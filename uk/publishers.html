@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vybridge — Для видавців</title>
+  <meta name="description" content="Підключіть свій сайт до Vybridge, отримуйте заявки від рекламодавців та заробляйте на розміщеннях реклами.">
+  <link rel="alternate" hreflang="en" href="../public/publishers.html">
+  <link rel="alternate" hreflang="uk" href="publishers.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../public/publishers.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container header__inner">
+      <a href="index.html" class="logo">
+        <img src="../assets/logo-icon.svg" alt="" class="logo__icon" width="36" height="36">
+        <span class="logo__text">vybridge</span>
+      </a>
+      <nav class="nav" id="nav">
+        <a href="how-it-works.html" class="nav__link">Як це працює</a>
+        <a href="advertisers.html" class="nav__link">Для рекламодавців</a>
+        <a href="publishers.html" class="nav__link nav__link--active" aria-current="page">Для видавців</a>
+        <a href="blog.html" class="nav__link">Блог</a>
+      </nav>
+      <div class="header__actions">
+        <div class="lang-switch" aria-label="Language">
+          <a href="../public/publishers.html" class="lang-switch__link" hreflang="en">EN</a>
+          <a href="publishers.html" class="lang-switch__link lang-switch__link--active" hreflang="uk" aria-current="page">UA</a>
+        </div>
+        <a href="#login" class="header__login">Увійти</a>
+        <a href="#signup" class="btn btn--purple btn--sm">Зареєструватися</a>
+      </div>
+      <button class="menu-toggle" id="menuToggle" aria-label="Відкрити меню" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero__inner">
+        <div class="hero__content reveal">
+          <span class="eyebrow">Для видавців</span>
+          <h1 class="hero__title">Заробляйте на своєму сайті або медіамайданчику</h1>
+          <p class="hero__subtitle">Підключіть свій сайт до Vybridge, отримуйте заявки від рекламодавців та самі вирішуйте, які кампанії приймати.</p>
+          <div class="hero__actions">
+            <a class="btn btn--green" href="#cta">Додати майданчик</a>
+          </div>
+        </div>
+        <div class="hero__visual reveal reveal--delay">
+          <div class="visual-card visual-card--main">
+            <p class="visual-card__label">Останні заявки</p>
+            <ul class="earnings-list">
+              <li class="earnings-list__item">
+                <strong>Банер у шапці сайту</strong>
+                <span>+ ₴4 200</span>
+              </li>
+              <li class="earnings-list__item">
+                <strong>Нативна публікація</strong>
+                <span>+ ₴8 500</span>
+              </li>
+              <li class="earnings-list__item">
+                <strong>Розсилка підписникам</strong>
+                <span>+ ₴3 100</span>
+              </li>
+              <li class="earnings-list__item">
+                <strong>Банер у сайдбарі</strong>
+                <span>+ ₴2 400</span>
+              </li>
+            </ul>
+          </div>
+          <div class="visual-card visual-card--float">
+            <p>Дохід цього місяця</p>
+            <strong>₴18 200</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section process" id="how-it-works">
+      <div class="container">
+        <div class="section__head reveal">
+          <span class="eyebrow">Як це працює</span>
+          <h2 class="section__title">Від підключення до першого доходу</h2>
+          <p class="section__subtitle">Простий процес для власників сайтів, блогів та медіа — без пошуку рекламодавців вручну.</p>
+        </div>
+
+        <div class="process-grid">
+          <article class="step-card reveal">
+            <div class="step-card__meta">Крок 1</div>
+            <div class="step-card__icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <h3>Додайте майданчик</h3>
+            <p>Зареєструйте свій сайт, блог або медіа та вкажіть доступні рекламні місця.</p>
+          </article>
+
+          <article class="step-card reveal">
+            <div class="step-card__meta">Крок 2</div>
+            <div class="step-card__icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2z"/><polyline points="22 7 12 13 2 7"/></svg>
+            </div>
+            <h3>Отримуйте заявки</h3>
+            <p>Рекламодавці знаходять ваш майданчик і надсилають запити на розміщення реклами.</p>
+          </article>
+
+          <article class="step-card reveal">
+            <div class="step-card__meta">Крок 3</div>
+            <div class="step-card__icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <h3>Підтверджуйте рекламу</h3>
+            <p>Переглядайте кожну заявку та приймайте лише ті кампанії, які відповідають вашій аудиторії.</p>
+          </article>
+
+          <article class="step-card reveal">
+            <div class="step-card__meta">Крок 4</div>
+            <div class="step-card__icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <h3>Заробляйте на розміщеннях</h3>
+            <p>Після публікації реклами отримуйте оплату напряму через платформу Vybridge.</p>
+          </article>
+        </div>
+
+        <div class="flow-line reveal" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section control" id="control">
+      <div class="container">
+        <div class="section__head reveal">
+          <span class="eyebrow eyebrow--purple">Що ви контролюєте</span>
+          <h2 class="section__title">Повний контроль над монетизацією</h2>
+          <p class="section__subtitle">Ви самі визначаєте умови — Vybridge лише з'єднує вас із рекламодавцями.</p>
+        </div>
+
+        <div class="control-grid">
+          <article class="control-card reveal">
+            <div class="control-card__icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <h3>Ціну розміщення</h3>
+            <p>Встановлюйте власні тарифи для кожного рекламного місця на вашому майданчику.</p>
+          </article>
+
+          <article class="control-card reveal">
+            <div class="control-card__icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </div>
+            <h3>Формати реклами</h3>
+            <p>Оберіть, які типи реклами приймаєте: банери, нативні публікації, розсилки та інше.</p>
+          </article>
+
+          <article class="control-card reveal">
+            <div class="control-card__icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+            </div>
+            <h3>Доступні місця</h3>
+            <p>Вкажіть конкретні зони на сайті або в контенті, де готові розміщувати рекламу.</p>
+          </article>
+
+          <article class="control-card reveal">
+            <div class="control-card__icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="18" y1="8" x2="23" y2="13"/><line x1="23" y1="8" x2="18" y2="13"/></svg>
+            </div>
+            <h3>Прийняття або відхилення заявок</h3>
+            <p>Жодна реклама не з'явиться без вашого підтвердження — ви завжди маєте останнє слово.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section audience-types" id="audience">
+      <div class="container">
+        <div class="section__head reveal">
+          <span class="eyebrow">Для кого це</span>
+          <h2 class="section__title">Vybridge для різних типів майданчиків</h2>
+          <p class="section__subtitle">Якщо у вас є аудиторія — ви можете монетизувати її через прямі угоди з рекламодавцями.</p>
+        </div>
+
+        <div class="audience-tags reveal">
+          <span class="audience-tag"><span class="audience-tag__dot"></span>Власники сайтів</span>
+          <span class="audience-tag"><span class="audience-tag__dot"></span>Блоги</span>
+          <span class="audience-tag"><span class="audience-tag__dot"></span>Онлайн-медіа</span>
+          <span class="audience-tag"><span class="audience-tag__dot"></span>Нішеві портали</span>
+          <span class="audience-tag"><span class="audience-tag__dot"></span>Спільноти</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section faq" id="faq">
+      <div class="container">
+        <div class="section__head reveal">
+          <span class="eyebrow eyebrow--purple">FAQ</span>
+          <h2 class="section__title">Питання видавців</h2>
+          <p class="section__subtitle">Відповіді на найпоширеніші питання про підключення майданчика та отримання доходу.</p>
+        </div>
+        <div class="faq-list">
+          <article class="faq-item reveal">
+            <button class="faq-item__button" aria-expanded="false">
+              <span>Хто може стати видавцем на Vybridge?</span>
+              <span class="faq-item__icon">+</span>
+            </button>
+            <div class="faq-item__content">
+              <p>Будь-який власник сайту, блогу, онлайн-медіа, нішевого порталу або спільноти з активною аудиторією. Головне — мати рекламні місця, які можна запропонувати рекламодавцям.</p>
+            </div>
+          </article>
+
+          <article class="faq-item reveal">
+            <button class="faq-item__button" aria-expanded="false">
+              <span>Скільки коштує підключення майданчика?</span>
+              <span class="faq-item__icon">+</span>
+            </button>
+            <div class="faq-item__content">
+              <p>Реєстрація та додавання майданчика безкоштовні. Vybridge отримує комісію лише з успішних угод — ви платите тільки тоді, коли заробляєте.</p>
+            </div>
+          </article>
+
+          <article class="faq-item reveal">
+            <button class="faq-item__button" aria-expanded="false">
+              <span>Чи можу я відхилити заявку на рекламу?</span>
+              <span class="faq-item__icon">+</span>
+            </button>
+            <div class="faq-item__content">
+              <p>Так. Ви повністю контролюєте, які кампанії приймати. Жодна реклама не публікується без вашого явного підтвердження.</p>
+            </div>
+          </article>
+
+          <article class="faq-item reveal">
+            <button class="faq-item__button" aria-expanded="false">
+              <span>Як я отримую оплату за розміщення?</span>
+              <span class="faq-item__icon">+</span>
+            </button>
+            <div class="faq-item__content">
+              <p>Після підтвердження та публікації реклами оплата проходить через платформу Vybridge. Кошти надходять на ваш рахунок після виконання умов розміщення.</p>
+            </div>
+          </article>
+
+          <article class="faq-item reveal">
+            <button class="faq-item__button" aria-expanded="false">
+              <span>Які формати реклами підтримуються?</span>
+              <span class="faq-item__icon">+</span>
+            </button>
+            <div class="faq-item__content">
+              <p>Банери, нативні публікації, розсилки, інтеграції в контент та інші формати. Ви самі обираєте, які з них доступні на вашому майданчику.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section cta" id="cta">
+      <div class="container cta__inner reveal">
+        <span class="eyebrow">Почніть заробляти</span>
+        <h2>Додайте свій майданчик до Vybridge</h2>
+        <p>Підключіть сайт за кілька хвилин і почніть отримувати заявки від рекламодавців, які шукають вашу аудиторію.</p>
+        <div class="cta__actions">
+          <a class="btn btn--green" href="#">Додати майданчик</a>
+          <a class="btn btn--ghost" href="index.html">На головну</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="vybridge-footer"></footer>
+
+  <script src="../public/publishers.js"></script>
+  <script src="../assets/footer-templates.js"></script>
+  <script src="../assets/footer.js"></script>
+</body>
+</html>

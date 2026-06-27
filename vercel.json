@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/create-campaign", "destination": "/create-campaign/index.html" }
+  ]
+}

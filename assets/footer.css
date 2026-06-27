@@ -1,0 +1,219 @@
+/* vybridge — global footer component */
+
+:root {
+  --footer-dark: #0a0f1e;
+  --footer-text-light: #94a3b8;
+  --footer-purple: #6366f1;
+  --footer-purple-dark: #4f46e5;
+  --footer-radius-sm: 8px;
+  --footer-font: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+.footer {
+  background: var(--footer-dark);
+  color: var(--footer-text-light);
+  padding: 64px 0 32px;
+}
+
+.footer .container {
+  width: 100%;
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.footer__grid {
+  display: grid;
+  grid-template-columns: 1.6fr repeat(5, 1fr);
+  gap: 32px 24px;
+  margin-bottom: 48px;
+}
+
+.footer__brand .logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer__brand .logo__icon {
+  border-radius: 8px;
+}
+
+.footer__brand .logo__text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: linear-gradient(90deg, #c084fc, #818cf8, #60a5fa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.footer__tagline {
+  margin: 14px 0 20px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--footer-text-light);
+  max-width: 240px;
+}
+
+.footer__social {
+  display: flex;
+  gap: 12px;
+}
+
+.footer__social a {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--footer-radius-sm);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--footer-text-light);
+  transition: background 0.2s, color 0.2s;
+}
+
+.footer__social a:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.footer__col h4 {
+  margin: 0 0 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.footer__col ul {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.footer__col a {
+  font-size: 14px;
+  color: var(--footer-text-light);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer__col a:hover {
+  color: #fff;
+}
+
+.footer__newsletter p {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.footer .newsletter-form {
+  display: flex;
+  gap: 0;
+  border-radius: var(--footer-radius-sm);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.footer .newsletter-form input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: none;
+  color: #fff;
+  font-family: var(--footer-font);
+  font-size: 14px;
+  outline: none;
+}
+
+.footer .newsletter-form input::placeholder {
+  color: rgba(148, 163, 184, 0.7);
+}
+
+.footer .newsletter-form button {
+  flex-shrink: 0;
+  width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--footer-purple);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.footer .newsletter-form button:hover {
+  background: var(--footer-purple-dark);
+}
+
+.footer__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 13px;
+  color: var(--footer-text-light);
+}
+
+.footer__bottom-links {
+  display: flex;
+  gap: 24px;
+}
+
+.footer__bottom-links a {
+  color: var(--footer-text-light);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer__bottom-links a:hover {
+  color: #fff;
+}
+
+@media (max-width: 1100px) {
+  .footer__grid {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .footer__brand {
+    grid-column: 1 / -1;
+  }
+
+  .footer__newsletter {
+    grid-column: 1 / -1;
+    max-width: 360px;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer__grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+
+  .footer__bottom {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer .container {
+    padding: 0 16px;
+  }
+
+  .footer__grid {
+    grid-template-columns: 1fr;
+  }
+}

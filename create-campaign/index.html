@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vybridge — Створити рекламну кампанію</title>
+  <meta name="description" content="Залиште заявку, і ми допоможемо підібрати відповідні рекламні майданчики для вашого бізнесу.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../public/advertisers.css">
+  <link rel="stylesheet" href="create-campaign.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container header__inner">
+      <a href="../uk/index.html" class="logo">
+        <img src="../assets/logo-icon.svg" alt="" class="logo__icon" width="36" height="36">
+        <span class="logo__text">vybridge</span>
+      </a>
+      <nav class="nav" id="nav">
+        <a href="../uk/how-it-works.html" class="nav__link">Як це працює</a>
+        <a href="../uk/advertisers.html" class="nav__link">Для рекламодавців</a>
+        <a href="../uk/publishers.html" class="nav__link">Для видавців</a>
+        <a href="../uk/blog.html" class="nav__link">Блог</a>
+      </nav>
+      <div class="header__actions">
+        <a href="../uk/index.html" class="header__login">На головну</a>
+        <a href="#signup" class="btn btn--brand btn--sm">Зареєструватися</a>
+      </div>
+      <button class="menu-toggle" id="menuToggle" aria-label="Відкрити меню" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="campaign-hero">
+      <div class="container campaign-hero__inner">
+        <div class="campaign-hero__content reveal">
+          <span class="eyebrow">Заявка на рекламу</span>
+          <h1 class="campaign-hero__title">Створити рекламну кампанію</h1>
+          <p class="campaign-hero__subtitle">Залиште заявку, і ми допоможемо підібрати відповідні рекламні майданчики.</p>
+        </div>
+
+        <div class="campaign-form-card reveal reveal--delay">
+          <form class="campaign-form" id="campaignForm" novalidate>
+            <div class="form-field">
+              <label class="form-field__label" for="name">Імʼя</label>
+              <input class="form-field__input" type="text" id="name" name="name" autocomplete="name" required>
+            </div>
+
+            <div class="form-field">
+              <label class="form-field__label" for="email">Email</label>
+              <input class="form-field__input" type="email" id="email" name="email" autocomplete="email" required>
+            </div>
+
+            <div class="form-field">
+              <label class="form-field__label" for="phone">Телефон</label>
+              <input class="form-field__input" type="tel" id="phone" name="phone" autocomplete="tel" required>
+            </div>
+
+            <div class="form-field">
+              <label class="form-field__label" for="advertise">Що ви хочете рекламувати?</label>
+              <textarea class="form-field__input form-field__textarea" id="advertise" name="advertise" rows="4" required></textarea>
+            </div>
+
+            <div class="form-field">
+              <label class="form-field__label" for="budget">Бюджет</label>
+              <input class="form-field__input" type="text" id="budget" name="budget" placeholder="Наприклад: $2 000 / місяць" required>
+            </div>
+
+            <p class="form-message form-message--error" id="formError" hidden role="alert"></p>
+
+            <button type="submit" class="btn btn--brand btn--full" id="submitBtn">Надіслати заявку</button>
+          </form>
+
+          <div class="form-success" id="formSuccess" hidden>
+            <div class="form-success__icon" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <p class="form-success__text">Дякуємо! Ваша заявка надіслана. Ми звʼяжемося з вами найближчим часом.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="vybridge-footer"></footer>
+
+  <script src="create-campaign.js"></script>
+  <script src="../assets/footer-templates.js"></script>
+  <script src="../assets/footer.js"></script>
+</body>
+</html>

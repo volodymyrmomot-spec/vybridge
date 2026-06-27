@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vybridge — Blog</title>
+  <meta name="description" content="News, marketing, advertising, website monetization, and digital platform growth from the Vybridge team.">
+  <link rel="alternate" hreflang="en" href="blog.html">
+  <link rel="alternate" hreflang="uk" href="../uk/blog.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="blog.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container header__inner">
+      <a href="../index.html" class="logo">
+        <img src="../assets/logo-icon.svg" alt="" class="logo__icon" width="36" height="36">
+        <span class="logo__text">vybridge</span>
+      </a>
+      <nav class="nav" id="nav">
+        <a href="../how-it-works.html" class="nav__link">How It Works</a>
+        <a href="advertisers.html" class="nav__link">For Advertisers</a>
+        <a href="publishers.html" class="nav__link">For Publishers</a>
+        <a href="blog.html" class="nav__link nav__link--active" aria-current="page">Blog</a>
+      </nav>
+      <div class="header__actions">
+        <div class="lang-switch" aria-label="Language">
+          <a href="blog.html" class="lang-switch__link lang-switch__link--active" hreflang="en" aria-current="page">EN</a>
+          <a href="../uk/blog.html" class="lang-switch__link" hreflang="uk">UA</a>
+        </div>
+        <a href="#login" class="header__login">Log in</a>
+        <a href="#signup" class="btn btn--brand btn--sm">Sign up</a>
+      </div>
+      <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero__inner reveal">
+        <span class="eyebrow">Blog</span>
+        <h1 class="hero__title">Vybridge Blog</h1>
+        <p class="hero__subtitle">News, marketing, advertising, website monetization, and digital platform growth.</p>
+      </div>
+    </section>
+
+    <section class="section articles" id="articles">
+      <div class="container">
+        <div class="section__head reveal">
+          <span class="eyebrow">Featured</span>
+          <h2 class="section__title">Latest articles</h2>
+        </div>
+
+        <div class="articles-grid">
+          <article class="article-card reveal">
+            <div class="article-card__thumb" aria-hidden="true"></div>
+            <h3>How to Earn from Your Own Website</h3>
+            <p>Practical ways to monetize your site through direct ad deals with brands.</p>
+            <span class="article-card__link">Read more →</span>
+          </article>
+
+          <article class="article-card reveal">
+            <div class="article-card__thumb" aria-hidden="true"></div>
+            <h3>How to Find Advertisers</h3>
+            <p>Where publishers look for advertisers and how to attract the right campaigns.</p>
+            <span class="article-card__link">Read more →</span>
+          </article>
+
+          <article class="article-card reveal">
+            <div class="article-card__thumb" aria-hidden="true"></div>
+            <h3>How Much Does Banner Advertising Cost</h3>
+            <p>A breakdown of pricing factors, formats, and what to expect when buying placements.</p>
+            <span class="article-card__link">Read more →</span>
+          </article>
+
+          <article class="article-card reveal">
+            <div class="article-card__thumb" aria-hidden="true"></div>
+            <h3>How to Increase Website Revenue</h3>
+            <p>Strategies to grow ad income without hurting user experience or site quality.</p>
+            <span class="article-card__link">Read more →</span>
+          </article>
+
+          <article class="article-card reveal">
+            <div class="article-card__thumb" aria-hidden="true"></div>
+            <h3>Mistakes When Launching Ad Campaigns</h3>
+            <p>Common pitfalls advertisers make — and how to avoid wasted budget.</p>
+            <span class="article-card__link">Read more →</span>
+          </article>
+
+          <article class="article-card reveal">
+            <div class="article-card__thumb" aria-hidden="true"></div>
+            <h3>How to Prepare a Banner for Advertising</h3>
+            <p>Size, format, and design tips to get your creatives approved faster.</p>
+            <span class="article-card__link">Read more →</span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section categories" id="categories">
+      <div class="container">
+        <div class="section__head reveal">
+          <span class="eyebrow">Categories</span>
+          <h2 class="section__title">Browse by topic</h2>
+        </div>
+
+        <div class="categories-grid reveal">
+          <span class="category-tag"><span class="category-tag__dot"></span>Marketing</span>
+          <span class="category-tag"><span class="category-tag__dot"></span>Advertising</span>
+          <span class="category-tag"><span class="category-tag__dot"></span>Publishers</span>
+          <span class="category-tag"><span class="category-tag__dot"></span>Advertisers</span>
+          <span class="category-tag"><span class="category-tag__dot"></span>Case Studies</span>
+          <span class="category-tag"><span class="category-tag__dot"></span>Vybridge News</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section newsletter" id="newsletter">
+      <div class="container newsletter__inner reveal">
+        <span class="eyebrow">Newsletter</span>
+        <h2>Don't Miss New Articles</h2>
+        <form class="newsletter-form" onsubmit="return false;">
+          <input type="email" placeholder="Your email" aria-label="Email address">
+          <button type="submit" class="btn btn--brand">Subscribe</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer id="vybridge-footer"></footer>
+
+  <script src="blog.js"></script>
+  <script src="../assets/footer-templates.js"></script>
+  <script src="../assets/footer.js"></script>
+</body>
+</html>

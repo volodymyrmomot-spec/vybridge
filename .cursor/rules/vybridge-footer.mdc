@@ -1,0 +1,48 @@
+---
+description: Vybridge global footer component — required on all pages
+globs: **/*.html
+alwaysApply: true
+---
+
+# Vybridge Global Footer
+
+Every Vybridge HTML page MUST use the shared footer component. Do not duplicate footer markup in page files.
+
+## Required markup (before `</body>`)
+
+```html
+<footer id="vybridge-footer"></footer>
+<script src="PATH/assets/footer-templates.js"></script>
+<script src="PATH/assets/footer.js"></script>
+```
+
+## Script path by page location
+
+| Location | Script paths |
+|----------|----------------|
+| Root (`index.html`, `how-it-works.html`) | `assets/footer-templates.js`, `assets/footer.js` |
+| `uk/` | `../assets/footer-templates.js`, `../assets/footer.js` |
+| `public/` | `../assets/footer-templates.js`, `../assets/footer.js` |
+
+## Source files (edit only these for footer changes)
+
+- `components/footer.en.html` — English footer HTML (source of truth)
+- `components/footer.uk.html` — Ukrainian footer HTML (source of truth)
+- `assets/footer-templates.js` — embedded templates (sync after editing components)
+- `assets/footer.css` — footer styles (design system)
+- `assets/footer.js` — loader, locale detection, link resolution
+
+After editing `components/footer.*.html`, run `node scripts/sync-footer-templates.js`.
+
+## Language
+
+Footer language is auto-detected from:
+1. `data-lang` on `#vybridge-footer` (optional override)
+2. `<html lang="uk">` or `/uk/` in the URL path
+
+## New pages checklist
+
+1. Add `<footer id="vybridge-footer"></footer>` after `</main>`
+2. Include `footer-templates.js` then `footer.js` with the correct relative paths
+3. Do NOT copy footer HTML or CSS into the page file
+4. Duplicate EN + UA pages when adding new sections (project convention)
