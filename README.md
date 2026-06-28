@@ -19,33 +19,59 @@ This project is a static draft website built with plain HTML, CSS, and JavaScrip
 
 Use the EN / UA toggle in the header to switch between English and Ukrainian versions.
 
-You can open files directly in a browser, or run a local static server:
+## Local development
+
+Run the Node.js server:
 
 ```bash
-python -m http.server 8080
+npm start
 ```
 
 Then open:
 
-- `http://localhost:8080/index.html`
-- `http://localhost:8080/how-it-works.html`
+- `http://localhost:3000/`
+- `http://localhost:3000/how-it-works.html`
+- `http://localhost:3000/uk/`
 
-## Domain Deployment (when ready)
+## Deploy to Railway
 
-Because all links use relative paths, you can deploy this draft to most static hosts without code changes:
+This project runs as a Node.js web service with a `Dockerfile`.
 
-- Vercel
-- Netlify
-- Cloudflare Pages
-- GitHub Pages
+### 1. Push to GitHub
 
-### Minimal deployment checklist
+Ensure the latest code is on the `main` branch of your repository.
 
-1. Upload project files to a Git repository.
-2. Connect repository to your hosting provider.
-3. Set `index.html` as the entry page (default on static hosts).
-4. Point your domain DNS to the hosting provider.
-5. Enable HTTPS in hosting settings.
+### 2. Create a Railway project
+
+1. Open [railway.com](https://railway.com) and sign in.
+2. Click **New Project** → **Deploy from GitHub repo**.
+3. Select the `vybridge` repository and branch `main`.
+
+### 3. Railway settings
+
+Railway detects the `Dockerfile` automatically. No custom build command is required.
+
+| Setting | Value |
+|---------|-------|
+| **Builder** | Dockerfile |
+| **Start command** | *(from Dockerfile `CMD`)* |
+| **Healthcheck** | optional: `/health` |
+
+### 4. Environment variables
+
+In Railway → **Variables**, add if needed:
+
+| Variable | Value |
+|----------|-------|
+| `NODE_ENV` | `production` |
+| `PORT` | set by Railway automatically |
+
+Do not commit secrets to Git. Use Railway Variables or a local `.env` file (see `.env.example`).
+
+### 5. Deploy
+
+Railway deploys automatically on every push to `main`.  
+After deploy, open the generated `*.up.railway.app` URL.
 
 ## Notes
 

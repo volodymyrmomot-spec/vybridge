@@ -4,7 +4,7 @@ const path = require("path");
 const { URL } = require("url");
 const { handleCampaignRequest } = require("./lib/campaign-requests");
 
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = process.env.PORT || 3000;
 const ROOT = __dirname;
 
 const MIME_TYPES = {
