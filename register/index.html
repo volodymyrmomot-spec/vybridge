@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vybridge — Registrácia</title>
+  <meta name="description" content="Vytvorte si účet na Vybridge ako reklamodávca alebo vydavateľ.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../public/advertisers.css">
+  <link rel="stylesheet" href="../auth/auth.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container header__inner">
+      <a href="../index.html" class="logo">
+        <img src="../assets/logo-icon.svg" alt="" class="logo__icon" width="36" height="36">
+        <span class="logo__text">vybridge</span>
+      </a>
+      <nav class="nav" id="nav">
+        <a href="../how-it-works.html" class="nav__link">Ako to funguje</a>
+        <a href="../public/advertisers.html" class="nav__link">Pre reklamodávateľov</a>
+        <a href="../public/publishers.html" class="nav__link">Pre vydavateľov</a>
+      </nav>
+      <div class="header__actions">
+        <a href="/login" class="header__login">Prihlásiť sa</a>
+      </div>
+      <button class="menu-toggle" id="menuToggle" aria-label="Otvoriť menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <main class="auth-page">
+    <div class="container">
+      <div class="auth-card">
+        <h1 class="auth-card__title">Registrácia</h1>
+        <p class="auth-card__subtitle">Vytvorte si účet a vyberte, či chcete kupovať alebo ponúkať reklamu.</p>
+
+        <form id="registerForm" class="auth-form" novalidate>
+          <div class="form-field">
+            <label class="form-field__label" for="name">Meno</label>
+            <input class="form-field__input" type="text" id="name" name="name" autocomplete="name" required>
+          </div>
+
+          <div class="form-field">
+            <label class="form-field__label" for="email">Email</label>
+            <input class="form-field__input" type="email" id="email" name="email" autocomplete="email" required>
+          </div>
+
+          <div class="form-field">
+            <label class="form-field__label" for="password">Heslo</label>
+            <input class="form-field__input" type="password" id="password" name="password" autocomplete="new-password" minlength="8" required>
+          </div>
+
+          <fieldset class="form-field" style="border:0;padding:0;margin:0;">
+            <legend class="form-field__label">Rola</legend>
+            <div class="role-options">
+              <label class="role-option">
+                <input type="radio" name="role" value="advertiser" required>
+                <span class="role-option__label">Chcem kúpiť reklamu</span>
+              </label>
+              <label class="role-option">
+                <input type="radio" name="role" value="publisher" required>
+                <span class="role-option__label">Chcem ponúkať reklamné miesta</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <button type="submit" class="btn btn--brand">Vytvoriť účet</button>
+          <p id="registerMessage" class="form-message" hidden></p>
+        </form>
+
+        <p class="auth-footer-link">Už máte účet? <a href="/login">Prihlásiť sa</a></p>
+      </div>
+    </div>
+  </main>
+
+  <footer id="vybridge-footer"></footer>
+  <script src="../auth/auth.js"></script>
+  <script src="register.js"></script>
+  <script src="../assets/footer-templates.js"></script>
+  <script src="../assets/footer.js"></script>
+</body>
+</html>

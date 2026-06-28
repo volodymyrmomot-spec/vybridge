@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const { URL } = require("url");
 const { handleCampaignRequest } = require("./lib/campaign-requests");
+const { handleAuthRequest } = require("./lib/auth");
 
 const PORT = process.env.PORT || 3000;
 const ROOT = __dirname;
@@ -40,6 +41,9 @@ function readBody(req) {
 
 const REWRITES = {
   "/create-campaign": "/create-campaign/index.html",
+  "/register": "/register/index.html",
+  "/login": "/login/index.html",
+  "/dashboard": "/dashboard/index.html",
 };
 
 function resolveStaticPath(urlPath) {
@@ -112,6 +116,16 @@ const server = http.createServer(async function (req, res) {
   if (url.pathname === "/api/campaign-requests" && req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return sendJson(res, 405, { ok: false, error: "Method not allowed" });
+  }
+
+  try {
+    const handled = await handleAuthRequest(req, res, url, readBody, sendJson);
+    if (handled) {
+      return;
+    }
+  } catch (err) {
+    console.error("[server] Auth error:", err);
+    return sendJson(res, 500, { ok: false, error: "Internal server error" });
   }
 
   const filePath = resolveStaticPath(url.pathname);

@@ -1,5 +1,8 @@
 {
   "rewrites": [
-    { "source": "/create-campaign", "destination": "/create-campaign/index.html" }
+    { "source": "/create-campaign", "destination": "/create-campaign/index.html" },
+    { "source": "/register", "destination": "/register/index.html" },
+    { "source": "/login", "destination": "/login/index.html" },
+    { "source": "/dashboard", "destination": "/dashboard/index.html" }
   ]
 }

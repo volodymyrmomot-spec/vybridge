@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vybridge — Dashboard</title>
+  <meta name="description" content="Váš účet Vybridge.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../public/advertisers.css">
+  <link rel="stylesheet" href="../auth/auth.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container header__inner">
+      <a href="../index.html" class="logo">
+        <img src="../assets/logo-icon.svg" alt="" class="logo__icon" width="36" height="36">
+        <span class="logo__text">vybridge</span>
+      </a>
+      <nav class="nav" id="nav">
+        <a href="../how-it-works.html" class="nav__link">Ako to funguje</a>
+        <a href="../public/advertisers.html" class="nav__link">Pre reklamodávateľov</a>
+        <a href="../public/publishers.html" class="nav__link">Pre vydavateľov</a>
+      </nav>
+      <div class="header__actions">
+        <button type="button" class="btn btn--purple btn--sm" id="logoutBtn">Odhlásiť sa</button>
+      </div>
+      <button class="menu-toggle" id="menuToggle" aria-label="Otvoriť menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <main class="dashboard-page">
+    <div class="container">
+      <div class="dashboard-card">
+        <h1 class="dashboard-card__title" id="welcomeTitle">Vitajte vo Vybridge</h1>
+        <p class="dashboard-card__meta" id="userMeta"></p>
+        <p class="dashboard-card__text" id="welcomeText"></p>
+        <div class="dashboard-actions">
+          <a href="../index.html" class="btn btn--brand">Späť na hlavnú stránku</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer id="vybridge-footer"></footer>
+  <script src="../auth/auth.js"></script>
+  <script src="dashboard.js"></script>
+  <script src="../assets/footer-templates.js"></script>
+  <script src="../assets/footer.js"></script>
+</body>
+</html>
