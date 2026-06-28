@@ -1,12 +1,11 @@
 services:
   - type: web
     name: vybridge
-    runtime: node
+    runtime: docker
     plan: free
     region: frankfurt
     branch: main
-    buildCommand: npm install
-    startCommand: npm start
+    dockerfilePath: ./Dockerfile
     autoDeploy: true
     envVars:
       - key: NODE_ENV
