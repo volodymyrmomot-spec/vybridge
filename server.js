@@ -4,7 +4,7 @@ const path = require("path");
 const { URL } = require("url");
 const { handleCampaignRequest } = require("./lib/campaign-requests");
 
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
 const ROOT = __dirname;
 
 const MIME_TYPES = {
@@ -92,6 +92,10 @@ function serveStatic(req, res, filePath) {
 
 const server = http.createServer(async function (req, res) {
   const url = new URL(req.url, "http://" + req.headers.host);
+
+  if (url.pathname === "/health") {
+    return sendJson(res, 200, { ok: true, service: "vybridge" });
+  }
 
   if (url.pathname === "/api/campaign-requests" && req.method === "POST") {
     try {
