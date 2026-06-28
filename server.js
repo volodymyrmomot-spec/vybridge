@@ -127,3 +127,8 @@ const server = http.createServer(async function (req, res) {
 server.listen(PORT, "0.0.0.0", function () {
   console.log("Vybridge server listening on port " + PORT);
 });
+
+server.on("error", function (err) {
+  console.error("[server] Failed to start:", err);
+  process.exit(1);
+});
