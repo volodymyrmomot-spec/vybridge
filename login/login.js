@@ -4,6 +4,10 @@
   var form = document.getElementById("loginForm");
   var message = document.getElementById("loginMessage");
 
+  if (!form) {
+    return;
+  }
+
   VybridgeAuth.redirectIfAuthenticated();
 
   form.addEventListener("submit", function (event) {
@@ -15,13 +19,13 @@
       password: form.password.value,
     }).then(function (result) {
       if (!result.ok) {
-        var errors = result.body.errors || [result.body.error || "Prihlásenie zlyhalo"];
+        var errors = result.body.errors || [result.body.error || VybridgeI18n.t("loginFailed")];
         VybridgeAuth.showErrors(message, errors);
         return;
       }
-      window.location.href = "/dashboard";
+      window.location.href = VybridgeI18n.authPath("/dashboard");
     }).catch(function () {
-      VybridgeAuth.showErrors(message, ["Prihlásenie zlyhalo. Skúste to znova."]);
+      VybridgeAuth.showErrors(message, [VybridgeI18n.t("loginRetry")]);
     });
   });
 

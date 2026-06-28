@@ -17,7 +17,18 @@
   function showErrors(el, messages) {
     el.hidden = false;
     el.className = "form-message form-message--error";
-    el.textContent = messages.join(" ");
+    var translated = window.VybridgeI18n
+      ? VybridgeI18n.translateApiMessages(messages)
+      : messages;
+    el.textContent = translated.join(" ");
+  }
+
+  function dashboardPath() {
+    return window.VybridgeI18n ? VybridgeI18n.authPath("/dashboard") : "/dashboard";
+  }
+
+  function loginPath() {
+    return window.VybridgeI18n ? VybridgeI18n.authPath("/login") : "/login";
   }
 
   window.VybridgeAuth = {
@@ -27,7 +38,7 @@
       return fetch("/api/auth/me", { credentials: "same-origin" })
         .then(function (res) {
           if (res.ok) {
-            window.location.href = "/dashboard";
+            window.location.href = dashboardPath();
           }
         })
         .catch(function () {});
@@ -36,7 +47,7 @@
       return fetch("/api/auth/me", { credentials: "same-origin" })
         .then(function (res) {
           if (!res.ok) {
-            window.location.href = "/login";
+            window.location.href = loginPath();
             return null;
           }
           return res.json();

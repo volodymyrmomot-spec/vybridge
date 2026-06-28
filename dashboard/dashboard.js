@@ -13,17 +13,15 @@
     userMeta.textContent = user.name + " · " + user.email;
 
     if (user.role === "publisher") {
-      welcomeText.textContent =
-        "Vitajte vo Vybridge. Tu budete môcť pridať svoje reklamné miesta.";
+      welcomeText.textContent = VybridgeI18n.t("publisherWelcome");
     } else {
-      welcomeText.textContent =
-        "Vitajte vo Vybridge. Tu budete môcť nájsť reklamné miesta.";
+      welcomeText.textContent = VybridgeI18n.t("advertiserWelcome");
     }
   });
 
   logoutBtn.addEventListener("click", function () {
     VybridgeAuth.postJson("/api/auth/logout", {}).then(function () {
-      window.location.href = "/login";
+      window.location.href = VybridgeI18n.authPath("/login");
     });
   });
 

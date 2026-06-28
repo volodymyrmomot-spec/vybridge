@@ -3,6 +3,9 @@
     { "source": "/create-campaign", "destination": "/create-campaign/index.html" },
     { "source": "/register", "destination": "/register/index.html" },
     { "source": "/login", "destination": "/login/index.html" },
-    { "source": "/dashboard", "destination": "/dashboard/index.html" }
+    { "source": "/dashboard", "destination": "/dashboard/index.html" },
+    { "source": "/uk/register", "destination": "/uk/register/index.html" },
+    { "source": "/uk/login", "destination": "/uk/login/index.html" },
+    { "source": "/uk/dashboard", "destination": "/uk/dashboard/index.html" }
   ]
 }

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uk">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>vybridge — Log in</title>
-  <meta name="description" content="Sign in to your Vybridge account.">
+  <title>vybridge — Вхід</title>
+  <meta name="description" content="Увійдіть до свого облікового запису Vybridge.">
   <link rel="alternate" hreflang="en" href="/login">
   <link rel="alternate" hreflang="uk" href="/uk/login">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,23 +16,23 @@
 <body>
   <header class="header">
     <div class="container header__inner">
-      <a href="/index.html" class="logo">
+      <a href="/uk/index.html" class="logo">
         <img src="/assets/logo-icon.svg" alt="" class="logo__icon" width="36" height="36">
         <span class="logo__text">vybridge</span>
       </a>
       <nav class="nav" id="nav">
-        <a href="/how-it-works.html" class="nav__link">How It Works</a>
-        <a href="/public/advertisers.html" class="nav__link">For Advertisers</a>
-        <a href="/public/publishers.html" class="nav__link">For Publishers</a>
+        <a href="/uk/how-it-works.html" class="nav__link">Як це працює</a>
+        <a href="/uk/advertisers.html" class="nav__link">Для рекламодавців</a>
+        <a href="/uk/publishers.html" class="nav__link">Для видавців</a>
       </nav>
       <div class="header__actions">
-        <div class="lang-switch" aria-label="Language">
-          <a href="/login" class="lang-switch__link lang-switch__link--active" hreflang="en" aria-current="page">EN</a>
-          <a href="/uk/login" class="lang-switch__link" hreflang="uk">UA</a>
+        <div class="lang-switch" aria-label="Мова">
+          <a href="/login" class="lang-switch__link" hreflang="en">EN</a>
+          <a href="/uk/login" class="lang-switch__link lang-switch__link--active" hreflang="uk" aria-current="page">UA</a>
         </div>
-        <a href="/register" class="btn btn--purple btn--sm">Sign up</a>
+        <a href="/uk/register" class="btn btn--purple btn--sm">Реєстрація</a>
       </div>
-      <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">
+      <button class="menu-toggle" id="menuToggle" aria-label="Відкрити меню" aria-expanded="false">
         <span></span>
         <span></span>
         <span></span>
@@ -43,8 +43,8 @@
   <main class="auth-page">
     <div class="container">
       <div class="auth-card">
-        <h1 class="auth-card__title">Log in</h1>
-        <p class="auth-card__subtitle">Sign in to your Vybridge account.</p>
+        <h1 class="auth-card__title">Вхід</h1>
+        <p class="auth-card__subtitle">Увійдіть до свого облікового запису Vybridge.</p>
 
         <form id="loginForm" class="auth-form" novalidate>
           <div class="form-field">
@@ -53,15 +53,15 @@
           </div>
 
           <div class="form-field">
-            <label class="form-field__label" for="password">Password</label>
+            <label class="form-field__label" for="password">Пароль</label>
             <input class="form-field__input" type="password" id="password" name="password" autocomplete="current-password" required>
           </div>
 
-          <button type="submit" class="btn btn--brand">Log in</button>
+          <button type="submit" class="btn btn--brand">Увійти</button>
           <p id="loginMessage" class="form-message" hidden></p>
         </form>
 
-        <p class="auth-footer-link">Don't have an account? <a href="/register">Sign up</a></p>
+        <p class="auth-footer-link">Немає облікового запису? <a href="/uk/register">Реєстрація</a></p>
       </div>
     </div>
   </main>

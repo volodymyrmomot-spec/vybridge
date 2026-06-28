@@ -44,6 +44,9 @@ const REWRITES = {
   "/register": "/register/index.html",
   "/login": "/login/index.html",
   "/dashboard": "/dashboard/index.html",
+  "/uk/register": "/uk/register/index.html",
+  "/uk/login": "/uk/login/index.html",
+  "/uk/dashboard": "/uk/dashboard/index.html",
 };
 
 function resolveStaticPath(urlPath) {

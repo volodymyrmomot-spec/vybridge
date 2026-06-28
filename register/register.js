@@ -3,6 +3,13 @@
 
   var form = document.getElementById("registerForm");
   var message = document.getElementById("registerMessage");
+  var nameInput = document.getElementById("name");
+  var emailInput = document.getElementById("email");
+  var passwordInput = document.getElementById("password");
+
+  if (!form || !nameInput || !emailInput || !passwordInput) {
+    return;
+  }
 
   VybridgeAuth.redirectIfAuthenticated();
 
@@ -12,21 +19,21 @@
 
     var roleInput = form.querySelector('input[name="role"]:checked');
     var payload = {
-      name: form.name.value.trim(),
-      email: form.email.value.trim(),
-      password: form.password.value,
+      name: nameInput.value.trim(),
+      email: emailInput.value.trim(),
+      password: passwordInput.value,
       role: roleInput ? roleInput.value : "",
     };
 
     VybridgeAuth.postJson("/api/auth/register", payload).then(function (result) {
       if (!result.ok) {
-        var errors = result.body.errors || [result.body.error || "Registrácia zlyhala"];
+        var errors = result.body.errors || [result.body.error || VybridgeI18n.t("registerFailed")];
         VybridgeAuth.showErrors(message, errors);
         return;
       }
-      window.location.href = "/dashboard";
+      window.location.href = VybridgeI18n.authPath("/dashboard");
     }).catch(function () {
-      VybridgeAuth.showErrors(message, ["Registrácia zlyhala. Skúste to znova."]);
+      VybridgeAuth.showErrors(message, [VybridgeI18n.t("registerRetry")]);
     });
   });
 

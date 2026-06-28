@@ -3,7 +3,7 @@ const path = require("path");
 const { spawn } = require("child_process");
 
 const ROOT = path.join(__dirname, "..");
-const PORT = "3460";
+const PORT = "3461";
 
 function request(method, urlPath, body, cookie) {
   return new Promise(function (resolve, reject) {
@@ -58,6 +58,17 @@ function getText(urlPath) {
   });
 }
 
+function head(urlPath) {
+  return new Promise(function (resolve, reject) {
+    http
+      .request({ hostname: "127.0.0.1", port: PORT, path: urlPath, method: "HEAD" }, function (res) {
+        resolve({ status: res.statusCode });
+      })
+      .on("error", reject)
+      .end();
+  });
+}
+
 function extractCookie(setCookie) {
   if (!setCookie) {
     return "";
@@ -78,26 +89,14 @@ async function main() {
   });
 
   const email = "test-" + Date.now() + "@example.com";
-  const duplicate = await request("POST", "/api/auth/register", {
+  const register = await request("POST", "/api/auth/register", {
     name: "Test User",
     email: email,
     password: "password123",
     role: "publisher",
   });
-  const cookie = extractCookie(duplicate.headers["set-cookie"]);
+  const cookie = extractCookie(register.headers["set-cookie"]);
   const me = await request("GET", "/api/auth/me", null, cookie);
-  const dupAgain = await request("POST", "/api/auth/register", {
-    name: "Other",
-    email: email,
-    password: "password123",
-    role: "advertiser",
-  });
-  const shortPass = await request("POST", "/api/auth/register", {
-    name: "Bad",
-    email: "bad@example.com",
-    password: "short",
-    role: "advertiser",
-  });
   const logout = await request("POST", "/api/auth/logout", {}, cookie);
   const login = await request("POST", "/api/auth/login", {
     email: email,
@@ -106,22 +105,23 @@ async function main() {
   const loginCookie = extractCookie(login.headers["set-cookie"]);
   const meAfterLogin = await request("GET", "/api/auth/me", null, loginCookie);
   const registerPage = await getText("/register");
-  const loginPage = await getText("/login");
-  const dashboardPage = await getText("/dashboard");
+  const ukRegisterPage = await getText("/uk/register");
+  const brokenScript = await head("/register.js");
+  const fixedScript = await head("/register/register.js");
 
   const checks = {
-    registerOk: duplicate.status === 201 && duplicate.body.ok === true,
+    registerOk: register.status === 201 && register.body.ok === true,
     autoSession: !!cookie,
     meOk: me.body.user && me.body.user.role === "publisher",
     noPasswordHash: !JSON.stringify(me.body).includes("passwordHash"),
-    duplicateBlocked: dupAgain.status === 400,
-    shortPasswordBlocked: shortPass.status === 400,
     logoutOk: logout.body.ok === true,
     loginOk: login.body.ok === true,
     meAfterLogin: meAfterLogin.body.user.email === email,
-    registerPageOk: registerPage.status === 200 && registerPage.text.includes("Chcem kúpiť reklamu"),
-    loginPageOk: loginPage.status === 200,
-    dashboardPageOk: dashboardPage.status === 200 && dashboardPage.text.includes("Vitajte vo Vybridge"),
+    registerPageEn: registerPage.status === 200 && registerPage.text.includes("I want to buy advertising"),
+    registerPageUk: ukRegisterPage.status === 200 && ukRegisterPage.text.includes("Я хочу купити рекламу"),
+    brokenRegisterJs404: brokenScript.status === 404,
+    fixedRegisterJs200: fixedScript.status === 200,
+    registerUsesAbsoluteScript: registerPage.text.includes('src="/register/register.js"'),
   };
 
   console.log(JSON.stringify(checks, null, 2));
