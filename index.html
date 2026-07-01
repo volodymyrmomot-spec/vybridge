@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>vybridge — Buy and Sell Advertising Directly</title>
-  <meta name="description" content="The global marketplace for brands and publishers. No middlemen. No hassle. Just results.">
+  <title>vybridge — Buy and sell ads in a few clicks</title>
+  <meta name="description" content="The global ad marketplace. Advertise on websites or earn from your audience — automated from start to payout. No emails, no negotiations.">
   <link rel="alternate" hreflang="en" href="index.html">
   <link rel="alternate" hreflang="uk" href="uk/index.html">
   <link rel="stylesheet" href="styles.css">
@@ -21,18 +21,13 @@
         <span class="logo__text">vybridge</span>
       </a>
       <nav class="nav" id="nav">
-        <a href="how-it-works.html" class="nav__link">How It Works</a>
+        <a href="#how-it-works" class="nav__link">How it works</a>
         <a href="public/advertisers.html" class="nav__link">For Advertisers</a>
         <a href="public/publishers.html" class="nav__link">For Publishers</a>
-        <a href="public/blog.html" class="nav__link">Blog</a>
       </nav>
       <div class="header__actions">
-        <div class="lang-switch" aria-label="Language">
-          <a href="index.html" class="lang-switch__link lang-switch__link--active" hreflang="en" aria-current="page">EN</a>
-          <a href="uk/index.html" class="lang-switch__link" hreflang="uk">UA</a>
-        </div>
-        <a href="#login" class="header__login">Log in</a>
-        <a href="#signup" class="btn btn--purple btn--sm">Sign up</a>
+        <a href="/login" class="header__login">Log in</a>
+        <a href="/register" class="btn btn--purple btn--sm">Sign up</a>
       </div>
       <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">
         <span></span>
@@ -46,10 +41,20 @@
     <section class="hero">
       <div class="container">
         <div class="hero__header">
-          <h1 class="hero__title">Buy and Sell Advertising Directly</h1>
-          <p class="hero__subtitle">The global marketplace for brands and publishers. No middlemen. No hassle. Just results.</p>
+          <span class="badge">Global ad marketplace · No middlemen</span>
+          <h1 class="hero__title">Buy and sell ads in a few clicks</h1>
+          <p class="hero__subtitle">No emails, no negotiations. Advertise on websites or earn from your audience — automated from start to payout.</p>
+          <div class="hero__actions">
+            <a href="/register" class="btn btn--purple btn--lg">Start advertising</a>
+            <a href="/register" class="btn btn--outline btn--lg">Earn from my site</a>
+          </div>
         </div>
-        <div class="hero__cards">
+      </div>
+    </section>
+
+    <section class="intro-cards">
+      <div class="container">
+        <div class="intro-cards__grid">
 
           <article class="hero-card hero-card--advertiser">
             <div class="hero-card__top">
@@ -57,49 +62,11 @@
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-5v12L3 13v-2z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
               </div>
               <div>
-                <h2 class="hero-card__title hero-card__title--purple">I Want to Advertise</h2>
-                <p class="hero-card__desc">Find creators, websites and publishers to promote your business.</p>
+                <h2 class="hero-card__title hero-card__title--purple">I want to advertise</h2>
+                <p class="hero-card__desc">Browse verified ad slots on real websites. Upload your creative, pay once, and go live automatically as soon as it's approved.</p>
               </div>
             </div>
-            <a href="#advertise" class="btn btn--purple">Buy Advertising →</a>
-            <div class="hero-card__widget" aria-hidden="true">
-              <p class="widget__label">Top Publishers</p>
-              <ul class="publisher-list">
-                <li class="publisher-list__item">
-                  <span class="publisher-list__avatar">SM</span>
-                  <div class="publisher-list__info">
-                    <span class="publisher-list__name">Sarah Miller</span>
-                    <span class="publisher-list__platform">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31.4 31.4 0 0 0 0 12a31.4 31.4 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31.4 31.4 0 0 0 24 12a31.4 31.4 0 0 0-.5-5.8zM9.6 15.6V8.4L15.8 12l-6.2 3.6z"/></svg>
-                      YouTube
-                    </span>
-                  </div>
-                  <span class="publisher-list__count">250K</span>
-                </li>
-                <li class="publisher-list__item">
-                  <span class="publisher-list__avatar publisher-list__avatar--pink">JK</span>
-                  <div class="publisher-list__info">
-                    <span class="publisher-list__name">Jess Kim</span>
-                    <span class="publisher-list__platform">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.9.2 2.3.4.6.2 1 .5 1.5 1 .5.5.8.9 1 1.5.2.4.4 1.1.4 2.3.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.2 1.9-.4 2.3-.2.6-.5 1-1 1.5-.5.5-.9.8-1.5 1-.4.2-1.1.4-2.3.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.9-.2-2.3-.4-.6-.2-1-.5-1.5-1-.5-.5-.8-.9-1-1.5-.2-.4-.4-1.1-.4-2.3-.1-1.3-.1-1.7-.1-4.9s0-3.6.1-4.9c.1-1.2.2-1.9.4-2.3.2-.6.5-1 1-1.5.5-.5.9-.8 1.5-1 .4-.2 1.1-.4 2.3-.4C8.4 2.2 8.8 2.2 12 2.2zm0 1.8c-3.1 0-3.5 0-4.7.1-1 .0-1.6.2-2 .3-.5.2-.9.4-1.3.8-.4.4-.6.8-.8 1.3-.1.4-.3 1-.3 2-.1 1.2-.1 1.6-.1 4.7s0 3.5.1 4.7c0 1 .2 1.6.3 2 .2.5.4.9.8 1.3.4.4.8.6 1.3.8.4.1 1 .3 2 .3 1.2.1 1.6.1 4.7.1s3.5 0 4.7-.1c1 0 1.6-.2 2-.3.5-.2.9-.4 1.3-.8.4-.4.6-.8.8-1.3.1-.4.3-1 .3-2 .1-1.2.1-1.6.1-4.7s0-3.5-.1-4.7c0-1-.2-1.6-.3-2-.2-.5-.4-.9-.8-1.3-.4-.4-.8-.6-1.3-.8-.4-.1-1-.3-2-.3-1.2-.1-1.6-.1-4.7-.1zM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 1.8a3.2 3.2 0 1 1 0 6.4 3.2 3.2 0 0 1 0-6.4zm5.3-3.1a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z"/></svg>
-                      Instagram
-                    </span>
-                  </div>
-                  <span class="publisher-list__count">180K</span>
-                </li>
-                <li class="publisher-list__item">
-                  <span class="publisher-list__avatar publisher-list__avatar--blue">MR</span>
-                  <div class="publisher-list__info">
-                    <span class="publisher-list__name">Mike Ross</span>
-                    <span class="publisher-list__platform">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
-                      TikTok
-                    </span>
-                  </div>
-                  <span class="publisher-list__count">420K</span>
-                </li>
-              </ul>
-            </div>
+            <a href="/register" class="btn btn--purple">Browse ad slots →</a>
           </article>
 
           <article class="hero-card hero-card--publisher">
@@ -108,81 +75,13 @@
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
               </div>
               <div>
-                <h2 class="hero-card__title hero-card__title--green">I Want to Sell Advertising</h2>
-                <p class="hero-card__desc">Earn money from your audience on social media, websites and newsletters.</p>
+                <h2 class="hero-card__title hero-card__title--green">I want to earn</h2>
+                <p class="hero-card__desc">Add one script to your site, pick a spot and set your price. Approve creatives when they come in — payouts happen automatically.</p>
               </div>
             </div>
-            <a href="#publish" class="btn btn--green">Sell Advertising →</a>
-            <div class="hero-card__widget hero-card__widget--earnings" aria-hidden="true">
-              <p class="widget__label">Earnings Overview</p>
-              <div class="earnings">
-                <div class="earnings__total">
-                  <span class="earnings__amount">$4,750</span>
-                  <span class="earnings__trend">+10%</span>
-                </div>
-                <svg class="earnings__chart" viewBox="0 0 200 50" preserveAspectRatio="none">
-                  <polyline points="0,40 30,35 60,38 90,25 120,28 150,15 180,18 200,8" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <ul class="earnings__platforms">
-                  <li><span>Instagram</span><strong>$1,850</strong></li>
-                  <li><span>YouTube</span><strong>$1,420</strong></li>
-                  <li><span>Newsletter</span><strong>$980</strong></li>
-                  <li><span>Website</span><strong>$500</strong></li>
-                </ul>
-              </div>
-            </div>
+            <a href="/register" class="btn btn--purple">List my website →</a>
           </article>
 
-        </div>
-      </div>
-    </section>
-
-    <section class="platforms">
-      <div class="container">
-        <h2 class="platforms__title">Supported Platforms</h2>
-        <div class="platforms__grid">
-          <div class="platform">
-            <div class="platform__icon platform__icon--instagram">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.9.2 2.3.4.6.2 1 .5 1.5 1 .5.5.8.9 1 1.5.2.4.4 1.1.4 2.3.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.2 1.9-.4 2.3-.2.6-.5 1-1 1.5-.5.5-.9.8-1.5 1-.4.2-1.1.4-2.3.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.9-.2-2.3-.4-.6-.2-1-.5-1.5-1-.5-.5-.8-.9-1-1.5-.2-.4-.4-1.1-.4-2.3-.1-1.3-.1-1.7-.1-4.9s0-3.6.1-4.9c.1-1.2.2-1.9.4-2.3.2-.6.5-1 1-1.5.5-.5.9-.8 1.5-1 .4-.2 1.1-.4 2.3-.4C8.4 2.2 8.8 2.2 12 2.2zm0 1.8c-3.1 0-3.5 0-4.7.1-1 .0-1.6.2-2 .3-.5.2-.9.4-1.3.8-.4.4-.6.8-.8 1.3-.1.4-.3 1-.3 2-.1 1.2-.1 1.6-.1 4.7s0 3.5.1 4.7c0 1 .2 1.6.3 2 .2.5.4.9.8 1.3.4.4.8.6 1.3.8.4.1 1 .3 2 .3 1.2.1 1.6.1 4.7.1s3.5 0 4.7-.1c1 0 1.6-.2 2-.3.5-.2.9-.4 1.3-.8.4-.4.6-.8.8-1.3.1-.4.3-1 .3-2 .1-1.2.1-1.6.1-4.7s0-3.5-.1-4.7c0-1-.2-1.6-.3-2-.2-.5-.4-.9-.8-1.3-.4-.4-.8-.6-1.3-.8-.4-.1-1-.3-2-.3-1.2-.1-1.6-.1-4.7-.1zM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 1.8a3.2 3.2 0 1 1 0 6.4 3.2 3.2 0 0 1 0-6.4zm5.3-3.1a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z"/></svg>
-            </div>
-            <span>Instagram</span>
-          </div>
-          <div class="platform">
-            <div class="platform__icon platform__icon--tiktok">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
-            </div>
-            <span>TikTok</span>
-          </div>
-          <div class="platform">
-            <div class="platform__icon platform__icon--youtube">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31.4 31.4 0 0 0 0 12a31.4 31.4 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31.4 31.4 0 0 0 24 12a31.4 31.4 0 0 0-.5-5.8zM9.6 15.6V8.4L15.8 12l-6.2 3.6z"/></svg>
-            </div>
-            <span>YouTube</span>
-          </div>
-          <div class="platform">
-            <div class="platform__icon platform__icon--web">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-            </div>
-            <span>Websites</span>
-          </div>
-          <div class="platform">
-            <div class="platform__icon platform__icon--newsletter">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            </div>
-            <span>Newsletters</span>
-          </div>
-          <div class="platform">
-            <div class="platform__icon platform__icon--podcast">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-            </div>
-            <span>Podcasts</span>
-          </div>
-          <div class="platform platform--more">
-            <div class="platform__icon platform__icon--more">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-            </div>
-            <span>and more...</span>
-          </div>
         </div>
       </div>
     </section>
@@ -199,32 +98,32 @@
                 <div class="step__icon step__icon--purple">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 </div>
-                <h4 class="step__title">Choose a publisher</h4>
-                <p class="step__text">Browse and filter thousands of publishers.</p>
+                <h4 class="step__title">Browse ad slots</h4>
+                <p class="step__text">Find available placements on real websites, filtered by size and price.</p>
               </article>
               <div class="steps-row__connector" aria-hidden="true"></div>
               <article class="step">
                 <div class="step__icon step__icon--purple">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
                 </div>
-                <h4 class="step__title">Upload materials</h4>
-                <p class="step__text">Add your ad content and campaign details.</p>
+                <h4 class="step__title">Upload &amp; pay</h4>
+                <p class="step__text">Add your creative and pay securely — funds are held in escrow.</p>
               </article>
               <div class="steps-row__connector" aria-hidden="true"></div>
               <article class="step">
                 <div class="step__icon step__icon--purple">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 </div>
-                <h4 class="step__title">Pay securely</h4>
-                <p class="step__text">Make payment safely through our escrow system.</p>
+                <h4 class="step__title">Get approved</h4>
+                <p class="step__text">The site owner reviews your creative before it goes live.</p>
               </article>
               <div class="steps-row__connector" aria-hidden="true"></div>
               <article class="step">
                 <div class="step__icon step__icon--purple">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 </div>
-                <h4 class="step__title">Get exposure</h4>
-                <p class="step__text">Your ad is published and you reach your audience.</p>
+                <h4 class="step__title">Go live automatically</h4>
+                <p class="step__text">Your ad appears the moment it's approved — no extra steps.</p>
               </article>
             </div>
           </div>
@@ -236,34 +135,34 @@
             <div class="steps-row">
               <article class="step">
                 <div class="step__icon step__icon--green">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
                 </div>
-                <h4 class="step__title">Create a profile</h4>
-                <p class="step__text">Sign up and add your channels or website.</p>
+                <h4 class="step__title">Add one script</h4>
+                <p class="step__text">Install a single snippet on your site — just once, ever.</p>
               </article>
               <div class="steps-row__connector steps-row__connector--green" aria-hidden="true"></div>
               <article class="step">
                 <div class="step__icon step__icon--green">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
                 </div>
-                <h4 class="step__title">List ad opportunities</h4>
-                <p class="step__text">Set your prices, formats and availability.</p>
+                <h4 class="step__title">Set a slot &amp; price</h4>
+                <p class="step__text">Choose where ads appear on your site and set a fixed price.</p>
               </article>
               <div class="steps-row__connector steps-row__connector--green" aria-hidden="true"></div>
               <article class="step">
                 <div class="step__icon step__icon--green">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                 </div>
-                <h4 class="step__title">Accept orders</h4>
-                <p class="step__text">Receive orders and approve the campaign.</p>
+                <h4 class="step__title">Approve creatives</h4>
+                <p class="step__text">Review each ad before it goes live on your site.</p>
               </article>
               <div class="steps-row__connector steps-row__connector--green" aria-hidden="true"></div>
               <article class="step">
                 <div class="step__icon step__icon--green">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                 </div>
-                <h4 class="step__title">Get paid</h4>
-                <p class="step__text">Publish the ad and get paid securely on time.</p>
+                <h4 class="step__title">Get paid automatically</h4>
+                <p class="step__text">Funds are released to you when the placement ends.</p>
               </article>
             </div>
           </div>
@@ -272,52 +171,49 @@
       </div>
     </section>
 
-    <section class="stats-cta">
-      <div class="container stats-cta__inner">
-        <div class="stats-cta__content">
-          <span class="stats-cta__label">A platform for direct advertising</span>
-          <h2 class="stats-cta__title">Why Vybridge?</h2>
-          <p class="stats-cta__desc">Advertisers and platform owners connect directly — with transparent terms and a clear process from request to publication.</p>
-          <a href="#signup" class="btn btn--purple">Join Vybridge Today →</a>
+    <section class="trust">
+      <div class="container">
+        <div class="trust__grid">
+          <article class="trust-card">
+            <span class="trust-card__value">$0</span>
+            <span class="trust-card__label">Until your ad is confirmed</span>
+          </article>
+          <article class="trust-card">
+            <span class="trust-card__value">48h</span>
+            <span class="trust-card__label">Auto-release if no response</span>
+          </article>
+          <article class="trust-card">
+            <span class="trust-card__value">12%</span>
+            <span class="trust-card__label">Commission, shown upfront</span>
+          </article>
         </div>
-        <div class="stats-grid">
-          <article class="stat-card">
-            <div class="stat-card__icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            </div>
-            <span class="stat-card__number">01</span>
-            <span class="stat-card__label">Direct contact between advertiser and platform</span>
-          </article>
-          <article class="stat-card">
-            <div class="stat-card__icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            </div>
-            <span class="stat-card__number">02</span>
-            <span class="stat-card__label">Transparent ad approval process</span>
-          </article>
-          <article class="stat-card">
-            <div class="stat-card__icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-            </div>
-            <span class="stat-card__number">03</span>
-            <span class="stat-card__label">All requests in one dashboard</span>
-          </article>
-          <article class="stat-card">
-            <div class="stat-card__icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            </div>
-            <span class="stat-card__number">04</span>
-            <span class="stat-card__label">Fast ad campaign launch</span>
-          </article>
+      </div>
+    </section>
+
+    <section class="cta-band">
+      <div class="container">
+        <div class="cta-band__panel">
+          <span class="cta-band__eyebrow">Fully automated deal flow, no messaging needed</span>
+          <h2 class="cta-band__title">Ready to start?</h2>
+          <a href="/register" class="btn btn--white btn--lg">Create your account</a>
         </div>
       </div>
     </section>
   </main>
 
-  <footer id="vybridge-footer"></footer>
+  <footer class="simple-footer">
+    <div class="container simple-footer__inner">
+      <span>© 2026 Vybridge</span>
+      <div class="simple-footer__links">
+        <a href="public/privacy.html">Privacy</a>
+        <span aria-hidden="true">·</span>
+        <a href="public/terms.html">Terms</a>
+        <span aria-hidden="true">·</span>
+        <a href="public/contact.html">Contact</a>
+      </div>
+    </div>
+  </footer>
 
   <script src="script.js"></script>
-  <script src="assets/footer-templates.js"></script>
-  <script src="assets/footer.js"></script>
 </body>
 </html>

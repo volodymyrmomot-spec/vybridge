@@ -799,9 +799,177 @@ ul {
 
 /* Footer styles: assets/footer.css (loaded by assets/footer.js) */
 
+/* Badge (hero eyebrow) */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand-blue);
+  background: var(--brand-gradient-soft);
+  border: 1px solid rgba(79, 70, 229, 0.18);
+  border-radius: 100px;
+}
+
+.hero .hero__header {
+  margin-bottom: 0;
+}
+
+.hero__actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 32px;
+  flex-wrap: wrap;
+}
+
+.btn--lg {
+  padding: 14px 30px;
+  font-size: 16px;
+}
+
+.btn--outline {
+  background: #fff;
+  color: var(--brand-blue);
+  border: 1.5px solid rgba(79, 70, 229, 0.35);
+}
+
+.btn--outline:hover {
+  border-color: var(--brand-blue);
+  background: var(--purple-tint);
+}
+
+.btn--white {
+  background: #fff;
+  color: var(--purple-dark);
+}
+
+.btn--white:hover {
+  background: #f5f3ff;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18);
+}
+
+/* Intro cards (I want to advertise / I want to earn) */
+.intro-cards {
+  padding: 56px 0 80px;
+}
+
+.intro-cards__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+/* Trust cards */
+.trust {
+  padding: 64px 0;
+  background: var(--bg-muted);
+}
+
+.trust__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.trust-card {
+  text-align: center;
+  padding: 32px 20px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.trust-card__value {
+  display: block;
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.trust-card__label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* CTA band */
+.cta-band {
+  padding: 24px 0 80px;
+}
+
+.cta-band__panel {
+  text-align: center;
+  padding: 64px 40px;
+  border-radius: var(--radius-xl);
+  background: var(--brand-gradient);
+  box-shadow: 0 20px 50px rgba(79, 70, 229, 0.28);
+}
+
+.cta-band__eyebrow {
+  display: block;
+  margin-bottom: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.cta-band__title {
+  margin: 0 0 28px;
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+
+/* Simple footer (homepage only — other pages use assets/footer.js) */
+.simple-footer {
+  padding: 32px 0;
+  border-top: 1px solid var(--border);
+}
+
+.simple-footer__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.simple-footer__links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.simple-footer__links a {
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.simple-footer__links a:hover {
+  color: var(--text);
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .hero__cards {
+    grid-template-columns: 1fr;
+  }
+
+  .intro-cards__grid {
     grid-template-columns: 1fr;
   }
 
@@ -903,6 +1071,27 @@ ul {
     grid-template-columns: 1fr 1fr;
     gap: 16px;
   }
+
+  .intro-cards {
+    padding: 40px 0 56px;
+  }
+
+  .trust {
+    padding: 48px 0;
+  }
+
+  .trust__grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .cta-band {
+    padding: 0 0 56px;
+  }
+
+  .cta-band__panel {
+    padding: 48px 24px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -925,5 +1114,15 @@ ul {
   .platform__icon {
     width: 48px;
     height: 48px;
+  }
+
+  .hero__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .simple-footer__inner {
+    flex-direction: column;
+    text-align: center;
   }
 }
