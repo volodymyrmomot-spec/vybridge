@@ -6,6 +6,7 @@ const { handleCampaignRequest } = require("./lib/campaign-requests");
 const { handleAuthRequest } = require("./lib/auth");
 const { handleDealsRequest } = require("./lib/deals-http");
 const { handleStripeWebhookRequest } = require("./lib/stripe-webhook");
+const { runCronCycle } = require("./lib/payout-cron");
 
 const PORT = process.env.PORT || 3000;
 const ROOT = __dirname;
@@ -173,3 +174,21 @@ server.on("error", function (err) {
   console.error("[server] Failed to start:", err);
   process.exit(1);
 });
+
+// In-process scheduler for auto-approve / completion / payout release.
+// Deliberately not a separate worker: this service runs as a single
+// instance on Railway, so there's no risk of two schedulers racing. Every
+// step the cron takes is idempotent (conditional updateMany + Stripe
+// idempotency keys), so even a duplicate tick is harmless — but if this
+// service is ever scaled to multiple instances, move this to a dedicated
+// Railway cron service instead so it doesn't run N times per tick.
+const CRON_INTERVAL_MS = Number(process.env.CRON_INTERVAL_MINUTES || 5) * 60 * 1000;
+
+function tickCron() {
+  runCronCycle().catch(function (err) {
+    console.error("[cron] cycle failed:", err);
+  });
+}
+
+setInterval(tickCron, CRON_INTERVAL_MS);
+tickCron();

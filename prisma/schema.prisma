@@ -166,6 +166,14 @@ model Deal {
   status                 DealStatus @default(created)
   statusHistory          Json       @default("[]") @map("status_history")
 
+  // Set the moment the deal enters pending_approval — the auto-approve cron
+  // filters on this to find deals that have sat unreviewed past the
+  // AUTO_APPROVE_HOURS window.
+  pendingApprovalAt      DateTime?  @map("pending_approval_at")
+
+  // startsAt/endsAt/payoutEligibleAt are written together in the same
+  // update as the approved->live transition (see lib/deals.js
+  // transitionDealToLive) — never set independently.
   startsAt               DateTime?  @map("starts_at")
   endsAt                 DateTime?  @map("ends_at")
   payoutEligibleAt       DateTime?  @map("payout_eligible_at")
@@ -173,6 +181,7 @@ model Deal {
   stripePaymentIntentId  String?    @unique @map("stripe_payment_intent_id")
   stripeChargeId         String?    @map("stripe_charge_id")
   stripeTransferId       String?    @map("stripe_transfer_id")
+  stripeRefundId         String?    @map("stripe_refund_id")
 
   createdAt              DateTime   @default(now()) @map("created_at")
   updatedAt              DateTime   @updatedAt @map("updated_at")
@@ -181,6 +190,9 @@ model Deal {
 
   @@index([status])
   @@index([slotId])
+  @@index([status, pendingApprovalAt])
+  @@index([status, endsAt])
+  @@index([status, payoutEligibleAt])
   @@map("deals")
 }
 
