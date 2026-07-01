@@ -105,7 +105,6 @@ async function main() {
   const loginCookie = extractCookie(login.headers["set-cookie"]);
   const meAfterLogin = await request("GET", "/api/auth/me", null, loginCookie);
   const registerPage = await getText("/register");
-  const ukRegisterPage = await getText("/uk/register");
   const brokenScript = await head("/register.js");
   const fixedScript = await head("/register/register.js");
 
@@ -118,7 +117,6 @@ async function main() {
     loginOk: login.body.ok === true,
     meAfterLogin: meAfterLogin.body.user.email === email,
     registerPageEn: registerPage.status === 200 && registerPage.text.includes("I want to buy advertising"),
-    registerPageUk: ukRegisterPage.status === 200 && ukRegisterPage.text.includes("Я хочу купити рекламу"),
     brokenRegisterJs404: brokenScript.status === 404,
     fixedRegisterJs200: fixedScript.status === 200,
     registerUsesAbsoluteScript: registerPage.text.includes('src="/register/register.js"'),

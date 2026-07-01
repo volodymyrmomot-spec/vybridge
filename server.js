@@ -2,7 +2,6 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const { URL } = require("url");
-const { handleCampaignRequest } = require("./lib/campaign-requests");
 const { handleAuthRequest } = require("./lib/auth");
 const { handleDealsRequest } = require("./lib/deals-http");
 const { handleStripeWebhookRequest } = require("./lib/stripe-webhook");
@@ -43,13 +42,8 @@ function readBody(req) {
 }
 
 const REWRITES = {
-  "/create-campaign": "/create-campaign/index.html",
   "/register": "/register/index.html",
   "/login": "/login/index.html",
-  "/dashboard": "/dashboard/index.html",
-  "/uk/register": "/uk/register/index.html",
-  "/uk/login": "/uk/login/index.html",
-  "/uk/dashboard": "/uk/dashboard/index.html",
 };
 
 function resolveStaticPath(urlPath) {
@@ -117,23 +111,6 @@ const server = http.createServer(async function (req, res) {
       console.error("[server] Stripe webhook error:", err);
       return sendJson(res, 500, { ok: false, error: "Internal server error" });
     }
-  }
-
-  if (url.pathname === "/api/campaign-requests" && req.method === "POST") {
-    try {
-      const raw = await readBody(req);
-      const body = raw ? JSON.parse(raw) : {};
-      const result = handleCampaignRequest(body);
-      return sendJson(res, result.status, result.body);
-    } catch (err) {
-      console.error("[server] Campaign request error:", err);
-      return sendJson(res, 500, { ok: false, error: "Internal server error" });
-    }
-  }
-
-  if (url.pathname === "/api/campaign-requests" && req.method !== "POST") {
-    res.setHeader("Allow", "POST");
-    return sendJson(res, 405, { ok: false, error: "Method not allowed" });
   }
 
   try {

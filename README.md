@@ -8,16 +8,9 @@ This project is a static draft website built with plain HTML, CSS, and JavaScrip
 
 ## Pages
 
-- `index.html` — main landing page (English)
-- `how-it-works.html` — How It Works page (English)
-- `uk/index.html` — Ukrainian landing page
-- `uk/how-it-works.html` — Ukrainian How It Works page
-
-**Note:** Pages in `uk/` use `../` paths for shared CSS, JS, and assets.
-
-## Language Switcher
-
-Use the EN / UA toggle in the header to switch between English and Ukrainian versions.
+- `index.html` — main landing page
+- `register/` — sign up
+- `login/` — log in
 
 ## Local development
 
@@ -30,8 +23,8 @@ npm start
 Then open:
 
 - `http://localhost:3000/`
-- `http://localhost:3000/how-it-works.html`
-- `http://localhost:3000/uk/`
+- `http://localhost:3000/register`
+- `http://localhost:3000/login`
 
 ## Deploy to Railway
 

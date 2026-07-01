@@ -23,8 +23,8 @@
     el.textContent = translated.join(" ");
   }
 
-  function dashboardPath() {
-    return window.VybridgeI18n ? VybridgeI18n.authPath("/dashboard") : "/dashboard";
+  function postAuthPath() {
+    return window.VybridgeI18n ? VybridgeI18n.authPath("/") : "/";
   }
 
   function loginPath() {
@@ -38,7 +38,7 @@
       return fetch("/api/auth/me", { credentials: "same-origin" })
         .then(function (res) {
           if (res.ok) {
-            window.location.href = dashboardPath();
+            window.location.href = postAuthPath();
           }
         })
         .catch(function () {});

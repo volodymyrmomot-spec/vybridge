@@ -797,8 +797,6 @@ ul {
   line-height: 1.45;
 }
 
-/* Footer styles: assets/footer.css (loaded by assets/footer.js) */
-
 /* Badge (hero eyebrow) */
 .badge {
   display: inline-flex;
@@ -932,7 +930,7 @@ ul {
   color: #fff;
 }
 
-/* Simple footer (homepage only — other pages use assets/footer.js) */
+/* Simple footer */
 .simple-footer {
   padding: 32px 0;
   border-top: 1px solid var(--border);
