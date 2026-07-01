@@ -4,6 +4,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --env-file=.env server.js",
+    "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
     "migrate:dev": "node --env-file=.env node_modules/prisma/build/index.js migrate dev",
     "migrate:deploy": "prisma migrate deploy",
