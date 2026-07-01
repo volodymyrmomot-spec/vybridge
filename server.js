@@ -4,6 +4,8 @@ const path = require("path");
 const { URL } = require("url");
 const { handleCampaignRequest } = require("./lib/campaign-requests");
 const { handleAuthRequest } = require("./lib/auth");
+const { handleDealsRequest } = require("./lib/deals-http");
+const { handleStripeWebhookRequest } = require("./lib/stripe-webhook");
 
 const PORT = process.env.PORT || 3000;
 const ROOT = __dirname;
@@ -104,6 +106,18 @@ const server = http.createServer(async function (req, res) {
     return sendJson(res, 200, { ok: true, service: "vybridge" });
   }
 
+  // Reads the raw request body itself (needed for Stripe signature
+  // verification) — must be handled before any route below touches the
+  // request stream via readBody().
+  if (url.pathname === "/api/stripe/webhook" && req.method === "POST") {
+    try {
+      return await handleStripeWebhookRequest(req, res, sendJson);
+    } catch (err) {
+      console.error("[server] Stripe webhook error:", err);
+      return sendJson(res, 500, { ok: false, error: "Internal server error" });
+    }
+  }
+
   if (url.pathname === "/api/campaign-requests" && req.method === "POST") {
     try {
       const raw = await readBody(req);
@@ -128,6 +142,16 @@ const server = http.createServer(async function (req, res) {
     }
   } catch (err) {
     console.error("[server] Auth error:", err);
+    return sendJson(res, 500, { ok: false, error: "Internal server error" });
+  }
+
+  try {
+    const handled = await handleDealsRequest(req, res, url, readBody, sendJson);
+    if (handled) {
+      return;
+    }
+  } catch (err) {
+    console.error("[server] Deals error:", err);
     return sendJson(res, 500, { ok: false, error: "Internal server error" });
   }
 

@@ -1,0 +1,215 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  publisher
+  advertiser
+}
+
+enum StripeOnboardingStatus {
+  not_started
+  pending
+  complete
+}
+
+enum SiteStatus {
+  active
+  suspended
+}
+
+enum SlotStatus {
+  draft
+  active
+  booked
+  paused
+}
+
+enum DealStatus {
+  created
+  paid_escrow
+  pending_approval
+  approved
+  live
+  completed
+  payout_released
+  rejected
+  disputed
+  refunded
+}
+
+enum CreativeStatus {
+  submitted
+  approved
+  rejected
+}
+
+model User {
+  id                         String    @id @default(uuid())
+  email                      String    @unique
+  passwordHash               String    @map("password_hash")
+  role                       Role
+  name                       String
+  locale                     String    @default("en")
+
+  // Advertiser-only fields
+  stripeCustomerId           String?   @map("stripe_customer_id")
+  lifetimeAdvertiserSpendCents BigInt  @default(0) @map("lifetime_advertiser_spend_cents")
+
+  createdAt                  DateTime  @default(now()) @map("created_at")
+  updatedAt                  DateTime  @updatedAt @map("updated_at")
+
+  stripeAccount              StripeAccount?
+  sites                      Site[]
+  slots                      Slot[]          @relation("PublisherSlots")
+  dealsAsAdvertiser          Deal[]          @relation("AdvertiserDeals")
+  dealsAsPublisher           Deal[]          @relation("PublisherDeals")
+
+  @@map("users")
+}
+
+model StripeAccount {
+  id                String                 @id @default(uuid())
+  userId            String                 @unique @map("user_id")
+  user              User                   @relation(fields: [userId], references: [id])
+  stripeAccountId   String                 @unique @map("stripe_account_id")
+  onboardingStatus  StripeOnboardingStatus @default(not_started) @map("onboarding_status")
+  payoutsEnabled    Boolean                @default(false) @map("payouts_enabled")
+
+  createdAt         DateTime               @default(now()) @map("created_at")
+  updatedAt         DateTime               @updatedAt @map("updated_at")
+
+  @@map("stripe_accounts")
+}
+
+model Site {
+  id            String     @id @default(uuid())
+  publisherId   String     @map("publisher_id")
+  publisher     User       @relation(fields: [publisherId], references: [id])
+  domain        String
+  siteKey       String     @unique @map("site_key")
+  status        SiteStatus @default(active)
+
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  slots         Slot[]
+
+  @@map("sites")
+}
+
+model Slot {
+  id               String     @id @default(uuid())
+  siteId           String     @map("site_id")
+  site             Site       @relation(fields: [siteId], references: [id])
+  publisherId      String     @map("publisher_id")
+  publisher        User       @relation("PublisherSlots", fields: [publisherId], references: [id])
+
+  label            String
+  domSelector      String     @map("dom_selector")
+  fallbackAnchorId String?    @map("fallback_anchor_id")
+  format           String
+  width            Int
+  height           Int
+
+  priceCents       Int        @map("price_cents")
+  currency         String     @default("usd")
+  durationDays     Int        @map("duration_days")
+
+  status           SlotStatus @default(draft)
+
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime   @updatedAt @map("updated_at")
+
+  deals            Deal[]
+
+  @@map("slots")
+}
+
+model FeeTier {
+  id                     String   @id @default(uuid())
+  name                   String
+  minLifetimeSpendCents  BigInt   @map("min_lifetime_spend_cents")
+  feeBps                 Int      @map("fee_bps")
+
+  createdAt              DateTime @default(now()) @map("created_at")
+
+  @@map("fee_tiers")
+}
+
+model Deal {
+  id                     String     @id @default(uuid())
+
+  slotId                 String     @map("slot_id")
+  slot                   Slot       @relation(fields: [slotId], references: [id])
+
+  publisherId            String     @map("publisher_id")
+  publisher              User       @relation("PublisherDeals", fields: [publisherId], references: [id])
+
+  advertiserId           String     @map("advertiser_id")
+  advertiser             User       @relation("AdvertiserDeals", fields: [advertiserId], references: [id])
+
+  // Snapshots taken at booking time so later edits to slot price or fee
+  // tiers never change the economics of an already-created deal.
+  slotPriceCents         Int        @map("slot_price_cents")
+  platformFeeBps         Int        @map("platform_fee_bps")
+  platformFeeCents       Int        @map("platform_fee_cents")
+  totalChargedCents      Int        @map("total_charged_cents")
+  currency               String     @default("usd")
+  durationDays           Int        @map("duration_days")
+
+  status                 DealStatus @default(created)
+  statusHistory          Json       @default("[]") @map("status_history")
+
+  startsAt               DateTime?  @map("starts_at")
+  endsAt                 DateTime?  @map("ends_at")
+  payoutEligibleAt       DateTime?  @map("payout_eligible_at")
+
+  stripePaymentIntentId  String?    @unique @map("stripe_payment_intent_id")
+  stripeChargeId         String?    @map("stripe_charge_id")
+  stripeTransferId       String?    @map("stripe_transfer_id")
+
+  createdAt              DateTime   @default(now()) @map("created_at")
+  updatedAt              DateTime   @updatedAt @map("updated_at")
+
+  creatives              Creative[]
+
+  @@index([status])
+  @@index([slotId])
+  @@map("deals")
+}
+
+model Creative {
+  id               String         @id @default(uuid())
+  dealId           String         @map("deal_id")
+  deal             Deal           @relation(fields: [dealId], references: [id])
+
+  fileUrl          String         @map("file_url")
+  width            Int
+  height           Int
+  mimeType         String         @map("mime_type")
+  fileSizeBytes    Int            @map("file_size_bytes")
+
+  status           CreativeStatus @default(submitted)
+  rejectionReason  String?        @map("rejection_reason")
+
+  submittedAt      DateTime       @default(now()) @map("submitted_at")
+  reviewedAt       DateTime?      @map("reviewed_at")
+
+  @@map("creatives")
+}
+
+// Stripe webhook idempotency ledger — every processed event id is recorded
+// here before its side effects are applied, so a redelivered event is a no-op.
+model StripeEvent {
+  id           String   @id
+  type         String
+  processedAt  DateTime @default(now()) @map("processed_at")
+
+  @@map("stripe_events")
+}
