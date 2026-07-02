@@ -1,0 +1,6 @@
+/* This page has no hamburger nav, so keep header actions visible at every width. */
+@media (max-width: 900px) {
+  .header__actions {
+    display: flex;
+  }
+}

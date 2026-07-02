@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vybridge — Dashboard</title>
+  <meta name="description" content="Your Vybridge dashboard.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/dashboard/dashboard.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container header__inner">
+      <a href="/" class="logo">
+        <img src="/assets/logo-icon.svg" alt="" class="logo__icon" width="36" height="36">
+        <span class="logo__text">vybridge</span>
+      </a>
+      <div class="header__actions">
+        <button type="button" class="btn btn--outline btn--sm" id="logoutBtn">Log out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard-page">
+    <div class="container dashboard-container">
+      <p class="dashboard-loading" id="dashboardLoading">Loading…</p>
+
+      <section class="dashboard-view" id="advertiserDashboard" hidden>
+        <h1 class="dashboard-title">Welcome, <span id="advertiserName"></span></h1>
+        <a href="/slots" class="btn btn--purple">Browse ad slots</a>
+
+        <h2 class="dashboard-section-title">My deals</h2>
+        <div class="dashboard-table-wrap">
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th>Site</th>
+                <th>Price</th>
+                <th>Status</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="advertiserDealsBody"></tbody>
+          </table>
+        </div>
+        <p class="dashboard-empty" id="advertiserDealsEmpty" hidden>No deals yet</p>
+      </section>
+
+      <section class="dashboard-view" id="publisherDashboard" hidden>
+        <h1 class="dashboard-title">Welcome, <span id="publisherName"></span></h1>
+
+        <div class="dashboard-card">
+          <h2 class="dashboard-card__title">My site</h2>
+          <dl class="dashboard-site-info" id="mySiteInfo"></dl>
+        </div>
+
+        <div class="dashboard-card">
+          <h2 class="dashboard-card__title">Pending approvals</h2>
+          <div class="dashboard-approvals" id="pendingApprovalsList"></div>
+          <p class="dashboard-empty" id="pendingApprovalsEmpty" hidden>No pending approvals</p>
+        </div>
+
+        <h2 class="dashboard-section-title">All deals</h2>
+        <div class="dashboard-table-wrap">
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th>Site</th>
+                <th>Status</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody id="publisherDealsBody"></tbody>
+          </table>
+        </div>
+        <p class="dashboard-empty" id="publisherDealsEmpty" hidden>No deals yet</p>
+      </section>
+    </div>
+  </main>
+
+  <script src="/auth/i18n.js"></script>
+  <script src="/auth/auth.js"></script>
+  <script src="/dashboard/dashboard.js"></script>
+</body>
+</html>
