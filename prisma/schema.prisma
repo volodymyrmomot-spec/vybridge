@@ -119,7 +119,7 @@ model Slot {
   height           Int
 
   priceCents       Int        @map("price_cents")
-  currency         String     @default("usd")
+  currency         String     @default("eur")
   durationDays     Int        @map("duration_days")
 
   status           SlotStatus @default(draft)
@@ -161,7 +161,7 @@ model Deal {
   platformFeeBps         Int        @map("platform_fee_bps")
   platformFeeCents       Int        @map("platform_fee_cents")
   totalChargedCents      Int        @map("total_charged_cents")
-  currency               String     @default("usd")
+  currency               String     @default("eur")
   durationDays           Int        @map("duration_days")
 
   status                 DealStatus @default(created)
