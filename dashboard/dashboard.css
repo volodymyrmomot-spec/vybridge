@@ -75,6 +75,19 @@
   word-break: break-all;
 }
 
+/* Payouts */
+.dashboard-payouts {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.dashboard-payouts__cta {
+  padding: 8px 18px;
+  font-size: 13px;
+}
+
 /* Pending approvals */
 .dashboard-approvals {
   display: grid;

@@ -5,6 +5,7 @@ const { URL } = require("url");
 const { handleAuthRequest } = require("./lib/auth");
 const { handleDealsRequest } = require("./lib/deals-http");
 const { handleDashboardRequest } = require("./lib/dashboard-http");
+const { handleConnectRequest } = require("./lib/connect-http");
 const { handleStripeWebhookRequest } = require("./lib/stripe-webhook");
 const { runCronCycle } = require("./lib/payout-cron");
 
@@ -47,6 +48,7 @@ const REWRITES = {
   "/login": "/login/index.html",
   "/dashboard": "/dashboard/index.html",
   "/slots": "/slots/index.html",
+  "/connect/return": "/connect/return/index.html",
 };
 
 function resolveStaticPath(urlPath) {
@@ -143,6 +145,16 @@ const server = http.createServer(async function (req, res) {
     }
   } catch (err) {
     console.error("[server] Dashboard error:", err);
+    return sendJson(res, 500, { ok: false, error: "Internal server error" });
+  }
+
+  try {
+    const handled = await handleConnectRequest(req, res, url, sendJson);
+    if (handled) {
+      return;
+    }
+  } catch (err) {
+    console.error("[server] Connect error:", err);
     return sendJson(res, 500, { ok: false, error: "Internal server error" });
   }
 

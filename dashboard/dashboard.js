@@ -96,6 +96,49 @@
     dl.appendChild(el("dd", null, site.siteKey));
   }
 
+  function renderPayoutsStatus(payouts) {
+    var container = document.getElementById("payoutsStatus");
+    container.innerHTML = "";
+
+    if (payouts.payoutsEnabled) {
+      var enabledPill = el("span", "status-pill status-pill--live", "✓ Payouts enabled");
+      container.appendChild(enabledPill);
+      return;
+    }
+
+    var pill = el(
+      "span",
+      "status-pill status-pill--pending_approval",
+      payouts.connected ? "Setup in progress" : "Not connected"
+    );
+    container.appendChild(pill);
+
+    var button = el("button", "btn btn--purple dashboard-payouts__cta", "Connect your bank account");
+    button.type = "button";
+    button.addEventListener("click", function () {
+      button.disabled = true;
+      fetch("/api/connect/onboard", { method: "POST", credentials: "same-origin" })
+        .then(function (res) {
+          return res.json().then(function (data) {
+            return { ok: res.ok, body: data };
+          });
+        })
+        .then(function (result) {
+          if (!result.ok || !result.body.url) {
+            button.disabled = false;
+            window.alert(result.body.error || "Could not start onboarding. Please try again.");
+            return;
+          }
+          window.location.href = result.body.url;
+        })
+        .catch(function () {
+          button.disabled = false;
+          window.alert("Network error. Please try again.");
+        });
+    });
+    container.appendChild(button);
+  }
+
   function renderPendingApprovals(deals, onAction) {
     var list = document.getElementById("pendingApprovalsList");
     var empty = document.getElementById("pendingApprovalsEmpty");
@@ -208,6 +251,7 @@
   function renderPublisherDashboard(data) {
     document.getElementById("publisherName").textContent = data.user.name;
     renderMySite(data.site);
+    renderPayoutsStatus(data.payouts);
     renderPendingApprovals(data.pendingApprovals, reviewDeal);
     renderAllDeals(data.deals);
 
