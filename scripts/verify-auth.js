@@ -94,6 +94,8 @@ async function main() {
     email: email,
     password: "password123",
     role: "publisher",
+    websiteUrl: "https://example.com",
+    country: "Germany",
   });
   const cookie = extractCookie(register.headers["set-cookie"]);
   const me = await request("GET", "/api/auth/me", null, cookie);
@@ -116,7 +118,7 @@ async function main() {
     logoutOk: logout.body.ok === true,
     loginOk: login.body.ok === true,
     meAfterLogin: meAfterLogin.body.user.email === email,
-    registerPageEn: registerPage.status === 200 && registerPage.text.includes("I want to buy advertising"),
+    registerPageEn: registerPage.status === 200 && registerPage.text.includes("I want to earn from my site"),
     brokenRegisterJs404: brokenScript.status === 404,
     fixedRegisterJs200: fixedScript.status === 200,
     registerUsesAbsoluteScript: registerPage.text.includes('src="/register/register.js"'),

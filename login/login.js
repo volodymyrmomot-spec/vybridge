@@ -23,7 +23,7 @@
         VybridgeAuth.showErrors(message, errors);
         return;
       }
-      window.location.href = VybridgeI18n.authPath("/");
+      window.location.href = VybridgeI18n.authPath("/dashboard");
     }).catch(function () {
       VybridgeAuth.showErrors(message, [VybridgeI18n.t("loginRetry")]);
     });

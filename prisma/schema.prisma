@@ -55,6 +55,7 @@ model User {
   passwordHash               String    @map("password_hash")
   role                       Role
   name                       String
+  country                    String
   locale                     String    @default("en")
 
   // Advertiser-only fields

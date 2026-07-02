@@ -24,7 +24,7 @@
   }
 
   function postAuthPath() {
-    return window.VybridgeI18n ? VybridgeI18n.authPath("/") : "/";
+    return window.VybridgeI18n ? VybridgeI18n.authPath("/dashboard") : "/dashboard";
   }
 
   function loginPath() {

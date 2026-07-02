@@ -3,18 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>vybridge — Sign up</title>
+  <title>vybridge — Create your account</title>
   <meta name="description" content="Create your Vybridge account as an advertiser or publisher.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/auth/page.css">
+  <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="/auth/auth.css">
+  <link rel="stylesheet" href="/register/register.css">
 </head>
 <body>
   <header class="header">
     <div class="container header__inner">
-      <a href="/index.html" class="logo">
+      <a href="/" class="logo">
         <img src="/assets/logo-icon.svg" alt="" class="logo__icon" width="36" height="36">
         <span class="logo__text">vybridge</span>
       </a>
@@ -24,48 +25,85 @@
     </div>
   </header>
 
-  <main class="auth-page">
-    <div class="container">
-      <div class="auth-card">
-        <h1 class="auth-card__title">Sign up</h1>
-        <p class="auth-card__subtitle">Create your account and choose whether you want to buy or sell advertising.</p>
+  <main class="register-page">
+    <div class="container register-container">
+      <h1 class="register-title">Create your account</h1>
 
-        <form id="registerForm" class="auth-form" novalidate>
-          <div class="form-field">
-            <label class="form-field__label" for="name">Name</label>
-            <input class="form-field__input" type="text" id="name" name="name" autocomplete="name" required>
-          </div>
-
-          <div class="form-field">
-            <label class="form-field__label" for="email">Email</label>
-            <input class="form-field__input" type="email" id="email" name="email" autocomplete="email" required>
-          </div>
-
-          <div class="form-field">
-            <label class="form-field__label" for="password">Password</label>
-            <input class="form-field__input" type="password" id="password" name="password" autocomplete="new-password" minlength="8" required>
-          </div>
-
-          <fieldset class="form-field" style="border:0;padding:0;margin:0;">
-            <legend class="form-field__label">Role</legend>
-            <div class="role-options">
-              <label class="role-option">
-                <input type="radio" name="role" value="advertiser" required>
-                <span class="role-option__label">I want to buy advertising</span>
-              </label>
-              <label class="role-option">
-                <input type="radio" name="role" value="publisher" required>
-                <span class="role-option__label">I want to offer advertising space</span>
-              </label>
-            </div>
-          </fieldset>
-
-          <button type="submit" class="btn btn--brand">Create account</button>
-          <p id="registerMessage" class="form-message" hidden></p>
-        </form>
-
-        <p class="auth-footer-link">Already have an account? <a href="/login">Log in</a></p>
+      <div class="role-select" id="roleSelect">
+        <button type="button" class="role-card" id="roleAdvertiser" data-role="advertiser" aria-expanded="false">
+          <span class="role-card__icon role-card__icon--purple">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-5v12L3 13v-2z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
+          </span>
+          <span class="role-card__label">I want to advertise</span>
+        </button>
+        <button type="button" class="role-card" id="rolePublisher" data-role="publisher" aria-expanded="false">
+          <span class="role-card__icon role-card__icon--green">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </span>
+          <span class="role-card__label">I want to earn from my site</span>
+        </button>
       </div>
+
+      <form id="advertiserForm" class="register-form" novalidate hidden>
+        <div class="form-field">
+          <label class="form-field__label" for="advName">Name or company</label>
+          <input class="form-field__input" type="text" id="advName" name="name" autocomplete="name">
+          <p class="form-field__error" id="advNameError" hidden></p>
+        </div>
+        <div class="form-field">
+          <label class="form-field__label" for="advEmail">Email</label>
+          <input class="form-field__input" type="email" id="advEmail" name="email" autocomplete="email">
+          <p class="form-field__error" id="advEmailError" hidden></p>
+        </div>
+        <div class="form-field">
+          <label class="form-field__label" for="advPassword">Password</label>
+          <input class="form-field__input" type="password" id="advPassword" name="password" autocomplete="new-password">
+          <p class="form-field__error" id="advPasswordError" hidden></p>
+        </div>
+        <div class="form-field">
+          <label class="form-field__label" for="advCountry">Country</label>
+          <select class="form-field__input" id="advCountry" name="country">
+            <option value="">Select country</option>
+          </select>
+          <p class="form-field__error" id="advCountryError" hidden></p>
+        </div>
+        <button type="submit" class="btn btn--purple btn--lg register-submit">Create advertiser account</button>
+        <p class="form-message form-message--error" id="advFormMessage" hidden></p>
+      </form>
+
+      <form id="publisherForm" class="register-form" novalidate hidden>
+        <div class="form-field">
+          <label class="form-field__label" for="pubName">Name</label>
+          <input class="form-field__input" type="text" id="pubName" name="name" autocomplete="name">
+          <p class="form-field__error" id="pubNameError" hidden></p>
+        </div>
+        <div class="form-field">
+          <label class="form-field__label" for="pubEmail">Email</label>
+          <input class="form-field__input" type="email" id="pubEmail" name="email" autocomplete="email">
+          <p class="form-field__error" id="pubEmailError" hidden></p>
+        </div>
+        <div class="form-field">
+          <label class="form-field__label" for="pubPassword">Password</label>
+          <input class="form-field__input" type="password" id="pubPassword" name="password" autocomplete="new-password">
+          <p class="form-field__error" id="pubPasswordError" hidden></p>
+        </div>
+        <div class="form-field">
+          <label class="form-field__label" for="pubWebsite">Website URL</label>
+          <input class="form-field__input" type="url" id="pubWebsite" name="websiteUrl" placeholder="https://example.com" autocomplete="url">
+          <p class="form-field__error" id="pubWebsiteError" hidden></p>
+        </div>
+        <div class="form-field">
+          <label class="form-field__label" for="pubCountry">Country</label>
+          <select class="form-field__input" id="pubCountry" name="country">
+            <option value="">Select country</option>
+          </select>
+          <p class="form-field__error" id="pubCountryError" hidden></p>
+        </div>
+        <button type="submit" class="btn btn--purple btn--lg register-submit">Create publisher account</button>
+        <p class="form-message form-message--error" id="pubFormMessage" hidden></p>
+      </form>
+
+      <p class="auth-footer-link">Already have an account? <a href="/login">Log in</a></p>
     </div>
   </main>
 
