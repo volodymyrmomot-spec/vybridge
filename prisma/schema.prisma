@@ -208,6 +208,7 @@ model Deal {
   updatedAt              DateTime   @updatedAt @map("updated_at")
 
   creatives              Creative[]
+  clicks                 Click[]
 
   @@index([status])
   @@index([slotId])
@@ -223,6 +224,7 @@ model Creative {
   deal             Deal           @relation(fields: [dealId], references: [id])
 
   fileUrl          String         @map("file_url")
+  clickUrl         String         @map("click_url")
   width            Int
   height           Int
   mimeType         String         @map("mime_type")
@@ -234,7 +236,28 @@ model Creative {
   submittedAt      DateTime       @default(now()) @map("submitted_at")
   reviewedAt       DateTime?      @map("reviewed_at")
 
+  clicks           Click[]
+
   @@map("creatives")
+}
+
+// One row per (rate-limit-eligible) ad click. Deliberately keyed off the
+// deal, not the creative, so click history survives if a rejected creative
+// is ever resubmitted under the same deal.
+model Click {
+  id         String   @id @default(uuid())
+  dealId     String   @map("deal_id")
+  deal       Deal     @relation(fields: [dealId], references: [id])
+  creativeId String?  @map("creative_id")
+  creative   Creative? @relation(fields: [creativeId], references: [id])
+
+  ip         String
+  userAgent  String?  @map("user_agent")
+
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([dealId, ip, createdAt])
+  @@map("clicks")
 }
 
 // Stripe webhook idempotency ledger — every processed event id is recorded

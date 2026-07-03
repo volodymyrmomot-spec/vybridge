@@ -2,19 +2,12 @@
   "use strict";
 
   // This is the one script a publisher ever adds to their site by hand.
-  // Right now it only handles the visual placement picker
-  // (?vybridge_pick=TOKEN&vybridge_slot=SLOT_ID) — serving live creatives
-  // into approved slots is a separate, later step; a page with neither
-  // query param loaded does nothing at all today.
-  var params = new URLSearchParams(window.location.search);
-  var token = params.get("vybridge_pick");
-  var slotId = params.get("vybridge_slot");
-  if (!token || !slotId) {
-    return;
-  }
-
-  var currentScript =
-    document.currentScript || document.querySelector('script[src*="w.js"]');
+  // Two mutually exclusive modes, both driven by this same tag:
+  //  - ?vybridge_pick=TOKEN&vybridge_slot=ID in the page URL -> visual
+  //    placement picker (see startPickerMode).
+  //  - otherwise -> normal ad serving for whatever slots on this site
+  //    currently have a live, approved creative (see startAdServing).
+  var currentScript = document.currentScript || document.querySelector('script[src*="w.js"]');
   var apiOrigin = "";
   if (currentScript) {
     try {
@@ -24,7 +17,116 @@
     }
   }
 
-  var overlayEl = null;
+  var params = new URLSearchParams(window.location.search);
+  var pickToken = params.get("vybridge_pick");
+  var pickSlotId = params.get("vybridge_slot");
+
+  function ready(fn) {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", fn);
+    } else {
+      fn();
+    }
+  }
+
+  if (pickToken && pickSlotId) {
+    ready(function () {
+      startPickerMode(pickToken, pickSlotId);
+    });
+  } else if (currentScript) {
+    var siteKey = currentScript.getAttribute("data-site");
+    if (siteKey) {
+      ready(function () {
+        startAdServing(siteKey);
+      });
+    }
+  }
+
+  // ---------- Ad serving ----------
+
+  function startAdServing(siteKey) {
+    fetch(apiOrigin + "/api/widget/" + encodeURIComponent(siteKey))
+      .then(function (res) {
+        return res.json();
+      })
+      .then(function (slots) {
+        if (!Array.isArray(slots)) {
+          return;
+        }
+        slots.forEach(scheduleSlot);
+      })
+      .catch(function () {});
+  }
+
+  var clickDestinations = {};
+  var messageListenerAdded = false;
+
+  function scheduleSlot(slot) {
+    var target;
+    try {
+      target = document.querySelector(slot.dom_selector);
+    } catch (err) {
+      return;
+    }
+    if (!target) {
+      return;
+    }
+
+    if ("IntersectionObserver" in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            io.unobserve(target);
+            renderAd(target, slot);
+          }
+        });
+      });
+      io.observe(target);
+    } else {
+      renderAd(target, slot);
+    }
+  }
+
+  function renderAd(target, slot) {
+    clickDestinations[slot.slot_id] = slot.click_tracking_url;
+    ensureClickListener();
+
+    var iframe = document.createElement("iframe");
+    iframe.width = slot.width;
+    iframe.height = slot.height;
+    iframe.setAttribute("scrolling", "no");
+    iframe.setAttribute("sandbox", "allow-scripts allow-same-origin");
+    iframe.style.cssText = "border:0;display:block;width:" + slot.width + "px;height:" + slot.height + "px;";
+    iframe.srcdoc =
+      "<style>body{margin:0}img{display:block;width:100%;height:100%;cursor:pointer}</style>" +
+      '<img src="' +
+      escapeAttr(slot.creative_url) +
+      '" onclick="parent.postMessage({vybridgeClick:\'' +
+      slot.slot_id +
+      "'},'*')\">";
+    target.appendChild(iframe);
+  }
+
+  function ensureClickListener() {
+    if (messageListenerAdded) {
+      return;
+    }
+    messageListenerAdded = true;
+    window.addEventListener("message", function (event) {
+      var id = event.data && event.data.vybridgeClick;
+      var url = id && clickDestinations[id];
+      if (url) {
+        window.open(url, "_blank", "noopener");
+      }
+    });
+  }
+
+  function escapeAttr(str) {
+    return String(str).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  // ---------- Visual placement picker ----------
+
   var toastEl = null;
   var lastHighlighted = null;
 
@@ -56,7 +158,7 @@
     return path.join(" > ") || "body";
   }
 
-  function injectStyles() {
+  function injectPickerStyles() {
     var style = document.createElement("style");
     style.textContent =
       ".vybridge-picker-highlight{outline:2px solid #7c3aed !important;outline-offset:-2px !important;" +
@@ -113,10 +215,10 @@
 
     showToast("Saving placement…");
 
-    fetch(apiOrigin + "/api/slots/" + encodeURIComponent(slotId) + "/selector", {
+    fetch(apiOrigin + "/api/slots/" + encodeURIComponent(pickSlotId) + "/selector", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token: token, selector: selector }),
+      body: JSON.stringify({ token: pickToken, selector: selector }),
     })
       .then(function (res) {
         return res.json().then(function (data) {
@@ -148,15 +250,9 @@
   }
 
   function startPickerMode() {
-    injectStyles();
+    injectPickerStyles();
     showToast("Click the element where this ad should appear.", { cancel: true });
     document.addEventListener("mouseover", onMouseOver, true);
     document.addEventListener("click", onClick, true);
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", startPickerMode);
-  } else {
-    startPickerMode();
   }
 })();
