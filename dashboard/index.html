@@ -62,6 +62,26 @@
           <div class="dashboard-payouts" id="payoutsStatus"></div>
         </div>
 
+        <div class="dashboard-section-header">
+          <h2 class="dashboard-section-title dashboard-section-title--inline">My slots</h2>
+          <a href="/slots/new" class="btn btn--purple btn--sm">+ New slot</a>
+        </div>
+        <div class="dashboard-table-wrap">
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th>Label</th>
+                <th>Size</th>
+                <th>Price</th>
+                <th>Duration</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="publisherSlotsBody"></tbody>
+          </table>
+        </div>
+        <p class="dashboard-empty" id="publisherSlotsEmpty" hidden>No slots yet — create one to start listing ad space.</p>
+
         <div class="dashboard-card">
           <h2 class="dashboard-card__title">Pending approvals</h2>
           <div class="dashboard-approvals" id="pendingApprovalsList"></div>

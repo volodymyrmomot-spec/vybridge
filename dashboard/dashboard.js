@@ -12,6 +12,10 @@
     rejected: "Rejected",
     disputed: "Disputed",
     refunded: "Refunded",
+    draft: "Draft — connect payouts to activate",
+    active: "Active",
+    booked: "Booked",
+    paused: "Paused",
   };
 
   function statusLabel(status) {
@@ -183,6 +187,34 @@
     });
   }
 
+  function renderSlots(slots) {
+    var body = document.getElementById("publisherSlotsBody");
+    var table = body.closest(".dashboard-table-wrap");
+    var empty = document.getElementById("publisherSlotsEmpty");
+    body.innerHTML = "";
+
+    if (!slots.length) {
+      table.hidden = true;
+      empty.hidden = false;
+      return;
+    }
+
+    table.hidden = false;
+    empty.hidden = true;
+
+    slots.forEach(function (slot) {
+      var row = document.createElement("tr");
+      row.appendChild(el("td", null, slot.label));
+      row.appendChild(el("td", null, slot.format));
+      row.appendChild(el("td", null, slot.price));
+      row.appendChild(el("td", null, slot.durationDays + " days"));
+      var statusCell = document.createElement("td");
+      statusCell.appendChild(statusPill(slot.status));
+      row.appendChild(statusCell);
+      body.appendChild(row);
+    });
+  }
+
   function renderAllDeals(deals) {
     var body = document.getElementById("publisherDealsBody");
     var table = body.closest(".dashboard-table-wrap");
@@ -252,6 +284,7 @@
     document.getElementById("publisherName").textContent = data.user.name;
     renderMySite(data.site);
     renderPayoutsStatus(data.payouts);
+    renderSlots(data.slots);
     renderPendingApprovals(data.pendingApprovals, reviewDeal);
     renderAllDeals(data.deals);
 

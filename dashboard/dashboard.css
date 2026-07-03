@@ -35,6 +35,18 @@
   color: var(--text);
 }
 
+.dashboard-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 36px 0 16px;
+}
+
+.dashboard-section-title--inline {
+  margin: 0;
+}
+
 /* Cards (My site / Pending approvals) */
 .dashboard-card {
   margin-top: 24px;
@@ -232,6 +244,28 @@
 .status-pill--refunded {
   background: #fee2e2;
   color: #b91c1c;
+}
+
+/* Slot statuses (separate enum from deal statuses, reuses the same
+   .status-pill base) */
+.status-pill--active {
+  background: var(--green-light);
+  color: var(--green-dark);
+}
+
+.status-pill--draft {
+  background: var(--bg-muted);
+  color: var(--text-muted);
+}
+
+.status-pill--booked {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.status-pill--paused {
+  background: #fef3c7;
+  color: #b45309;
 }
 
 /* This page has no hamburger nav, so keep Log out visible at every width. */
