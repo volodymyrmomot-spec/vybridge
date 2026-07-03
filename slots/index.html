@@ -9,7 +9,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/auth/auth.css">
   <link rel="stylesheet" href="/slots/slots.css">
+  <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
   <header class="header">
@@ -24,25 +26,55 @@
     </div>
   </header>
 
-  <main>
-    <section class="hero">
-      <div class="container">
-        <div class="hero__header">
-          <span class="badge">Coming soon</span>
-          <h1 class="hero__title">The slot marketplace is on its way</h1>
-          <p class="hero__subtitle">Browsing and booking ad slots isn't live yet — check back soon.</p>
-          <div class="hero__actions">
-            <a href="/dashboard" class="btn btn--purple btn--lg">Back to dashboard</a>
-          </div>
-        </div>
-      </div>
-    </section>
+  <main class="catalog-page">
+    <div class="container">
+      <h1 class="dashboard-title">Browse ad slots</h1>
+      <p class="dashboard-loading" id="catalogLoading">Loading…</p>
+      <div class="slots-grid" id="slotsGrid" hidden></div>
+      <p class="dashboard-empty" id="slotsEmpty" hidden>No ad slots available right now — check back soon.</p>
+    </div>
   </main>
+
+  <div class="modal-backdrop" id="bookingBackdrop" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button type="button" class="modal__close" id="modalCloseBtn" aria-label="Close">&times;</button>
+      <h2 class="modal__title" id="modalTitle">Book this slot</h2>
+      <p class="modal__subtitle" id="modalSlotInfo"></p>
+
+      <form id="bookingForm" novalidate>
+        <div class="form-field">
+          <label class="form-field__label" for="creativeFile">Creative (image, max 500KB)</label>
+          <input class="form-field__input" type="file" id="creativeFile" accept="image/png,image/jpeg,image/gif,image/webp">
+          <p class="form-field__error" id="creativeFileError" hidden></p>
+        </div>
+
+        <div class="form-field">
+          <label class="form-field__label" for="creativeClickUrl">Click URL</label>
+          <input class="form-field__input" type="url" id="creativeClickUrl" placeholder="https://example.com/landing">
+          <p class="form-field__error" id="creativeClickUrlError" hidden></p>
+        </div>
+
+        <dl class="booking-summary" id="bookingSummary"></dl>
+
+        <div class="form-field" id="cardFieldWrap">
+          <label class="form-field__label">Card details</label>
+          <div id="cardElement" class="booking-card-element"></div>
+          <p class="form-field__error" id="cardError" hidden></p>
+        </div>
+
+        <button type="submit" class="btn btn--purple btn--lg register-submit" id="payBtn">Pay</button>
+        <p class="form-message form-message--error" id="bookingFormMessage" hidden></p>
+      </form>
+    </div>
+  </div>
 
   <footer class="simple-footer">
     <div class="container simple-footer__inner">
       <span>© 2026 Vybridge</span>
     </div>
   </footer>
+  <script src="/auth/i18n.js"></script>
+  <script src="/auth/auth.js"></script>
+  <script src="/slots/slots.js"></script>
 </body>
 </html>

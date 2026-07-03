@@ -10,6 +10,7 @@ const { handleSlotsRequest } = require("./lib/slots-http");
 const { handlePickerRequest } = require("./lib/picker-http");
 const { handleWidgetRequest } = require("./lib/widget-http");
 const { handleClicksRequest } = require("./lib/clicks-http");
+const { handleConfigRequest } = require("./lib/config-http");
 const { handleStripeWebhookRequest } = require("./lib/stripe-webhook");
 const { runCronCycle } = require("./lib/payout-cron");
 
@@ -200,6 +201,16 @@ const server = http.createServer(async function (req, res) {
     }
   } catch (err) {
     console.error("[server] Clicks error:", err);
+    return sendJson(res, 500, { ok: false, error: "Internal server error" });
+  }
+
+  try {
+    const handled = await handleConfigRequest(req, res, url, sendJson);
+    if (handled) {
+      return;
+    }
+  } catch (err) {
+    console.error("[server] Config error:", err);
     return sendJson(res, 500, { ok: false, error: "Internal server error" });
   }
 

@@ -1,6 +1,23 @@
 (function () {
   "use strict";
 
+  var BANNER_MESSAGES = {
+    pending_approval: "Your ad is pending approval.",
+  };
+
+  (function showBannerFromQuery() {
+    var message = new URLSearchParams(window.location.search).get("message");
+    var text = message && BANNER_MESSAGES[message];
+    if (!text) {
+      return;
+    }
+    var banner = document.getElementById("dashboardBanner");
+    banner.textContent = text;
+    banner.hidden = false;
+    // Drop the query param so a refresh doesn't re-show a stale banner.
+    window.history.replaceState({}, "", window.location.pathname);
+  })();
+
   var STATUS_LABELS = {
     created: "Created",
     paid_escrow: "Paid (escrow)",

@@ -16,6 +16,20 @@
   padding: 60px 0;
 }
 
+.dashboard-banner {
+  margin: 0 0 24px;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.dashboard-banner--success {
+  background: var(--green-light);
+  color: var(--green-dark);
+  border: 1px solid rgba(5, 150, 105, 0.2);
+}
+
 .dashboard-view[hidden] {
   display: none;
 }
