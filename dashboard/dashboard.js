@@ -89,15 +89,21 @@
 
   function renderMySite(site) {
     var dl = document.getElementById("mySiteInfo");
+    var snippetWrap = document.getElementById("mySiteSnippet");
     dl.innerHTML = "";
     if (!site) {
       dl.appendChild(el("dd", null, "No site on file yet."));
+      snippetWrap.hidden = true;
       return;
     }
     dl.appendChild(el("dt", null, "Domain"));
     dl.appendChild(el("dd", null, site.domain));
     dl.appendChild(el("dt", null, "Site key"));
     dl.appendChild(el("dd", null, site.siteKey));
+
+    document.getElementById("mySiteSnippetCode").textContent =
+      '<script src="' + window.location.origin + '/w.js" data-site="' + site.siteKey + '" async></' + "script>";
+    snippetWrap.hidden = false;
   }
 
   function renderPayoutsStatus(payouts) {
@@ -187,6 +193,36 @@
     });
   }
 
+  // Opens the publisher's own site in a new tab with the one-time picker
+  // token in the URL. w.js (already installed on their site) detects the
+  // token and takes over from there — this tab doesn't track completion,
+  // it just re-fetches the dashboard when the user comes back to it (see
+  // the visibilitychange listener in loadDashboard).
+  function startPlacementPicker(slotId, triggerBtn) {
+    triggerBtn.disabled = true;
+    fetch("/api/slots/" + encodeURIComponent(slotId) + "/picker-token", {
+      method: "POST",
+      credentials: "same-origin",
+    })
+      .then(function (res) {
+        return res.json().then(function (data) {
+          return { ok: res.ok, body: data };
+        });
+      })
+      .then(function (result) {
+        triggerBtn.disabled = false;
+        if (!result.ok || !result.body.url) {
+          window.alert(result.body.error || "Could not start the placement picker. Please try again.");
+          return;
+        }
+        window.open(result.body.url, "_blank", "noopener");
+      })
+      .catch(function () {
+        triggerBtn.disabled = false;
+        window.alert("Network error. Please try again.");
+      });
+  }
+
   function renderSlots(slots) {
     var body = document.getElementById("publisherSlotsBody");
     var table = body.closest(".dashboard-table-wrap");
@@ -211,6 +247,17 @@
       var statusCell = document.createElement("td");
       statusCell.appendChild(statusPill(slot.status));
       row.appendChild(statusCell);
+      row.appendChild(el("td", "dashboard-cell--code", slot.domSelector));
+
+      var actionCell = document.createElement("td");
+      var pickBtn = el("button", "btn btn--outline btn--sm", "Pick placement");
+      pickBtn.type = "button";
+      pickBtn.addEventListener("click", function () {
+        startPlacementPicker(slot.id, pickBtn);
+      });
+      actionCell.appendChild(pickBtn);
+      row.appendChild(actionCell);
+
       body.appendChild(row);
     });
   }
@@ -325,4 +372,13 @@
   }
 
   loadDashboard();
+
+  // Picking a placement happens in a separate tab (the publisher's own
+  // site) — re-fetch when the user comes back to this one so a freshly
+  // saved selector shows up without a manual reload.
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible") {
+      loadDashboard();
+    }
+  });
 })();

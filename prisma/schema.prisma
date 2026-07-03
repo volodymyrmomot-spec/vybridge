@@ -128,8 +128,28 @@ model Slot {
   updatedAt        DateTime   @updatedAt @map("updated_at")
 
   deals            Deal[]
+  pickerTokens     PickerToken[]
 
   @@map("slots")
+}
+
+// One-time, short-lived tokens for the visual placement picker. The token
+// itself IS the authorization for POST /api/slots/:id/selector — that route
+// is called cross-origin from the publisher's own site (no session cookie
+// available there), so possession of a valid, unused, unexpired token is
+// the entire security model for that single write.
+model PickerToken {
+  id          String    @id @default(uuid())
+  slotId      String    @map("slot_id")
+  slot        Slot      @relation(fields: [slotId], references: [id])
+  publisherId String    @map("publisher_id")
+
+  expiresAt   DateTime  @map("expires_at")
+  usedAt      DateTime? @map("used_at")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@map("picker_tokens")
 }
 
 model FeeTier {

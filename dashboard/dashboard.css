@@ -87,6 +87,31 @@
   word-break: break-all;
 }
 
+.dashboard-snippet {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.dashboard-snippet__label {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.dashboard-snippet__code {
+  display: block;
+  padding: 10px 14px;
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--text);
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+
 /* Payouts */
 .dashboard-payouts {
   display: flex;
@@ -199,6 +224,15 @@
 
 .dashboard-table td {
   color: var(--text);
+}
+
+.dashboard-cell--code {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 .dashboard-empty {

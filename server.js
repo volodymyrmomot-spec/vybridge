@@ -7,6 +7,7 @@ const { handleDealsRequest } = require("./lib/deals-http");
 const { handleDashboardRequest } = require("./lib/dashboard-http");
 const { handleConnectRequest } = require("./lib/connect-http");
 const { handleSlotsRequest } = require("./lib/slots-http");
+const { handlePickerRequest } = require("./lib/picker-http");
 const { handleStripeWebhookRequest } = require("./lib/stripe-webhook");
 const { runCronCycle } = require("./lib/payout-cron");
 
@@ -167,6 +168,16 @@ const server = http.createServer(async function (req, res) {
     }
   } catch (err) {
     console.error("[server] Slots error:", err);
+    return sendJson(res, 500, { ok: false, error: "Internal server error" });
+  }
+
+  try {
+    const handled = await handlePickerRequest(req, res, url, readBody, sendJson);
+    if (handled) {
+      return;
+    }
+  } catch (err) {
+    console.error("[server] Picker error:", err);
     return sendJson(res, 500, { ok: false, error: "Internal server error" });
   }
 

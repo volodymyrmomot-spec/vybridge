@@ -55,6 +55,10 @@
         <div class="dashboard-card">
           <h2 class="dashboard-card__title">My site</h2>
           <dl class="dashboard-site-info" id="mySiteInfo"></dl>
+          <div class="dashboard-snippet" id="mySiteSnippet" hidden>
+            <p class="dashboard-snippet__label">Install this once on your site (in &lt;head&gt;):</p>
+            <code class="dashboard-snippet__code" id="mySiteSnippetCode"></code>
+          </div>
         </div>
 
         <div class="dashboard-card">
@@ -75,6 +79,8 @@
                 <th>Price</th>
                 <th>Duration</th>
                 <th>Status</th>
+                <th>Placement</th>
+                <th></th>
               </tr>
             </thead>
             <tbody id="publisherSlotsBody"></tbody>
