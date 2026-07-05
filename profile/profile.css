@@ -1,0 +1,39 @@
+.profile-container {
+  max-width: 640px;
+}
+
+#profileForm {
+  display: grid;
+  gap: 16px;
+}
+
+.profile-section-title--password {
+  margin-top: 12px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.profile-section-hint {
+  margin: -8px 0 4px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.profile-danger-zone {
+  border-color: rgba(220, 38, 38, 0.25);
+}
+
+.profile-danger-zone .profile-section-hint {
+  margin: 0 0 16px;
+}
+
+#deleteForm {
+  display: grid;
+  gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .profile-container {
+    max-width: none;
+  }
+}

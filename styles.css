@@ -849,6 +849,36 @@ ul {
   box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18);
 }
 
+.btn--danger {
+  background: #fff;
+  color: #dc2626;
+  border: 1.5px solid rgba(220, 38, 38, 0.35);
+}
+
+.btn--danger:hover {
+  background: #fef2f2;
+  border-color: #dc2626;
+}
+
+/* Solid fill — reserved for actions more severe than .btn--danger's outline
+   style (e.g. permanently deleting an account vs. rejecting one ad). */
+.btn--danger-solid {
+  background: #dc2626;
+  color: #fff;
+}
+
+.btn--danger-solid:hover {
+  background: #b91c1c;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
+}
+
+.btn--danger:disabled,
+.btn--danger-solid:disabled,
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* Intro cards (I want to advertise / I want to earn) */
 .intro-cards {
   padding: 56px 0 80px;
@@ -959,6 +989,101 @@ ul {
 
 .simple-footer__links a:hover {
   color: var(--text);
+}
+
+/* Modal — shared by the /slots booking dialog and /profile's delete
+   confirmation */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-backdrop[hidden] {
+  display: none;
+}
+
+.modal {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  background: #fff;
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  box-shadow: var(--shadow-lg);
+}
+
+.modal__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: var(--bg-muted);
+  border-radius: 50%;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.modal__close:hover {
+  background: var(--border);
+  color: var(--text);
+}
+
+.modal__title {
+  margin: 0 0 4px;
+  font-size: 1.375rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.modal__subtitle {
+  margin: 0 0 24px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* Page banner — one-off status messages shown after a redirect (e.g. the
+   landing page after account deletion). */
+.page-banner {
+  margin: 0;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.page-banner--success {
+  background: var(--green-light);
+  color: var(--green-dark);
+  border: 1px solid rgba(5, 150, 105, 0.2);
+}
+
+.page-banner[hidden] {
+  display: none;
+}
+
+.landing-banner {
+  margin-top: 20px;
+}
+
+@media (max-width: 560px) {
+  .modal {
+    padding: 24px;
+  }
 }
 
 /* Responsive */

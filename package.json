@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@prisma/client": "6.19.3",
+    "busboy": "^1.6.0",
+    "cloudinary": "^2.10.0",
     "stripe": "^22.3.0"
   },
   "devDependencies": {

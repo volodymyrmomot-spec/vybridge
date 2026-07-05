@@ -11,6 +11,9 @@ const { handlePickerRequest } = require("./lib/picker-http");
 const { handleWidgetRequest } = require("./lib/widget-http");
 const { handleClicksRequest } = require("./lib/clicks-http");
 const { handleConfigRequest } = require("./lib/config-http");
+const { handleSitesRequest } = require("./lib/sites-http");
+const { handleProfileRequest } = require("./lib/profile-http");
+const { recordScriptLoad } = require("./lib/script-track");
 const { handleStripeWebhookRequest } = require("./lib/stripe-webhook");
 const { runCronCycle } = require("./lib/payout-cron");
 
@@ -55,6 +58,7 @@ const REWRITES = {
   "/slots": "/slots/index.html",
   "/slots/new": "/slots/new/index.html",
   "/connect/return": "/connect/return/index.html",
+  "/profile": "/profile/index.html",
 };
 
 function resolveStaticPath(urlPath) {
@@ -122,6 +126,13 @@ const server = http.createServer(async function (req, res) {
       console.error("[server] Stripe webhook error:", err);
       return sendJson(res, 500, { ok: false, error: "Internal server error" });
     }
+  }
+
+  // Fire-and-forget — recordScriptLoad has its own try/catch, and w.js must
+  // always be served below (via the static-file fallback) regardless of
+  // whether this write succeeds.
+  if (url.pathname === "/w.js" && req.method === "GET") {
+    recordScriptLoad(req);
   }
 
   try {
@@ -211,6 +222,26 @@ const server = http.createServer(async function (req, res) {
     }
   } catch (err) {
     console.error("[server] Config error:", err);
+    return sendJson(res, 500, { ok: false, error: "Internal server error" });
+  }
+
+  try {
+    const handled = await handleSitesRequest(req, res, url, readBody, sendJson);
+    if (handled) {
+      return;
+    }
+  } catch (err) {
+    console.error("[server] Sites error:", err);
+    return sendJson(res, 500, { ok: false, error: "Internal server error" });
+  }
+
+  try {
+    const handled = await handleProfileRequest(req, res, url, readBody, sendJson);
+    if (handled) {
+      return;
+    }
+  } catch (err) {
+    console.error("[server] Profile error:", err);
     return sendJson(res, 500, { ok: false, error: "Internal server error" });
   }
 

@@ -1,4 +1,23 @@
 (function () {
+  var BANNER_MESSAGES = {
+    account_deleted: "Your account has been deleted.",
+  };
+
+  var message = new URLSearchParams(window.location.search).get("message");
+  var text = message && BANNER_MESSAGES[message];
+  if (!text) {
+    return;
+  }
+  var banner = document.getElementById("landingBanner");
+  if (!banner) {
+    return;
+  }
+  banner.textContent = text;
+  banner.hidden = false;
+  window.history.replaceState({}, "", window.location.pathname);
+})();
+
+(function () {
   var toggle = document.getElementById("menuToggle");
   var nav = document.getElementById("nav");
 

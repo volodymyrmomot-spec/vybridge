@@ -39,6 +39,54 @@
     return STATUS_LABELS[status] || status;
   }
 
+  var CATEGORY_LABELS = {
+    technology: "Technology",
+    lifestyle: "Lifestyle",
+    automotive: "Automotive",
+    fashion: "Fashion",
+    food: "Food",
+    travel: "Travel",
+    sports: "Sports",
+    business: "Business",
+    entertainment: "Entertainment",
+    education: "Education",
+    health: "Health",
+    news: "News",
+    other: "Other",
+  };
+
+  var CATEGORY_ICONS = {
+    technology: "💻",
+    lifestyle: "🧘",
+    automotive: "🚗",
+    fashion: "👗",
+    food: "🍔",
+    travel: "✈️",
+    sports: "⚽",
+    business: "💼",
+    entertainment: "🎬",
+    education: "🎓",
+    health: "❤️",
+    news: "📰",
+    other: "📦",
+  };
+
+  var MONTHLY_VISITORS_LABELS = {
+    under_1k: "Under 1,000",
+    "1k_10k": "1,000 – 10,000",
+    "10k_50k": "10,000 – 50,000",
+    "50k_200k": "50,000 – 200,000",
+    "200k_plus": "200,000+",
+  };
+
+  var AUDIENCE_LANGUAGE_LABELS = {
+    english: "English",
+    slovak: "Slovak",
+    ukrainian: "Ukrainian",
+    russian: "Russian",
+    other: "Other",
+  };
+
   function statusPill(status) {
     var span = document.createElement("span");
     span.className = "status-pill status-pill--" + status;
@@ -104,13 +152,320 @@
     document.getElementById("advertiserDashboard").hidden = false;
   }
 
+  // ---------- Install guide (Step 1: install the script) ----------
+
+  var installPollTimer = null;
+
+  function installTabButtons() {
+    return document.querySelectorAll(".install-guide__tab");
+  }
+
+  function selectInstallTab(tabName) {
+    installTabButtons().forEach(function (btn) {
+      var active = btn.dataset.tab === tabName;
+      btn.classList.toggle("install-guide__tab--active", active);
+      btn.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    document.querySelectorAll("[data-panel]").forEach(function (panel) {
+      panel.hidden = panel.dataset.panel !== tabName;
+    });
+  }
+
+  installTabButtons().forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      selectInstallTab(btn.dataset.tab);
+    });
+  });
+
+  function fallbackCopy(text) {
+    var textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.select();
+    var copied = false;
+    try {
+      copied = document.execCommand("copy");
+    } catch (err) {
+      copied = false;
+    }
+    document.body.removeChild(textarea);
+    return copied;
+  }
+
+  var copyCodeBtn = document.getElementById("copyCodeBtn");
+  if (copyCodeBtn) {
+    copyCodeBtn.addEventListener("click", function () {
+      var code = document.getElementById("mySiteSnippetCode").textContent;
+      var showCopied = function () {
+        var original = "Copy code";
+        copyCodeBtn.textContent = "Copied ✓";
+        setTimeout(function () {
+          copyCodeBtn.textContent = original;
+        }, 1800);
+      };
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(showCopied, function () {
+          if (fallbackCopy(code)) {
+            showCopied();
+          } else {
+            window.alert("Could not copy automatically — please select the code and copy it manually.");
+          }
+        });
+      } else if (fallbackCopy(code)) {
+        showCopied();
+      } else {
+        window.alert("Could not copy automatically — please select the code and copy it manually.");
+      }
+    });
+  }
+
+  function setInstallStatus(state) {
+    var status = document.getElementById("installStatus");
+    if (state === "detected") {
+      status.textContent = "Code detected ✓";
+      status.className = "install-guide__status install-guide__status--detected";
+      status.hidden = false;
+    } else if (state === "pending") {
+      status.textContent = "Not detected yet — install the code above";
+      status.className = "install-guide__status install-guide__status--pending";
+      status.hidden = false;
+    } else {
+      status.hidden = true;
+    }
+  }
+
+  // Polls GET /api/sites/:site_key/verify (true once w.js has actually
+  // loaded from this domain in the last 24h — see lib/script-track.js) so
+  // the checkmark appears on its own, without the publisher refreshing.
+  function pollInstallStatus(siteKey) {
+    if (installPollTimer) {
+      clearInterval(installPollTimer);
+      installPollTimer = null;
+    }
+
+    function check() {
+      fetch("/api/sites/" + encodeURIComponent(siteKey) + "/verify", { credentials: "same-origin" })
+        .then(function (res) {
+          return res.json();
+        })
+        .then(function (result) {
+          if (!result.ok) {
+            return;
+          }
+          setInstallStatus(result.verified ? "detected" : "pending");
+          if (result.verified && installPollTimer) {
+            clearInterval(installPollTimer);
+            installPollTimer = null;
+          }
+        })
+        .catch(function () {});
+    }
+
+    check();
+    installPollTimer = setInterval(check, 15000);
+  }
+
+  var downloadWpPluginBtn = document.getElementById("downloadWpPluginBtn");
+  if (downloadWpPluginBtn) {
+    downloadWpPluginBtn.addEventListener("click", function () {
+      window.alert("The WordPress plugin is coming soon — for now, use the code snippet below.");
+    });
+  }
+
+  // wix and squarespace share the same tab; anything else (including a
+  // domain we couldn't reach or didn't recognize) falls back to the plain
+  // HTML instructions, which work for every site regardless of platform.
+  var CMS_TAB_MAP = {
+    wordpress: "wordpress",
+    wix: "wix",
+    squarespace: "wix",
+    shopify: "html",
+    webflow: "html",
+    tilda: "html",
+    unknown: "html",
+  };
+
+  // Runs once per page load per site — a publisher who manually switches
+  // tabs afterward shouldn't have their choice overridden by a later
+  // dashboard refresh (e.g. the visibilitychange reload after the picker
+  // flow).
+  var cmsDetectedForSiteKey = null;
+
+  function detectAndSelectTab(siteKey) {
+    if (cmsDetectedForSiteKey === siteKey) {
+      return;
+    }
+    cmsDetectedForSiteKey = siteKey;
+
+    fetch("/api/sites/" + encodeURIComponent(siteKey) + "/detect-cms", { credentials: "same-origin" })
+      .then(function (res) {
+        return res.json();
+      })
+      .then(function (result) {
+        if (!result.ok) {
+          return;
+        }
+        selectInstallTab(CMS_TAB_MAP[result.cms] || "html");
+      })
+      .catch(function () {});
+  }
+
+  // ---------- My site info (audience details) ----------
+
+  var currentSite = null;
+  var siteInfoForm = document.getElementById("siteInfoForm");
+  var editSiteInfoBtn = document.getElementById("editSiteInfoBtn");
+  var cancelSiteInfoBtn = document.getElementById("cancelSiteInfoBtn");
+  var siteInfoDescriptionInput = document.getElementById("siteInfoDescription");
+  var siteInfoDescriptionCounter = document.getElementById("siteInfoDescriptionCounter");
+
+  function renderSiteAudienceInfo(site) {
+    var dl = document.getElementById("siteAudienceInfo");
+    dl.innerHTML = "";
+
+    function addRow(label, value) {
+      dl.appendChild(el("dt", null, label));
+      var dd = document.createElement("dd");
+      if (value) {
+        dd.textContent = value;
+      } else {
+        dd.textContent = "No info provided";
+        dd.className = "dashboard-site-info__value--empty";
+      }
+      dl.appendChild(dd);
+    }
+
+    addRow("Category", site.category ? CATEGORY_ICONS[site.category] + " " + CATEGORY_LABELS[site.category] : null);
+    addRow("Monthly visitors", site.monthlyVisitors ? MONTHLY_VISITORS_LABELS[site.monthlyVisitors] : null);
+    addRow("Audience country", site.audienceCountry);
+    addRow("Audience language", site.audienceLanguage ? AUDIENCE_LANGUAGE_LABELS[site.audienceLanguage] : null);
+    addRow("Description", site.siteDescription);
+  }
+
+  function updateDescriptionCounter() {
+    siteInfoDescriptionCounter.textContent = siteInfoDescriptionInput.value.length + " / 300";
+  }
+
+  if (siteInfoDescriptionInput) {
+    siteInfoDescriptionInput.addEventListener("input", updateDescriptionCounter);
+  }
+
+  function clearSiteInfoFormErrors() {
+    var msg = document.getElementById("siteInfoFormMessage");
+    msg.hidden = true;
+    msg.textContent = "";
+  }
+
+  function setSiteInfoFormMessage(message) {
+    var msg = document.getElementById("siteInfoFormMessage");
+    msg.textContent = message;
+    msg.hidden = false;
+  }
+
+  function openSiteInfoForm(site) {
+    document.getElementById("siteInfoCategory").value = site.category || "";
+    document.getElementById("siteInfoVisitors").value = site.monthlyVisitors || "";
+    document.getElementById("siteInfoCountry").value = site.audienceCountry || "";
+    document.getElementById("siteInfoLanguage").value = site.audienceLanguage || "";
+    siteInfoDescriptionInput.value = site.siteDescription || "";
+    updateDescriptionCounter();
+    clearSiteInfoFormErrors();
+    siteInfoForm.hidden = false;
+    editSiteInfoBtn.hidden = true;
+  }
+
+  function closeSiteInfoForm() {
+    siteInfoForm.hidden = true;
+    editSiteInfoBtn.hidden = false;
+  }
+
+  if (editSiteInfoBtn) {
+    editSiteInfoBtn.addEventListener("click", function () {
+      if (currentSite) {
+        openSiteInfoForm(currentSite);
+      }
+    });
+  }
+
+  if (cancelSiteInfoBtn) {
+    cancelSiteInfoBtn.addEventListener("click", function () {
+      closeSiteInfoForm();
+    });
+  }
+
+  if (siteInfoForm) {
+    siteInfoForm.addEventListener("submit", function (event) {
+      event.preventDefault();
+      clearSiteInfoFormErrors();
+
+      var submitBtn = siteInfoForm.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+
+      fetch("/api/sites/" + encodeURIComponent(currentSite.siteKey), {
+        method: "PUT",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          category: document.getElementById("siteInfoCategory").value,
+          monthlyVisitors: document.getElementById("siteInfoVisitors").value,
+          audienceCountry: document.getElementById("siteInfoCountry").value,
+          audienceLanguage: document.getElementById("siteInfoLanguage").value,
+          siteDescription: siteInfoDescriptionInput.value,
+        }),
+      })
+        .then(function (res) {
+          return res.json().then(function (data) {
+            return { ok: res.ok, body: data };
+          });
+        })
+        .then(function (result) {
+          submitBtn.disabled = false;
+          if (!result.ok) {
+            setSiteInfoFormMessage(result.body.error || "Could not save. Please check the fields and try again.");
+            return;
+          }
+          currentSite = result.body.site;
+          renderSiteAudienceInfo(currentSite);
+          closeSiteInfoForm();
+        })
+        .catch(function () {
+          submitBtn.disabled = false;
+          setSiteInfoFormMessage("Network error. Please try again.");
+        });
+    });
+  }
+
+  function buildDevEmailHref(snippetCode) {
+    var subject = "Please add this code to our website";
+    var body =
+      "Hi,\n\n" +
+      "Could you please add the code below to our website, just before the closing </head> tag?\n\n" +
+      snippetCode +
+      "\n\nThanks!";
+    return "mailto:?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+  }
+
   function renderMySite(site) {
     var dl = document.getElementById("mySiteInfo");
     var snippetWrap = document.getElementById("mySiteSnippet");
     dl.innerHTML = "";
+    currentSite = site;
+
     if (!site) {
       dl.appendChild(el("dd", null, "No site on file yet."));
       snippetWrap.hidden = true;
+      document.getElementById("siteAudienceInfo").innerHTML = "";
+      if (editSiteInfoBtn) {
+        editSiteInfoBtn.hidden = true;
+      }
+      closeSiteInfoForm();
+      if (installPollTimer) {
+        clearInterval(installPollTimer);
+        installPollTimer = null;
+      }
       return;
     }
     dl.appendChild(el("dt", null, "Domain"));
@@ -118,9 +473,20 @@
     dl.appendChild(el("dt", null, "Site key"));
     dl.appendChild(el("dd", null, site.siteKey));
 
-    document.getElementById("mySiteSnippetCode").textContent =
+    var snippetCode =
       '<script src="' + window.location.origin + '/w.js" data-site="' + site.siteKey + '" async></' + "script>";
+    document.getElementById("mySiteSnippetCode").textContent = snippetCode;
+    document.getElementById("emailDevLink").href = buildDevEmailHref(snippetCode);
     snippetWrap.hidden = false;
+
+    setInstallStatus(null);
+    pollInstallStatus(site.siteKey);
+    detectAndSelectTab(site.siteKey);
+
+    renderSiteAudienceInfo(site);
+    if (editSiteInfoBtn) {
+      editSiteInfoBtn.hidden = false;
+    }
   }
 
   function renderPayoutsStatus(payouts) {

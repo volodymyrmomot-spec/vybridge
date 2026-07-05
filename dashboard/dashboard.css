@@ -101,16 +101,47 @@
   word-break: break-all;
 }
 
-.dashboard-snippet {
-  margin-top: 16px;
-  padding-top: 16px;
+.dashboard-site-info--plain dd {
+  font-family: var(--font);
+  word-break: normal;
+}
+
+.dashboard-site-info__value--empty {
+  color: var(--text-light);
+  font-style: italic;
+}
+
+/* My site info (audience details) */
+.site-info__hint {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.site-info-form {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+  padding-top: 20px;
   border-top: 1px solid var(--border);
 }
 
-.dashboard-snippet__label {
-  margin: 0 0 8px;
-  font-size: 13px;
-  color: var(--text-muted);
+.site-info-form__textarea {
+  resize: vertical;
+  min-height: 72px;
+  font-family: var(--font);
+}
+
+.site-info-form__counter {
+  margin: -4px 0 0;
+  font-size: 12px;
+  color: var(--text-light);
+  text-align: right;
+}
+
+.site-info-form__actions {
+  display: flex;
+  gap: 10px;
 }
 
 .dashboard-snippet__code {
@@ -124,6 +155,139 @@
   color: var(--text);
   word-break: break-all;
   white-space: pre-wrap;
+}
+
+/* Install guide (Step 1: install the script) */
+.install-guide {
+  margin-top: 16px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.install-guide__title {
+  margin: 0 0 4px;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.install-guide__intro {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.install-guide__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.install-guide__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-muted);
+  border: 1.5px solid var(--border);
+  border-radius: 100px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.install-guide__tab:hover {
+  border-color: var(--purple);
+  color: var(--text);
+}
+
+.install-guide__tab--active,
+.install-guide__tab--active:hover {
+  background: var(--purple-tint);
+  border-color: var(--purple);
+  color: var(--purple-dark);
+}
+
+.install-guide__tab-icon {
+  flex-shrink: 0;
+}
+
+.install-guide__tab-icon--wp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.install-guide__steps {
+  margin: 0 0 16px;
+  padding-left: 20px;
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.8;
+}
+
+.install-guide__steps--text {
+  padding-left: 0;
+  list-style: none;
+}
+
+.install-guide__steps code {
+  padding: 1px 6px;
+  background: var(--bg-muted);
+  border-radius: 4px;
+  font-size: 12.5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.install-guide__wp-plugin-btn {
+  margin-bottom: 4px;
+}
+
+.install-guide__actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.install-guide__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.install-guide__status--detected {
+  color: var(--green-dark);
+}
+
+.install-guide__status--pending {
+  color: var(--text-light);
+}
+
+.install-guide__dev-link {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand-blue);
+}
+
+.install-guide__dev-link:hover {
+  text-decoration: underline;
 }
 
 /* Payouts */
@@ -182,23 +346,6 @@
 .approval-item__actions .btn {
   padding: 8px 16px;
   font-size: 13px;
-}
-
-.btn--danger {
-  background: #fff;
-  color: #dc2626;
-  border: 1.5px solid rgba(220, 38, 38, 0.35);
-}
-
-.btn--danger:hover {
-  background: #fef2f2;
-  border-color: #dc2626;
-}
-
-.btn--danger:disabled,
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 /* Tables */

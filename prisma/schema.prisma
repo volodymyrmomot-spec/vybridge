@@ -49,6 +49,41 @@ enum CreativeStatus {
   rejected
 }
 
+enum SiteCategory {
+  technology
+  lifestyle
+  automotive
+  fashion
+  food
+  travel
+  sports
+  business
+  entertainment
+  education
+  health
+  news
+  other
+}
+
+// Prisma enum value names can't start with a digit, so the "1k_10k"-style
+// values the API/DB actually use are attached via @map — the Prisma-side
+// names (range_1k_10k etc.) never leak past this schema file.
+enum MonthlyVisitors {
+  under_1k
+  range_1k_10k    @map("1k_10k")
+  range_10k_50k   @map("10k_50k")
+  range_50k_200k  @map("50k_200k")
+  range_200k_plus @map("200k_plus")
+}
+
+enum AudienceLanguage {
+  english
+  slovak
+  ukrainian
+  russian
+  other
+}
+
 model User {
   id                         String    @id @default(uuid())
   email                      String    @unique
@@ -96,11 +131,29 @@ model Site {
   siteKey       String     @unique @map("site_key")
   status        SiteStatus @default(active)
 
+  // Bumped on every GET /w.js whose Referer host matches this domain — the
+  // dashboard's install checklist polls GET /api/sites/:site_key/verify,
+  // which treats a hit within the last 24h as "code detected". Never set by
+  // anything the publisher enters themselves, only by the server observing
+  // a real request.
+  lastScriptLoadAt DateTime? @map("last_script_load_at")
+
+  // Audience info — entered by the publisher on the dashboard, shown to
+  // advertisers in the /slots catalog so they can judge fit before booking.
+  // All optional: a publisher who skips this just shows "No info provided"
+  // on the catalog card rather than being blocked from listing slots.
+  category         SiteCategory?
+  monthlyVisitors  MonthlyVisitors?  @map("monthly_visitors")
+  audienceCountry  String?           @map("audience_country")
+  audienceLanguage AudienceLanguage? @map("audience_language")
+  siteDescription  String?           @map("site_description")
+
   createdAt     DateTime   @default(now()) @map("created_at")
   updatedAt     DateTime   @updatedAt @map("updated_at")
 
   slots         Slot[]
 
+  @@index([domain])
   @@map("sites")
 }
 

@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/auth/auth.css">
   <link rel="stylesheet" href="/dashboard/dashboard.css">
 </head>
 <body>
@@ -19,6 +20,7 @@
         <span class="logo__text">vybridge</span>
       </a>
       <div class="header__actions">
+        <a href="/profile" class="btn btn--outline btn--sm">Profile</a>
         <button type="button" class="btn btn--outline btn--sm" id="logoutBtn">Log out</button>
       </div>
     </div>
@@ -56,10 +58,131 @@
         <div class="dashboard-card">
           <h2 class="dashboard-card__title">My site</h2>
           <dl class="dashboard-site-info" id="mySiteInfo"></dl>
-          <div class="dashboard-snippet" id="mySiteSnippet" hidden>
-            <p class="dashboard-snippet__label">Install this once on your site (in &lt;head&gt;):</p>
+
+          <div class="install-guide" id="mySiteSnippet" hidden>
+            <h3 class="install-guide__title">Step 1: Install Vybridge on your website</h3>
+            <p class="install-guide__intro">Add this one snippet to your site — pick how your site is built below.</p>
+
+            <div class="install-guide__tabs" id="installTabs" role="tablist">
+              <button type="button" class="install-guide__tab install-guide__tab--active" data-tab="wordpress" role="tab" aria-selected="true">
+                <span class="install-guide__tab-icon install-guide__tab-icon--wp" aria-hidden="true">W</span>
+                WordPress
+              </button>
+              <button type="button" class="install-guide__tab" data-tab="wix" role="tab" aria-selected="false">
+                <svg class="install-guide__tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                Wix / Squarespace
+              </button>
+              <button type="button" class="install-guide__tab" data-tab="html" role="tab" aria-selected="false">
+                <svg class="install-guide__tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                Other site
+              </button>
+            </div>
+
+            <div class="install-guide__panel" data-panel="wordpress">
+              <ol class="install-guide__steps">
+                <li>In your WordPress admin, go to <strong>Appearance → Theme Editor → header.php</strong></li>
+                <li>Find the line <code>&lt;/head&gt;</code></li>
+                <li>Paste the code below just above that line</li>
+                <li>Click <strong>Update File</strong></li>
+              </ol>
+              <button type="button" class="btn btn--outline btn--sm install-guide__wp-plugin-btn" id="downloadWpPluginBtn">Download WordPress Plugin</button>
+            </div>
+
+            <div class="install-guide__panel" data-panel="wix" hidden>
+              <ol class="install-guide__steps">
+                <li>Go to your site's <strong>Settings</strong></li>
+                <li>Find <strong>Custom Code</strong> or <strong>Tracking &amp; Analytics</strong></li>
+                <li>Click <strong>Add Code</strong></li>
+                <li>Paste the code below, choose <strong>Head</strong>, and save</li>
+              </ol>
+            </div>
+
+            <div class="install-guide__panel" data-panel="html" hidden>
+              <p class="install-guide__steps install-guide__steps--text">
+                Open any HTML file on your site, find the tag <code>&lt;/head&gt;</code>, and paste the code below right before it.
+              </p>
+            </div>
+
             <code class="dashboard-snippet__code" id="mySiteSnippetCode"></code>
+
+            <div class="install-guide__actions">
+              <button type="button" class="btn btn--purple" id="copyCodeBtn">Copy code</button>
+              <span class="install-guide__status" id="installStatus" hidden></span>
+            </div>
+
+            <a href="#" class="install-guide__dev-link" id="emailDevLink" target="_blank" rel="noopener">Not sure? Send these instructions to your developer →</a>
           </div>
+        </div>
+
+        <div class="dashboard-card">
+          <h2 class="dashboard-card__title">My site info</h2>
+          <p class="site-info__hint">Fill this in — advertisers use it to find your site</p>
+
+          <dl class="dashboard-site-info dashboard-site-info--plain" id="siteAudienceInfo"></dl>
+          <button type="button" class="btn btn--outline btn--sm" id="editSiteInfoBtn">Edit site info</button>
+
+          <form id="siteInfoForm" class="site-info-form" hidden novalidate>
+            <div class="form-field">
+              <label class="form-field__label" for="siteInfoCategory">Category</label>
+              <select class="form-field__input" id="siteInfoCategory" name="category">
+                <option value="">Not set</option>
+                <option value="technology">Technology</option>
+                <option value="lifestyle">Lifestyle</option>
+                <option value="automotive">Automotive</option>
+                <option value="fashion">Fashion</option>
+                <option value="food">Food</option>
+                <option value="travel">Travel</option>
+                <option value="sports">Sports</option>
+                <option value="business">Business</option>
+                <option value="entertainment">Entertainment</option>
+                <option value="education">Education</option>
+                <option value="health">Health</option>
+                <option value="news">News</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label class="form-field__label" for="siteInfoVisitors">Monthly visitors</label>
+              <select class="form-field__input" id="siteInfoVisitors" name="monthlyVisitors">
+                <option value="">Not set</option>
+                <option value="under_1k">Under 1,000</option>
+                <option value="1k_10k">1,000 – 10,000</option>
+                <option value="10k_50k">10,000 – 50,000</option>
+                <option value="50k_200k">50,000 – 200,000</option>
+                <option value="200k_plus">200,000+</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label class="form-field__label" for="siteInfoCountry">Audience country</label>
+              <input class="form-field__input" type="text" id="siteInfoCountry" name="audienceCountry" placeholder="e.g. Slovakia, Ukraine, Global" maxlength="100">
+            </div>
+
+            <div class="form-field">
+              <label class="form-field__label" for="siteInfoLanguage">Audience language</label>
+              <select class="form-field__input" id="siteInfoLanguage" name="audienceLanguage">
+                <option value="">Not set</option>
+                <option value="english">English</option>
+                <option value="slovak">Slovak</option>
+                <option value="ukrainian">Ukrainian</option>
+                <option value="russian">Russian</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label class="form-field__label" for="siteInfoDescription">Site description</label>
+              <textarea class="form-field__input site-info-form__textarea" id="siteInfoDescription" name="siteDescription" maxlength="300" rows="3" placeholder="What's your site about? Who reads it?"></textarea>
+              <p class="site-info-form__counter" id="siteInfoDescriptionCounter">0 / 300</p>
+            </div>
+
+            <div class="site-info-form__actions">
+              <button type="submit" class="btn btn--purple btn--sm">Save</button>
+              <button type="button" class="btn btn--outline btn--sm" id="cancelSiteInfoBtn">Cancel</button>
+            </div>
+            <p class="form-message form-message--error" id="siteInfoFormMessage" hidden></p>
+          </form>
         </div>
 
         <div class="dashboard-card">
