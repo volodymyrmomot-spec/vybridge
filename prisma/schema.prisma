@@ -10,6 +10,7 @@ datasource db {
 enum Role {
   publisher
   advertiser
+  blogger
 }
 
 enum StripeOnboardingStatus {
@@ -41,12 +42,35 @@ enum DealStatus {
   rejected
   disputed
   refunded
+
+  // Blogger vertical: pending_blogger_approval -> blogger_accepted ->
+  // blogger_published -> completed -> payout_released (completed and
+  // payout_released above are shared with the slot vertical). declined is
+  // this flow's terminal rejection, parallel to `rejected` above.
+  pending_blogger_approval
+  blogger_accepted
+  blogger_published
+  blogger_declined
 }
 
 enum CreativeStatus {
   submitted
   approved
   rejected
+}
+
+enum ChannelPlatform {
+  instagram
+  tiktok
+  youtube
+}
+
+// What an advertiser attaches to a blogger offer — either an uploaded image
+// (fileUrl on Creative) or a text brief (briefText) for the blogger to
+// produce their own content from.
+enum ContentType {
+  ready_file
+  brief
 }
 
 enum SiteCategory {
@@ -104,7 +128,10 @@ model User {
   sites                      Site[]
   slots                      Slot[]          @relation("PublisherSlots")
   dealsAsAdvertiser          Deal[]          @relation("AdvertiserDeals")
+  // Also holds blogger deals — a blogger is "PublisherDeals" in the same
+  // sense a site publisher is: the party being paid out (see Deal.publisherId).
   dealsAsPublisher           Deal[]          @relation("PublisherDeals")
+  bloggerChannels            BloggerChannel[]
 
   @@map("users")
 }
@@ -155,6 +182,32 @@ model Site {
 
   @@index([domain])
   @@map("sites")
+}
+
+// A blogger's social account. One blogger user can have several (Instagram
+// + TikTok + YouTube), each with its own price/category/follower count —
+// an advertiser targets one specific channel per offer (see Deal.bloggerChannelId).
+model BloggerChannel {
+  id                String           @id @default(uuid())
+  userId            String           @map("user_id")
+  user              User             @relation(fields: [userId], references: [id])
+
+  platform          ChannelPlatform
+  channelUrl        String           @map("channel_url")
+  // Parsed from channelUrl at creation time (e.g. "@name") — best-effort
+  // display convenience, never re-derived or trusted for anything else.
+  channelHandle     String?          @map("channel_handle")
+  followersCount    Int              @default(0) @map("followers_count")
+  contentCategory   SiteCategory?    @map("content_category")
+  pricePerPostCents Int              @map("price_per_post_cents")
+
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+
+  deals             Deal[]
+
+  @@index([userId])
+  @@map("blogger_channels")
 }
 
 model Slot {
@@ -219,9 +272,19 @@ model FeeTier {
 model Deal {
   id                     String     @id @default(uuid())
 
-  slotId                 String     @map("slot_id")
-  slot                   Slot       @relation(fields: [slotId], references: [id])
+  // Exactly one of slotId/bloggerChannelId is set — slotId for the ad-slot
+  // vertical, bloggerChannelId for the blogger vertical. Never both, never
+  // neither; enforced in application code (lib/deals.js vs
+  // lib/blogger-deals.js), not at the DB level.
+  slotId                 String?    @map("slot_id")
+  slot                   Slot?      @relation(fields: [slotId], references: [id])
 
+  bloggerChannelId       String?    @map("blogger_channel_id")
+  bloggerChannel         BloggerChannel? @relation(fields: [bloggerChannelId], references: [id])
+
+  // The party being paid out: the site publisher for a slot deal, or the
+  // blogger for a blogger deal (see bloggerChannel.userId) — always set
+  // either way, so payout-cron.js's releaseCompletedPayouts needs no branch.
   publisherId            String     @map("publisher_id")
   publisher              User       @relation("PublisherDeals", fields: [publisherId], references: [id])
 
@@ -229,12 +292,14 @@ model Deal {
   advertiser             User       @relation("AdvertiserDeals", fields: [advertiserId], references: [id])
 
   // Snapshots taken at booking time so later edits to slot price or fee
-  // tiers never change the economics of an already-created deal.
+  // tiers never change the economics of an already-created deal. For a
+  // blogger deal, slotPriceCents holds the agreed price per post instead.
   slotPriceCents         Int        @map("slot_price_cents")
   platformFeeBps         Int        @map("platform_fee_bps")
   platformFeeCents       Int        @map("platform_fee_cents")
   totalChargedCents      Int        @map("total_charged_cents")
   currency               String     @default("eur")
+  // Not meaningful for a blogger deal (a post isn't "live" for N days) — 0 there.
   durationDays           Int        @map("duration_days")
 
   status                 DealStatus @default(created)
@@ -252,6 +317,12 @@ model Deal {
   endsAt                 DateTime?  @map("ends_at")
   payoutEligibleAt       DateTime?  @map("payout_eligible_at")
 
+  // Blogger vertical only: set when the blogger marks the deal as
+  // published. publishedAt drives the 48h auto-confirm cron the same way
+  // pendingApprovalAt drives auto-approve.
+  publishedUrl           String?    @map("published_url")
+  publishedAt            DateTime?  @map("published_at")
+
   stripePaymentIntentId  String?    @unique @map("stripe_payment_intent_id")
   stripeChargeId         String?    @map("stripe_charge_id")
   stripeTransferId       String?    @map("stripe_transfer_id")
@@ -265,9 +336,11 @@ model Deal {
 
   @@index([status])
   @@index([slotId])
+  @@index([bloggerChannelId])
   @@index([status, pendingApprovalAt])
   @@index([status, endsAt])
   @@index([status, payoutEligibleAt])
+  @@index([status, publishedAt])
   @@map("deals")
 }
 
@@ -276,12 +349,19 @@ model Creative {
   dealId           String         @map("deal_id")
   deal             Deal           @relation(fields: [dealId], references: [id])
 
-  fileUrl          String         @map("file_url")
+  // fileUrl/width/height/mimeType/fileSizeBytes are all required in
+  // practice for a slot-ad creative, but nullable at the schema level to
+  // also support a blogger "brief" creative, which has briefText instead
+  // and no file at all. lib/deals.js (slot ads) and lib/blogger-deals.js
+  // (blogger offers) each enforce what's actually required for their case.
+  fileUrl          String?        @map("file_url")
+  briefText        String?        @map("brief_text")
+  contentType      ContentType?   @map("content_type")
   clickUrl         String         @map("click_url")
-  width            Int
-  height           Int
-  mimeType         String         @map("mime_type")
-  fileSizeBytes    Int            @map("file_size_bytes")
+  width            Int?
+  height           Int?
+  mimeType         String?        @map("mime_type")
+  fileSizeBytes    Int?           @map("file_size_bytes")
 
   status           CreativeStatus @default(submitted)
   rejectionReason  String?        @map("rejection_reason")

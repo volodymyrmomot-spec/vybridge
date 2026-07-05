@@ -1,0 +1,124 @@
+/* auth.css's ".form-field { display: grid }" ties with the UA [hidden]
+   rule on specificity and wins by source order — this restores hidden. */
+.form-field[hidden] {
+  display: none;
+}
+
+.bloggers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.blogger-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 24px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.blogger-card__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 4px;
+}
+
+.blogger-card__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--brand-gradient);
+  border-radius: 50%;
+}
+
+.blogger-card__name-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.blogger-card__name {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.blogger-card__platforms {
+  display: flex;
+  gap: 6px;
+}
+
+.blogger-card__platform-icon {
+  font-size: 14px;
+}
+
+.blogger-card__categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 4px;
+}
+
+.blogger-card__category-tag {
+  padding: 3px 9px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-muted);
+  border-radius: 999px;
+}
+
+.blogger-card__meta {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.blogger-card .btn {
+  margin-top: 6px;
+}
+
+/* Offer modal: content-type toggle */
+.content-type-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.content-type-toggle__btn {
+  flex: 1;
+  padding: 9px 12px;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-muted);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.content-type-toggle__btn--active {
+  color: #fff;
+  background: var(--brand-gradient);
+  border-color: transparent;
+}
+
+@media (max-width: 560px) {
+  .bloggers-grid {
+    grid-template-columns: 1fr;
+  }
+}

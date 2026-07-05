@@ -13,6 +13,8 @@ const { handleClicksRequest } = require("./lib/clicks-http");
 const { handleConfigRequest } = require("./lib/config-http");
 const { handleSitesRequest } = require("./lib/sites-http");
 const { handleProfileRequest } = require("./lib/profile-http");
+const { handleBloggerDealsRequest } = require("./lib/blogger-deals-http");
+const { handleBloggersRequest } = require("./lib/bloggers-http");
 const { recordScriptLoad } = require("./lib/script-track");
 const { handleStripeWebhookRequest } = require("./lib/stripe-webhook");
 const { runCronCycle } = require("./lib/payout-cron");
@@ -59,6 +61,7 @@ const REWRITES = {
   "/slots/new": "/slots/new/index.html",
   "/connect/return": "/connect/return/index.html",
   "/profile": "/profile/index.html",
+  "/bloggers": "/bloggers/index.html",
 };
 
 function resolveStaticPath(urlPath) {
@@ -242,6 +245,26 @@ const server = http.createServer(async function (req, res) {
     }
   } catch (err) {
     console.error("[server] Profile error:", err);
+    return sendJson(res, 500, { ok: false, error: "Internal server error" });
+  }
+
+  try {
+    const handled = await handleBloggerDealsRequest(req, res, url, readBody, sendJson);
+    if (handled) {
+      return;
+    }
+  } catch (err) {
+    console.error("[server] Blogger deals error:", err);
+    return sendJson(res, 500, { ok: false, error: "Internal server error" });
+  }
+
+  try {
+    const handled = await handleBloggersRequest(req, res, url, sendJson);
+    if (handled) {
+      return;
+    }
+  } catch (err) {
+    console.error("[server] Bloggers error:", err);
     return sendJson(res, 500, { ok: false, error: "Internal server error" });
   }
 

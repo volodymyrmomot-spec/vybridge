@@ -22,7 +22,7 @@
 /* Role selection cards */
 .role-select {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-bottom: 8px;
 }
@@ -101,6 +101,62 @@
 .form-field__input--error:focus {
   border-color: #dc2626;
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+/* Blogger registration: "My channels" block */
+.channels-block {
+  margin-top: 8px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.channels-block__title {
+  margin: 0 0 4px;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.channels-block__hint {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.channel-row {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  margin-bottom: 14px;
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.channel-row__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.channel-row__icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.channel-row__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .channel-row__grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 select.form-field__input {

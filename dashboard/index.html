@@ -33,7 +33,10 @@
 
       <section class="dashboard-view" id="advertiserDashboard" hidden>
         <h1 class="dashboard-title">Welcome, <span id="advertiserName"></span></h1>
-        <a href="/slots" class="btn btn--purple">Browse ad slots</a>
+        <div class="dashboard-actions">
+          <a href="/slots" class="btn btn--purple">Browse ad slots</a>
+          <a href="/bloggers" class="btn btn--outline">Browse bloggers</a>
+        </div>
 
         <h2 class="dashboard-section-title">My deals</h2>
         <div class="dashboard-table-wrap">
@@ -44,6 +47,7 @@
                 <th>Price</th>
                 <th>Status</th>
                 <th>Date</th>
+                <th></th>
               </tr>
             </thead>
             <tbody id="advertiserDealsBody"></tbody>
@@ -233,8 +237,80 @@
         </div>
         <p class="dashboard-empty" id="publisherDealsEmpty" hidden>No deals yet</p>
       </section>
+
+      <section class="dashboard-view" id="bloggerDashboard" hidden>
+        <h1 class="dashboard-title">Welcome, <span id="bloggerName"></span></h1>
+
+        <div class="dashboard-section-header">
+          <h2 class="dashboard-section-title dashboard-section-title--inline">My channels</h2>
+        </div>
+        <div class="dashboard-table-wrap">
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th>Platform</th>
+                <th>Handle</th>
+                <th>Followers</th>
+                <th>Category</th>
+                <th>Price / post</th>
+              </tr>
+            </thead>
+            <tbody id="bloggerChannelsBody"></tbody>
+          </table>
+        </div>
+        <p class="dashboard-empty" id="bloggerChannelsEmpty" hidden>No channels on file yet.</p>
+
+        <div class="dashboard-card">
+          <h2 class="dashboard-card__title">Payouts</h2>
+          <div class="dashboard-payouts" id="bloggerPayoutsStatus"></div>
+        </div>
+
+        <div class="dashboard-card">
+          <h2 class="dashboard-card__title">Incoming offers</h2>
+          <div class="dashboard-approvals" id="incomingOffersList"></div>
+          <p class="dashboard-empty" id="incomingOffersEmpty" hidden>No incoming offers</p>
+        </div>
+
+        <h2 class="dashboard-section-title">Active campaigns</h2>
+        <div class="dashboard-approvals" id="activeCampaignsList"></div>
+        <p class="dashboard-empty" id="activeCampaignsEmpty" hidden>No active campaigns</p>
+
+        <h2 class="dashboard-section-title">Completed</h2>
+        <div class="dashboard-table-wrap">
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th>Advertiser</th>
+                <th>Channel</th>
+                <th>Status</th>
+                <th>Payout</th>
+              </tr>
+            </thead>
+            <tbody id="bloggerCompletedBody"></tbody>
+          </table>
+        </div>
+        <p class="dashboard-empty" id="bloggerCompletedEmpty" hidden>No completed campaigns yet</p>
+      </section>
     </div>
   </main>
+
+  <div class="modal-backdrop" id="publishBackdrop" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="publishModalTitle">
+      <button type="button" class="modal__close" id="publishModalCloseBtn" aria-label="Close">&times;</button>
+      <h2 class="modal__title" id="publishModalTitle">Mark as published</h2>
+      <p class="modal__subtitle">Paste the URL of the live post.</p>
+
+      <form id="publishForm" novalidate>
+        <div class="form-field">
+          <label class="form-field__label" for="publishedUrlInput">Post URL</label>
+          <input class="form-field__input" type="url" id="publishedUrlInput" placeholder="https://instagram.com/p/...">
+          <p class="form-field__error" id="publishedUrlError" hidden></p>
+        </div>
+        <button type="submit" class="btn btn--purple" id="publishConfirmBtn">Save</button>
+        <p class="form-message form-message--error" id="publishFormMessage" hidden></p>
+      </form>
+    </div>
+  </div>
 
   <script src="/auth/i18n.js"></script>
   <script src="/auth/auth.js"></script>

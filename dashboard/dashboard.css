@@ -42,6 +42,12 @@
   color: var(--text);
 }
 
+.dashboard-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .dashboard-section-title {
   margin: 36px 0 16px;
   font-size: 1.125rem;
@@ -385,6 +391,16 @@
 
 .dashboard-table td {
   color: var(--text);
+}
+
+.dashboard-table__link {
+  color: var(--purple);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.dashboard-table__link:hover {
+  text-decoration: underline;
 }
 
 .dashboard-cell--code {

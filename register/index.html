@@ -42,6 +42,12 @@
           </span>
           <span class="role-card__label">I want to earn from my site</span>
         </button>
+        <button type="button" class="role-card" id="roleBlogger" data-role="blogger" aria-expanded="false">
+          <span class="role-card__icon role-card__icon--purple">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-3v10l-6-3"/></svg>
+          </span>
+          <span class="role-card__label">I'm a blogger / influencer</span>
+        </button>
       </div>
 
       <form id="advertiserForm" class="register-form" novalidate hidden>
@@ -101,6 +107,172 @@
         </div>
         <button type="submit" class="btn btn--purple btn--lg register-submit">Create publisher account</button>
         <p class="form-message form-message--error" id="pubFormMessage" hidden></p>
+      </form>
+
+      <form id="bloggerForm" class="register-form" novalidate hidden>
+        <div class="form-field">
+          <label class="form-field__label" for="blgName">Name</label>
+          <input class="form-field__input" type="text" id="blgName" name="name" autocomplete="name">
+          <p class="form-field__error" id="blgNameError" hidden></p>
+        </div>
+        <div class="form-field">
+          <label class="form-field__label" for="blgEmail">Email</label>
+          <input class="form-field__input" type="email" id="blgEmail" name="email" autocomplete="email">
+          <p class="form-field__error" id="blgEmailError" hidden></p>
+        </div>
+        <div class="form-field">
+          <label class="form-field__label" for="blgPassword">Password</label>
+          <input class="form-field__input" type="password" id="blgPassword" name="password" autocomplete="new-password">
+          <p class="form-field__error" id="blgPasswordError" hidden></p>
+        </div>
+        <div class="form-field">
+          <label class="form-field__label" for="blgCountry">Country</label>
+          <select class="form-field__input" id="blgCountry" name="country">
+            <option value="">Select country</option>
+          </select>
+          <p class="form-field__error" id="blgCountryError" hidden></p>
+        </div>
+
+        <div class="channels-block">
+          <h2 class="channels-block__title">My channels</h2>
+          <p class="channels-block__hint">Add at least one — Instagram, TikTok, or YouTube.</p>
+          <p class="form-field__error" id="channelsError" hidden></p>
+
+          <div class="channel-row" data-platform="instagram">
+            <div class="channel-row__header">
+              <span class="channel-row__icon">📷</span>
+              <span class="channel-row__label">Instagram</span>
+            </div>
+            <div class="form-field">
+              <label class="form-field__label" for="channelInstagramUrl">Profile URL</label>
+              <input class="form-field__input" type="url" id="channelInstagramUrl" placeholder="https://instagram.com/yourhandle">
+              <p class="form-field__error" id="channelInstagramUrlError" hidden></p>
+            </div>
+            <div class="channel-row__grid">
+              <div class="form-field">
+                <label class="form-field__label" for="channelInstagramFollowers">Followers</label>
+                <input class="form-field__input" type="number" id="channelInstagramFollowers" min="0" step="1" placeholder="10000">
+                <p class="form-field__error" id="channelInstagramFollowersError" hidden></p>
+              </div>
+              <div class="form-field">
+                <label class="form-field__label" for="channelInstagramPrice">Price per post (EUR)</label>
+                <input class="form-field__input" type="number" id="channelInstagramPrice" min="1" step="0.01" placeholder="50.00">
+                <p class="form-field__error" id="channelInstagramPriceError" hidden></p>
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="form-field__label" for="channelInstagramCategory">Content category</label>
+              <select class="form-field__input" id="channelInstagramCategory">
+                <option value="">Select category</option>
+                <option value="technology">Technology</option>
+                <option value="lifestyle">Lifestyle</option>
+                <option value="automotive">Automotive</option>
+                <option value="fashion">Fashion</option>
+                <option value="food">Food</option>
+                <option value="travel">Travel</option>
+                <option value="sports">Sports</option>
+                <option value="business">Business</option>
+                <option value="entertainment">Entertainment</option>
+                <option value="education">Education</option>
+                <option value="health">Health</option>
+                <option value="news">News</option>
+                <option value="other">Other</option>
+              </select>
+              <p class="form-field__error" id="channelInstagramCategoryError" hidden></p>
+            </div>
+          </div>
+
+          <div class="channel-row" data-platform="tiktok">
+            <div class="channel-row__header">
+              <span class="channel-row__icon">🎵</span>
+              <span class="channel-row__label">TikTok</span>
+            </div>
+            <div class="form-field">
+              <label class="form-field__label" for="channelTiktokUrl">Profile URL</label>
+              <input class="form-field__input" type="url" id="channelTiktokUrl" placeholder="https://tiktok.com/@yourhandle">
+              <p class="form-field__error" id="channelTiktokUrlError" hidden></p>
+            </div>
+            <div class="channel-row__grid">
+              <div class="form-field">
+                <label class="form-field__label" for="channelTiktokFollowers">Followers</label>
+                <input class="form-field__input" type="number" id="channelTiktokFollowers" min="0" step="1" placeholder="10000">
+                <p class="form-field__error" id="channelTiktokFollowersError" hidden></p>
+              </div>
+              <div class="form-field">
+                <label class="form-field__label" for="channelTiktokPrice">Price per post (EUR)</label>
+                <input class="form-field__input" type="number" id="channelTiktokPrice" min="1" step="0.01" placeholder="50.00">
+                <p class="form-field__error" id="channelTiktokPriceError" hidden></p>
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="form-field__label" for="channelTiktokCategory">Content category</label>
+              <select class="form-field__input" id="channelTiktokCategory">
+                <option value="">Select category</option>
+                <option value="technology">Technology</option>
+                <option value="lifestyle">Lifestyle</option>
+                <option value="automotive">Automotive</option>
+                <option value="fashion">Fashion</option>
+                <option value="food">Food</option>
+                <option value="travel">Travel</option>
+                <option value="sports">Sports</option>
+                <option value="business">Business</option>
+                <option value="entertainment">Entertainment</option>
+                <option value="education">Education</option>
+                <option value="health">Health</option>
+                <option value="news">News</option>
+                <option value="other">Other</option>
+              </select>
+              <p class="form-field__error" id="channelTiktokCategoryError" hidden></p>
+            </div>
+          </div>
+
+          <div class="channel-row" data-platform="youtube">
+            <div class="channel-row__header">
+              <span class="channel-row__icon">▶️</span>
+              <span class="channel-row__label">YouTube</span>
+            </div>
+            <div class="form-field">
+              <label class="form-field__label" for="channelYoutubeUrl">Channel URL</label>
+              <input class="form-field__input" type="url" id="channelYoutubeUrl" placeholder="https://youtube.com/@yourhandle">
+              <p class="form-field__error" id="channelYoutubeUrlError" hidden></p>
+            </div>
+            <div class="channel-row__grid">
+              <div class="form-field">
+                <label class="form-field__label" for="channelYoutubeFollowers">Subscribers</label>
+                <input class="form-field__input" type="number" id="channelYoutubeFollowers" min="0" step="1" placeholder="10000">
+                <p class="form-field__error" id="channelYoutubeFollowersError" hidden></p>
+              </div>
+              <div class="form-field">
+                <label class="form-field__label" for="channelYoutubePrice">Price per post (EUR)</label>
+                <input class="form-field__input" type="number" id="channelYoutubePrice" min="1" step="0.01" placeholder="50.00">
+                <p class="form-field__error" id="channelYoutubePriceError" hidden></p>
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="form-field__label" for="channelYoutubeCategory">Content category</label>
+              <select class="form-field__input" id="channelYoutubeCategory">
+                <option value="">Select category</option>
+                <option value="technology">Technology</option>
+                <option value="lifestyle">Lifestyle</option>
+                <option value="automotive">Automotive</option>
+                <option value="fashion">Fashion</option>
+                <option value="food">Food</option>
+                <option value="travel">Travel</option>
+                <option value="sports">Sports</option>
+                <option value="business">Business</option>
+                <option value="entertainment">Entertainment</option>
+                <option value="education">Education</option>
+                <option value="health">Health</option>
+                <option value="news">News</option>
+                <option value="other">Other</option>
+              </select>
+              <p class="form-field__error" id="channelYoutubeCategoryError" hidden></p>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn--purple btn--lg register-submit">Create blogger account</button>
+        <p class="form-message form-message--error" id="blgFormMessage" hidden></p>
       </form>
 
       <p class="auth-footer-link">Already have an account? <a href="/login">Log in</a></p>

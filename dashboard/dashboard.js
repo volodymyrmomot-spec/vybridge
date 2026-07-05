@@ -33,11 +33,27 @@
     active: "Active",
     booked: "Booked",
     paused: "Paused",
+    pending_blogger_approval: "Awaiting blogger's response",
+    blogger_accepted: "Accepted — not yet published",
+    blogger_published: "Published — awaiting confirmation",
+    blogger_declined: "Declined",
   };
 
   function statusLabel(status) {
     return STATUS_LABELS[status] || status;
   }
+
+  var PLATFORM_ICONS = {
+    instagram: "📷",
+    tiktok: "🎵",
+    youtube: "▶️",
+  };
+
+  var PLATFORM_LABELS = {
+    instagram: "Instagram",
+    tiktok: "TikTok",
+    youtube: "YouTube",
+  };
 
   var CATEGORY_LABELS = {
     technology: "Technology",
@@ -145,6 +161,51 @@
         statusCell.appendChild(statusPill(deal.status));
         row.appendChild(statusCell);
         row.appendChild(el("td", null, formatDate(deal.createdAt)));
+
+        var actionsCell = document.createElement("td");
+        if (deal.publishedUrl) {
+          var link = document.createElement("a");
+          link.href = deal.publishedUrl;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          link.textContent = "View post";
+          link.className = "dashboard-table__link";
+          actionsCell.appendChild(link);
+        }
+        if (deal.status === "blogger_published") {
+          var confirmBtn = el("button", "btn btn--purple btn--sm", "Confirm");
+          confirmBtn.type = "button";
+          confirmBtn.style.marginLeft = "10px";
+          confirmBtn.addEventListener("click", function () {
+            confirmBtn.disabled = true;
+            fetch("/api/blogger-offers/" + encodeURIComponent(deal.id) + "/confirm", {
+              method: "POST",
+              credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({}),
+            })
+              .then(function (res) {
+                return res.json().then(function (data) {
+                  return { ok: res.ok, body: data };
+                });
+              })
+              .then(function (result) {
+                if (!result.ok) {
+                  confirmBtn.disabled = false;
+                  window.alert(result.body.error || "Could not confirm this campaign. Please try again.");
+                  return;
+                }
+                loadDashboard();
+              })
+              .catch(function () {
+                confirmBtn.disabled = false;
+                window.alert("Network error. Please try again.");
+              });
+          });
+          actionsCell.appendChild(confirmBtn);
+        }
+        row.appendChild(actionsCell);
+
         body.appendChild(row);
       });
     }
@@ -489,8 +550,8 @@
     }
   }
 
-  function renderPayoutsStatus(payouts) {
-    var container = document.getElementById("payoutsStatus");
+  function renderPayoutsStatus(payouts, containerId) {
+    var container = document.getElementById(containerId || "payoutsStatus");
     container.innerHTML = "";
 
     if (payouts.payoutsEnabled) {
@@ -721,6 +782,270 @@
     document.getElementById("publisherDashboard").hidden = false;
   }
 
+  // ---------- Blogger dashboard ----------
+
+  function renderBloggerChannels(channels) {
+    var body = document.getElementById("bloggerChannelsBody");
+    var table = body.closest(".dashboard-table-wrap");
+    var empty = document.getElementById("bloggerChannelsEmpty");
+    body.innerHTML = "";
+
+    if (!channels.length) {
+      table.hidden = true;
+      empty.hidden = false;
+      return;
+    }
+    table.hidden = false;
+    empty.hidden = true;
+
+    channels.forEach(function (channel) {
+      var row = document.createElement("tr");
+      row.appendChild(el("td", null, (PLATFORM_ICONS[channel.platform] || "") + " " + (PLATFORM_LABELS[channel.platform] || channel.platform)));
+      row.appendChild(el("td", null, channel.channelHandle || "—"));
+      row.appendChild(el("td", null, channel.followersCount.toLocaleString()));
+      row.appendChild(el("td", null, channel.contentCategory ? (CATEGORY_ICONS[channel.contentCategory] + " " + CATEGORY_LABELS[channel.contentCategory]) : "—"));
+      row.appendChild(el("td", null, channel.pricePerPost));
+      body.appendChild(row);
+    });
+  }
+
+  function offerSubject(offer) {
+    return (PLATFORM_ICONS[offer.channelPlatform] || "") + " " + (offer.channelHandle || PLATFORM_LABELS[offer.channelPlatform] || offer.channelPlatform);
+  }
+
+  function renderIncomingOffers(offers, onAction) {
+    var list = document.getElementById("incomingOffersList");
+    var empty = document.getElementById("incomingOffersEmpty");
+    list.innerHTML = "";
+
+    if (!offers.length) {
+      list.hidden = true;
+      empty.hidden = false;
+      return;
+    }
+    list.hidden = false;
+    empty.hidden = true;
+
+    offers.forEach(function (offer) {
+      var item = el("div", "approval-item");
+      item.dataset.dealId = offer.id;
+
+      var info = el("div", "approval-item__info");
+      info.appendChild(el("span", "approval-item__site", offer.advertiserName + " — " + offerSubject(offer)));
+      info.appendChild(el("span", "approval-item__meta", offer.price + " · " + (offer.contentType === "brief" ? "Brief" : "Ready file")));
+      item.appendChild(info);
+
+      var actions = el("div", "approval-item__actions");
+      var acceptBtn = el("button", "btn btn--purple", "Accept");
+      acceptBtn.type = "button";
+      var declineBtn = el("button", "btn btn--danger", "Decline");
+      declineBtn.type = "button";
+
+      acceptBtn.addEventListener("click", function () {
+        onAction(offer.id, "accept", item, [acceptBtn, declineBtn]);
+      });
+      declineBtn.addEventListener("click", function () {
+        onAction(offer.id, "decline", item, [acceptBtn, declineBtn]);
+      });
+
+      actions.appendChild(acceptBtn);
+      actions.appendChild(declineBtn);
+      item.appendChild(actions);
+
+      list.appendChild(item);
+    });
+  }
+
+  function reviewOffer(dealId, action, itemEl, buttons) {
+    buttons.forEach(function (btn) {
+      btn.disabled = true;
+    });
+
+    fetch("/api/blogger-offers/" + encodeURIComponent(dealId) + "/" + action, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    })
+      .then(function (res) {
+        return res.json().then(function (data) {
+          return { ok: res.ok, body: data };
+        });
+      })
+      .then(function (result) {
+        if (!result.ok) {
+          buttons.forEach(function (btn) {
+            btn.disabled = false;
+          });
+          window.alert(result.body.error || "Could not update this offer. Please refresh and try again.");
+          return;
+        }
+        loadDashboard();
+      })
+      .catch(function () {
+        buttons.forEach(function (btn) {
+          btn.disabled = false;
+        });
+        window.alert("Network error. Please try again.");
+      });
+  }
+
+  var publishBackdrop = document.getElementById("publishBackdrop");
+  var publishForm = document.getElementById("publishForm");
+  var publishModalCloseBtn = document.getElementById("publishModalCloseBtn");
+  var publishConfirmBtn = document.getElementById("publishConfirmBtn");
+  var publishingDealId = null;
+
+  function openPublishModal(dealId) {
+    publishingDealId = dealId;
+    if (publishForm) {
+      publishForm.reset();
+      document.getElementById("publishedUrlError").hidden = true;
+      document.getElementById("publishFormMessage").hidden = true;
+    }
+    if (publishBackdrop) {
+      publishBackdrop.hidden = false;
+    }
+  }
+
+  function closePublishModal() {
+    publishingDealId = null;
+    if (publishBackdrop) {
+      publishBackdrop.hidden = true;
+    }
+  }
+
+  if (publishModalCloseBtn) {
+    publishModalCloseBtn.addEventListener("click", closePublishModal);
+  }
+  if (publishBackdrop) {
+    publishBackdrop.addEventListener("click", function (event) {
+      if (event.target === publishBackdrop) {
+        closePublishModal();
+      }
+    });
+  }
+  if (publishForm) {
+    publishForm.addEventListener("submit", function (event) {
+      event.preventDefault();
+      var urlInput = document.getElementById("publishedUrlInput");
+      var url = urlInput.value.trim();
+      var errorEl = document.getElementById("publishedUrlError");
+      errorEl.hidden = true;
+
+      if (!url || !/^https?:\/\//i.test(url)) {
+        errorEl.textContent = "Enter a URL starting with http:// or https://";
+        errorEl.hidden = false;
+        return;
+      }
+
+      publishConfirmBtn.disabled = true;
+      fetch("/api/blogger-offers/" + encodeURIComponent(publishingDealId) + "/publish", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ publishedUrl: url }),
+      })
+        .then(function (res) {
+          return res.json().then(function (data) {
+            return { ok: res.ok, body: data };
+          });
+        })
+        .then(function (result) {
+          publishConfirmBtn.disabled = false;
+          if (!result.ok) {
+            var msg = document.getElementById("publishFormMessage");
+            msg.textContent = result.body.error || "Could not save this link. Please try again.";
+            msg.hidden = false;
+            return;
+          }
+          closePublishModal();
+          loadDashboard();
+        })
+        .catch(function () {
+          publishConfirmBtn.disabled = false;
+          var msg = document.getElementById("publishFormMessage");
+          msg.textContent = "Network error. Please try again.";
+          msg.hidden = false;
+        });
+    });
+  }
+
+  function renderActiveCampaigns(campaigns) {
+    var list = document.getElementById("activeCampaignsList");
+    var empty = document.getElementById("activeCampaignsEmpty");
+    list.innerHTML = "";
+
+    if (!campaigns.length) {
+      list.hidden = true;
+      empty.hidden = false;
+      return;
+    }
+    list.hidden = false;
+    empty.hidden = true;
+
+    campaigns.forEach(function (campaign) {
+      var item = el("div", "approval-item");
+
+      var info = el("div", "approval-item__info");
+      info.appendChild(el("span", "approval-item__site", campaign.advertiserName + " — " + offerSubject(campaign)));
+      info.appendChild(el("span", "approval-item__meta", campaign.price));
+      item.appendChild(info);
+
+      var actions = el("div", "approval-item__actions");
+      if (campaign.status === "blogger_accepted") {
+        var publishBtn = el("button", "btn btn--purple", "Mark as published");
+        publishBtn.type = "button";
+        publishBtn.addEventListener("click", function () {
+          openPublishModal(campaign.id);
+        });
+        actions.appendChild(publishBtn);
+      } else {
+        actions.appendChild(statusPill(campaign.status));
+      }
+      item.appendChild(actions);
+
+      list.appendChild(item);
+    });
+  }
+
+  function renderBloggerCompleted(deals) {
+    var body = document.getElementById("bloggerCompletedBody");
+    var table = body.closest(".dashboard-table-wrap");
+    var empty = document.getElementById("bloggerCompletedEmpty");
+    body.innerHTML = "";
+
+    if (!deals.length) {
+      table.hidden = true;
+      empty.hidden = false;
+      return;
+    }
+    table.hidden = false;
+    empty.hidden = true;
+
+    deals.forEach(function (deal) {
+      var row = document.createElement("tr");
+      row.appendChild(el("td", null, deal.advertiserName));
+      row.appendChild(el("td", null, offerSubject(deal)));
+      var statusCell = document.createElement("td");
+      statusCell.appendChild(statusPill(deal.status));
+      row.appendChild(statusCell);
+      row.appendChild(el("td", null, deal.price));
+      body.appendChild(row);
+    });
+  }
+
+  function renderBloggerDashboard(data) {
+    document.getElementById("bloggerName").textContent = data.user.name;
+    renderBloggerChannels(data.channels);
+    renderPayoutsStatus(data.payouts, "bloggerPayoutsStatus");
+    renderIncomingOffers(data.incomingOffers, reviewOffer);
+    renderActiveCampaigns(data.activeCampaigns);
+    renderBloggerCompleted(data.completed);
+
+    document.getElementById("bloggerDashboard").hidden = false;
+  }
+
   function loadDashboard() {
     fetch("/api/dashboard", { credentials: "same-origin" })
       .then(function (res) {
@@ -744,6 +1069,8 @@
         var dashboard = result.dashboard;
         if (dashboard.role === "publisher") {
           renderPublisherDashboard(dashboard);
+        } else if (dashboard.role === "blogger") {
+          renderBloggerDashboard(dashboard);
         } else {
           renderAdvertiserDashboard(dashboard);
         }
