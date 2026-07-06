@@ -10,6 +10,18 @@
 
   VybridgeAuth.redirectIfAuthenticated();
 
+  (function showBannerFromQuery() {
+    var message = new URLSearchParams(window.location.search).get("message");
+    if (message !== "password_reset") {
+      return;
+    }
+    var banner = document.getElementById("loginBanner");
+    banner.textContent = "Password updated. Please log in.";
+    banner.hidden = false;
+    // Drop the query param so a refresh doesn't re-show a stale banner.
+    window.history.replaceState({}, "", window.location.pathname);
+  })();
+
   form.addEventListener("submit", function (event) {
     event.preventDefault();
     message.hidden = true;

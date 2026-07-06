@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>vybridge — Log in</title>
-  <meta name="description" content="Sign in to your Vybridge account.">
+  <title>vybridge — Forgot password</title>
+  <meta name="description" content="Reset your Vybridge password.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -27,27 +27,21 @@
   <main class="auth-page">
     <div class="container">
       <div class="auth-card">
-        <h1 class="auth-card__title">Log in</h1>
-        <p class="auth-card__subtitle">Sign in to your Vybridge account.</p>
-        <p id="loginBanner" class="form-message form-message--success" hidden></p>
+        <h1 class="auth-card__title">Forgot your password?</h1>
+        <p class="auth-card__subtitle">Enter your email and we'll send you a reset link.</p>
 
-        <form id="loginForm" class="auth-form" novalidate>
+        <form id="forgotPasswordForm" class="auth-form" novalidate>
           <div class="form-field">
             <label class="form-field__label" for="email">Email</label>
             <input class="form-field__input" type="email" id="email" name="email" autocomplete="email" required>
+            <p class="form-field__error" id="emailError" hidden></p>
           </div>
 
-          <div class="form-field">
-            <label class="form-field__label" for="password">Password</label>
-            <input class="form-field__input" type="password" id="password" name="password" autocomplete="current-password" required>
-          </div>
-
-          <button type="submit" class="btn btn--brand">Log in</button>
-          <p id="loginMessage" class="form-message" hidden></p>
+          <button type="submit" class="btn btn--brand">Send reset link</button>
+          <p id="forgotPasswordMessage" class="form-message" hidden></p>
         </form>
 
-        <p class="auth-footer-link">Forgot your password? <a href="/forgot-password">Reset it</a></p>
-        <p class="auth-footer-link">Don't have an account? <a href="/register">Sign up</a></p>
+        <p class="auth-footer-link">Remembered your password? <a href="/login">Log in</a></p>
       </div>
     </div>
   </main>
@@ -59,6 +53,6 @@
   </footer>
   <script src="/auth/i18n.js"></script>
   <script src="/auth/auth.js"></script>
-  <script src="/login/login.js"></script>
+  <script src="/forgot-password/forgot-password.js"></script>
 </body>
 </html>

@@ -31,6 +31,17 @@
   gap: 16px;
 }
 
+/* .auth-form's "display: grid" ties with the UA [hidden] rule on
+   specificity and wins by source order — this restores hidden (same
+   gotcha as .form-field, handled the same way below). */
+.auth-form[hidden] {
+  display: none;
+}
+
+.form-field[hidden] {
+  display: none;
+}
+
 .role-options {
   display: grid;
   gap: 10px;
@@ -149,4 +160,19 @@
   outline: none;
   border-color: var(--purple);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.form-field__error {
+  margin: -2px 0 0;
+  font-size: 13px;
+  color: #dc2626;
+}
+
+.form-field__input--error {
+  border-color: #dc2626;
+}
+
+.form-field__input--error:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
 }

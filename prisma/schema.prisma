@@ -139,6 +139,7 @@ model User {
   // sense a site publisher is: the party being paid out (see Deal.publisherId).
   dealsAsPublisher           Deal[]          @relation("PublisherDeals")
   bloggerChannels            BloggerChannel[]
+  passwordResetTokens        PasswordResetToken[]
 
   @@map("users")
 }
@@ -263,6 +264,25 @@ model PickerToken {
   createdAt   DateTime  @default(now()) @map("created_at")
 
   @@map("picker_tokens")
+}
+
+// One-time, short-lived tokens for the "forgot password" flow. Only ever
+// one active (unused, unexpired) token per user — requesting a new one
+// marks any previous token for the same user as used, so an old email
+// link can never be replayed once a newer one has been sent.
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  token     String   @unique
+
+  expiresAt DateTime @map("expires_at")
+  used      Boolean  @default(false)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("password_reset_tokens")
 }
 
 model FeeTier {

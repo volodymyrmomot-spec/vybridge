@@ -56,6 +56,8 @@ function readBody(req) {
 const REWRITES = {
   "/register": "/register/index.html",
   "/login": "/login/index.html",
+  "/forgot-password": "/forgot-password/index.html",
+  "/reset-password": "/reset-password/index.html",
   "/dashboard": "/dashboard/index.html",
   "/slots": "/slots/index.html",
   "/slots/new": "/slots/new/index.html",

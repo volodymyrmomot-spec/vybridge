@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vybridge — Reset password</title>
+  <meta name="description" content="Set a new password for your Vybridge account.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/auth/page.css">
+  <link rel="stylesheet" href="/auth/auth.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container header__inner">
+      <a href="/index.html" class="logo">
+        <img src="/assets/logo-icon.svg" alt="" class="logo__icon" width="36" height="36">
+        <span class="logo__text">vybridge</span>
+      </a>
+      <div class="header__actions">
+        <a href="/login" class="btn btn--brand btn--sm">Log in</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="auth-page">
+    <div class="container">
+      <div class="auth-card">
+        <h1 class="auth-card__title">Set a new password</h1>
+        <p class="auth-card__subtitle" id="resetPasswordSubtitle">Choose a new password for your account.</p>
+
+        <form id="resetPasswordForm" class="auth-form" novalidate>
+          <div class="form-field">
+            <label class="form-field__label" for="newPassword">New password</label>
+            <input class="form-field__input" type="password" id="newPassword" name="newPassword" autocomplete="new-password" required>
+            <p class="form-field__error" id="newPasswordError" hidden></p>
+          </div>
+
+          <div class="form-field">
+            <label class="form-field__label" for="confirmPassword">Confirm new password</label>
+            <input class="form-field__input" type="password" id="confirmPassword" name="confirmPassword" autocomplete="new-password" required>
+            <p class="form-field__error" id="confirmPasswordError" hidden></p>
+          </div>
+
+          <button type="submit" class="btn btn--brand" id="resetPasswordSubmit">Set new password</button>
+        </form>
+        <p id="resetPasswordMessage" class="form-message" hidden></p>
+
+        <p class="auth-footer-link"><a href="/login">Back to login</a></p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="simple-footer">
+    <div class="container simple-footer__inner">
+      <span>© 2026 Vybridge</span>
+    </div>
+  </footer>
+  <script src="/auth/i18n.js"></script>
+  <script src="/auth/auth.js"></script>
+  <script src="/reset-password/reset-password.js"></script>
+</body>
+</html>
