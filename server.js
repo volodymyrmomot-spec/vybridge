@@ -66,6 +66,8 @@ const REWRITES = {
   "/profile": "/profile/index.html",
   "/bloggers": "/bloggers/index.html",
   "/admin": "/admin/index.html",
+  "/terms": "/terms/index.html",
+  "/privacy": "/privacy/index.html",
 };
 
 function resolveStaticPath(urlPath) {

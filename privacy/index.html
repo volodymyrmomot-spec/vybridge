@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vybridge — Privacy Policy</title>
+  <meta name="description" content="Privacy Policy for Vybridge, the global ad marketplace.">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <header class="header" id="header">
+    <div class="container header__inner">
+      <a href="/" class="logo">
+        <img src="/assets/logo-icon.svg" alt="" class="logo__icon" width="36" height="36">
+        <span class="logo__text">vybridge</span>
+      </a>
+      <nav class="nav" id="nav">
+        <a href="/#how-it-works" class="nav__link">How it works</a>
+      </nav>
+      <div class="header__actions">
+        <a href="/login" class="header__login">Log in</a>
+        <a href="/register" class="btn btn--purple btn--sm">Sign up</a>
+      </div>
+      <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <main class="legal-page">
+    <div class="container">
+      <div class="legal-content">
+        <h1 class="legal-content__title">Privacy Policy</h1>
+        <p class="legal-content__meta">Effective date: July 1, 2026</p>
+
+        <h2>1. Data we collect</h2>
+        <p>To create and run an account on Vybridge, we collect:</p>
+        <ul>
+          <li>Your name and email address, used for login and account communication.</li>
+          <li>Your country, used to show relevant currency, tax, and audience information.</li>
+          <li>Payment information needed to charge or pay you — handled entirely by Stripe (see Section 2).</li>
+          <li>Content you submit yourself: site domains, ad slot details, blogger channel links, and uploaded creatives.</li>
+        </ul>
+
+        <h2>2. Payment data &amp; Stripe</h2>
+        <p>All payment processing — charging advertisers, holding escrow, and paying out publishers and bloggers — is handled by Stripe. We never receive or store your full card number, CVC, or bank account details; Stripe stores that data on its own PCI-compliant infrastructure and only shares limited information back to us (such as the last four digits of a card, or whether a payout succeeded).</p>
+        <a class="stripe-badge" href="https://stripe.com" target="_blank" rel="noopener noreferrer">
+          <img class="stripe-badge__logo" src="https://cdn.brandfetch.io/idxAg10C0L/theme/dark/logo.svg" alt="Stripe">
+          <span class="stripe-badge__text">Payments powered by Stripe</span>
+        </a>
+        <p>For details on how Stripe itself handles your data, see <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer">Stripe's Privacy Policy</a>.</p>
+
+        <h2>3. Cookies</h2>
+        <p>Vybridge uses a single, session-only cookie to keep you signed in. We do not use advertising cookies, third-party tracking pixels, or any cross-site behavioral tracking — the platform doesn't need to profile you to function, so it doesn't.</p>
+
+        <h2>4. We don't sell your data</h2>
+        <p>We do not sell, rent, or trade your personal data to third parties, for advertising or any other purpose. Your information is used only to operate the marketplace: matching advertisers with publishers and bloggers, processing payments, and communicating with you about your own deals.</p>
+
+        <h2>5. Cloudinary (creative storage)</h2>
+        <p>Ad creative images you upload — for a slot booking or a blogger offer — are stored using Cloudinary, a third-party media storage provider. Cloudinary hosts and serves these files on our behalf; it does not have access to your account, payment, or contact information.</p>
+
+        <h2>6. Your rights (GDPR)</h2>
+        <p>If you are located in the European Economic Area, you have the right to access, correct, or delete your personal data. You can delete your account and all associated data at any time from your <a href="/profile">account profile page</a>, provided you have no active deals in progress. For any other data request, contact us at the email below.</p>
+
+        <h2>7. Data retention</h2>
+        <p>We keep your account data for as long as your account is active. If you delete your account, your profile, site, slot, and channel data is removed immediately; records of completed financial transactions may be retained separately for as long as required by tax and accounting law, independent of your account's existence.</p>
+
+        <h2>8. Contact</h2>
+        <p>Questions about this Privacy Policy or a request regarding your personal data can be sent to <a href="mailto:privacy@vybridge.com">privacy@vybridge.com</a>.</p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="simple-footer">
+    <div class="container simple-footer__inner">
+      <span>© 2026 Vybridge</span>
+      <div class="simple-footer__links">
+        <a href="/privacy">Privacy Policy</a>
+        <span aria-hidden="true">·</span>
+        <a href="/terms">Terms of Service</a>
+        <span aria-hidden="true">·</span>
+        <a href="mailto:support@vybridge.com">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/script.js"></script>
+</body>
+</html>
