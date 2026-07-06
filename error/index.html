@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vybridge — Something went wrong</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <header class="header" id="header">
+    <div class="container header__inner">
+      <a href="/" class="logo">
+        <img src="/assets/logo-icon.svg" alt="" class="logo__icon" width="36" height="36">
+        <span class="logo__text">vybridge</span>
+      </a>
+      <nav class="nav" id="nav">
+        <a href="/#how-it-works" class="nav__link">How it works</a>
+      </nav>
+      <div class="header__actions">
+        <a href="/login" class="header__login">Log in</a>
+        <a href="/register" class="btn btn--purple btn--sm">Sign up</a>
+      </div>
+      <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <main class="error-page">
+    <div class="container">
+      <div class="error-page__content">
+        <h1 class="error-page__title">Something went wrong</h1>
+        <p class="error-page__text">We're sorry, an unexpected error occurred. Please try again or contact support if the problem persists.</p>
+        <div class="error-page__actions">
+          <a href="/" class="btn btn--purple btn--lg">Go to homepage</a>
+          <a href="mailto:support@vybridge.com" class="btn btn--outline btn--lg">Contact support</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="simple-footer">
+    <div class="container simple-footer__inner">
+      <span>© 2026 Vybridge</span>
+      <div class="simple-footer__links">
+        <a href="/privacy">Privacy Policy</a>
+        <span aria-hidden="true">·</span>
+        <a href="/terms">Terms of Service</a>
+        <span aria-hidden="true">·</span>
+        <a href="mailto:support@vybridge.com">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/script.js"></script>
+</body>
+</html>

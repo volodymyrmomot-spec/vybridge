@@ -102,12 +102,35 @@ function resolveStaticPath(urlPath) {
   return filePath;
 }
 
-function serveStatic(req, res, filePath) {
+// Serves the pretty /404 or /error page for a real browser navigation.
+// Never lets a missing/unreadable error-page file itself go unhandled —
+// falls back to a bare text response rather than hanging the request.
+function serveErrorPage(res, statusCode) {
+  const dir = statusCode === 404 ? "404" : "error";
+  const filePath = path.join(ROOT, dir, "index.html");
+
+  fs.readFile(filePath, function (err, data) {
+    if (err) {
+      res.writeHead(statusCode, { "Content-Type": "text/plain; charset=utf-8" });
+      res.end(statusCode === 404 ? "Not found" : "Internal server error");
+      return;
+    }
+    res.writeHead(statusCode, { "Content-Type": "text/html; charset=utf-8" });
+    res.end(data);
+  });
+}
+
+function isApiPath(pathname) {
+  return pathname.startsWith("/api/");
+}
+
+function serveStatic(req, res, filePath, requestPath) {
   fs.stat(filePath, function (err, stats) {
     if (err || !stats.isFile()) {
-      res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
-      res.end("Not found");
-      return;
+      if (isApiPath(requestPath)) {
+        return sendJson(res, 404, { ok: false, error: "Not found" });
+      }
+      return serveErrorPage(res, 404);
     }
 
     const ext = path.extname(filePath).toLowerCase();
@@ -118,7 +141,7 @@ function serveStatic(req, res, filePath) {
   });
 }
 
-const server = http.createServer(async function (req, res) {
+async function handleRequest(req, res) {
   const url = new URL(req.url, "http://" + req.headers.host);
 
   if (url.pathname === "/health") {
@@ -291,7 +314,38 @@ const server = http.createServer(async function (req, res) {
     return;
   }
 
-  serveStatic(req, res, filePath);
+  serveStatic(req, res, filePath, url.pathname);
+}
+
+// Every route above already catches its own handler's errors and returns a
+// JSON 500 (those are all /api/* routes by construction). This is the
+// backstop for anything that isn't wrapped that way — a bug in static
+// serving, a malformed request URL, or a future route added without its
+// own try/catch — so a request can never hang with no response at all.
+const server = http.createServer(async function (req, res) {
+  try {
+    await handleRequest(req, res);
+  } catch (err) {
+    console.error("[server] Unhandled error:", err);
+    if (res.headersSent) {
+      res.end();
+      return;
+    }
+
+    let pathname = "/";
+    try {
+      pathname = new URL(req.url, "http://" + req.headers.host).pathname;
+    } catch (parseErr) {
+      // Malformed URL — fall through with the "/" default so this still
+      // resolves to the HTML error page rather than throwing again.
+    }
+
+    if (isApiPath(pathname)) {
+      sendJson(res, 500, { ok: false, error: "Internal server error" });
+    } else {
+      serveErrorPage(res, 500);
+    }
+  }
 });
 
 server.listen(PORT, "0.0.0.0", function () {
