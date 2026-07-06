@@ -20,21 +20,31 @@
   var bloggerInfoEl = document.getElementById("offerBloggerInfo");
   var channelSelect = document.getElementById("offerChannel");
   var channelFieldWrap = document.getElementById("offerChannelFieldWrap");
+  var typeGrid = document.getElementById("offerTypeGrid");
+  var typeFieldsWrap = document.getElementById("offerTypeFields");
+  var fieldsProduct = document.getElementById("offerFieldsProduct");
+  var fieldsWebsite = document.getElementById("offerFieldsWebsite");
+  var fieldsOther = document.getElementById("offerFieldsOther");
+  var productImageInput = document.getElementById("offerProductImage");
+  var sendPhysicalCheckbox = document.getElementById("offerSendPhysicalProduct");
+  var deliveryInstructionsWrap = document.getElementById("offerDeliveryInstructionsWrap");
+  var clickUrlOptionalTag = document.getElementById("offerClickUrlOptionalTag");
   var summaryEl = document.getElementById("offerSummary");
-  var fileInput = document.getElementById("offerCreativeFile");
-  var fileFieldWrap = document.getElementById("offerFileFieldWrap");
-  var briefInput = document.getElementById("offerBriefText");
-  var briefFieldWrap = document.getElementById("offerBriefFieldWrap");
   var priceInput = document.getElementById("offerPrice");
   var clickUrlInput = document.getElementById("offerClickUrl");
   var payBtn = document.getElementById("offerPayBtn");
   var cardElementWrap = document.getElementById("offerCardElement");
 
+  var TYPE_FIELDS_EL = { product: fieldsProduct, website: fieldsWebsite, other: fieldsOther };
+  var DESCRIPTION_FIELD_ID = { product: "offerProductDescription", website: "offerWebsiteDescription", other: "offerOtherDescription" };
+  var DESCRIPTION_LIMIT = { product: 500, website: 500, other: 1000 };
+
   var stripe = null;
   var cardElement = null;
   var currentBlogger = null;
-  var currentCreativeFile = null;
-  var currentContentType = "ready_file";
+  var currentOfferType = null;
+  var currentAdFormat = null;
+  var currentProductImageFile = null;
 
   function el(tag, className, text) {
     var node = document.createElement(tag);
@@ -276,19 +286,75 @@
     });
   }
 
-  function setContentType(type) {
-    currentContentType = type;
-    document.querySelectorAll(".content-type-toggle__btn").forEach(function (btn) {
-      btn.classList.toggle("content-type-toggle__btn--active", btn.dataset.contentType === type);
-    });
-    fileFieldWrap.hidden = type !== "ready_file";
-    briefFieldWrap.hidden = type !== "brief";
+  function descriptionInput() {
+    return currentOfferType && document.getElementById(DESCRIPTION_FIELD_ID[currentOfferType]);
   }
 
-  document.querySelectorAll(".content-type-toggle__btn").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      setContentType(btn.dataset.contentType);
+  // Selecting a type reveals its sub-form and — since Click URL and Ad
+  // format's requiredness both depend on which type is active — refreshes
+  // those too. Previously chosen ad format / description text is preserved
+  // if the advertiser switches types mid-way.
+  function selectOfferType(type) {
+    currentOfferType = type;
+
+    typeGrid.querySelectorAll(".offer-type-card").forEach(function (card) {
+      card.classList.toggle("offer-type-card--active", card.dataset.offerType === type);
     });
+    clearFieldError("offerType", "offerTypeError");
+
+    Object.keys(TYPE_FIELDS_EL).forEach(function (key) {
+      TYPE_FIELDS_EL[key].hidden = key !== type;
+    });
+    typeFieldsWrap.hidden = false;
+
+    // Click URL is the one field Product doesn't require.
+    clickUrlOptionalTag.hidden = type !== "product";
+
+    updateSummary();
+  }
+
+  typeGrid.querySelectorAll(".offer-type-card").forEach(function (card) {
+    card.addEventListener("click", function () {
+      selectOfferType(card.dataset.offerType);
+    });
+  });
+
+  function selectAdFormat(format) {
+    currentAdFormat = format;
+    document.querySelectorAll(".ad-format-toggle__btn").forEach(function (btn) {
+      btn.classList.toggle("ad-format-toggle__btn--active", btn.dataset.adFormat === format);
+    });
+    clearFieldError("offerAdFormat" + capitalize(currentOfferType || ""));
+  }
+
+  function capitalize(str) {
+    return str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
+  }
+
+  document.querySelectorAll(".ad-format-toggle__btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      selectAdFormat(btn.dataset.adFormat);
+    });
+  });
+
+  // ---------- Character counters ----------
+
+  function wireCharCounter(textareaId, countId, limit) {
+    var textarea = document.getElementById(textareaId);
+    var countEl = document.getElementById(countId);
+    textarea.addEventListener("input", function () {
+      countEl.textContent = Math.min(textarea.value.length, limit);
+    });
+  }
+
+  wireCharCounter("offerProductDescription", "offerProductDescriptionCount", 500);
+  wireCharCounter("offerWebsiteDescription", "offerWebsiteDescriptionCount", 500);
+  wireCharCounter("offerOtherDescription", "offerOtherDescriptionCount", 1000);
+
+  // ---------- Physical product checkbox ----------
+
+  sendPhysicalCheckbox.addEventListener("change", function () {
+    deliveryInstructionsWrap.hidden = !sendPhysicalCheckbox.checked;
   });
 
   function updateSummary() {
@@ -302,7 +368,7 @@
     var feeCents = Math.round((priceCents * channel.platform_fee_bps) / 10000);
 
     summaryEl.innerHTML = "";
-    summaryEl.appendChild(el("dt", null, "Offer price"));
+    summaryEl.appendChild(el("dt", null, "Budget"));
     summaryEl.appendChild(el("dd", null, money(priceCents)));
     summaryEl.appendChild(el("dt", null, "Platform fee (" + channel.platform_fee_bps / 100 + "%)"));
     summaryEl.appendChild(el("dd", null, money(feeCents)));
@@ -321,10 +387,23 @@
 
   function openModal(blogger) {
     currentBlogger = blogger;
-    currentCreativeFile = null;
+    currentOfferType = null;
+    currentAdFormat = null;
+    currentProductImageFile = null;
     form.reset();
     clearFormErrors();
-    setContentType("ready_file");
+
+    typeGrid.querySelectorAll(".offer-type-card").forEach(function (card) {
+      card.classList.remove("offer-type-card--active");
+    });
+    document.querySelectorAll(".ad-format-toggle__btn").forEach(function (btn) {
+      btn.classList.remove("ad-format-toggle__btn--active");
+    });
+    ["offerProductDescriptionCount", "offerWebsiteDescriptionCount", "offerOtherDescriptionCount"].forEach(function (id) {
+      document.getElementById(id).textContent = "0";
+    });
+    deliveryInstructionsWrap.hidden = true;
+    typeFieldsWrap.hidden = true;
 
     bloggerInfoEl.textContent = blogger.name + " — " + blogger.channels.length + " channel" + (blogger.channels.length === 1 ? "" : "s");
 
@@ -360,29 +439,29 @@
     }
   });
 
-  // ---------- Creative upload ----------
+  // ---------- Product photo upload ----------
 
-  fileInput.addEventListener("change", function () {
-    clearFieldError("offerCreativeFile");
-    currentCreativeFile = null;
+  productImageInput.addEventListener("change", function () {
+    clearFieldError("offerProductImage");
+    currentProductImageFile = null;
 
-    var file = fileInput.files[0];
+    var file = productImageInput.files[0];
     if (!file) {
       return;
     }
 
     if (ALLOWED_MIME_TYPES.indexOf(file.type) === -1) {
-      setFieldError("offerCreativeFile", "Image must be JPG, PNG, GIF, or WebP");
-      fileInput.value = "";
+      setFieldError("offerProductImage", "Photo must be JPG, PNG, GIF, or WebP");
+      productImageInput.value = "";
       return;
     }
     if (file.size > MAX_FILE_SIZE) {
-      setFieldError("offerCreativeFile", "Image must be under 2MB");
-      fileInput.value = "";
+      setFieldError("offerProductImage", "Photo must be under 2MB");
+      productImageInput.value = "";
       return;
     }
 
-    currentCreativeFile = file;
+    currentProductImageFile = file;
   });
 
   // ---------- Form errors ----------
@@ -400,24 +479,24 @@
     msg.textContent = "";
   }
 
-  function setFieldError(fieldId, message) {
+  function setFieldError(fieldId, message, errorElId) {
     var input = document.getElementById(fieldId);
     if (input) {
       input.classList.add("form-field__input--error");
     }
-    var errorEl = document.getElementById(fieldId + "Error");
-    if (errorEl) {
+    var errorEl = document.getElementById(errorElId === undefined ? fieldId + "Error" : errorElId);
+    if (errorEl && message) {
       errorEl.textContent = message;
       errorEl.hidden = false;
     }
   }
 
-  function clearFieldError(fieldId) {
+  function clearFieldError(fieldId, errorElId) {
     var input = document.getElementById(fieldId);
     if (input) {
       input.classList.remove("form-field__input--error");
     }
-    var errorEl = document.getElementById(fieldId + "Error");
+    var errorEl = document.getElementById(errorElId === undefined ? fieldId + "Error" : errorElId);
     if (errorEl) {
       errorEl.hidden = true;
       errorEl.textContent = "";
@@ -436,26 +515,75 @@
     event.preventDefault();
     clearFormErrors();
 
-    var clickUrl = clickUrlInput.value.trim();
-    var priceEuros = priceInput.value;
     var valid = true;
 
-    if (currentContentType === "ready_file" && !currentCreativeFile) {
-      setFieldError("offerCreativeFile", "Upload a creative image");
+    if (!currentOfferType) {
+      setFieldError("offerType", "Choose what you're promoting", "offerTypeError");
       valid = false;
     }
-    if (currentContentType === "brief" && !briefInput.value.trim()) {
-      setFieldError("offerBriefText", "Enter a brief for the blogger");
+
+    var productName = "";
+    var websiteUrl = "";
+    if (currentOfferType === "product") {
+      productName = document.getElementById("offerProductName").value.trim();
+      if (!productName) {
+        setFieldError("offerProductName", "Enter a product name");
+        valid = false;
+      }
+    } else if (currentOfferType === "website") {
+      productName = document.getElementById("offerWebsiteName").value.trim();
+      websiteUrl = document.getElementById("offerWebsiteUrl").value.trim();
+      if (!productName) {
+        setFieldError("offerWebsiteName", "Enter a website or app name");
+        valid = false;
+      }
+      if (!websiteUrl || !/^https?:\/\//i.test(websiteUrl)) {
+        setFieldError("offerWebsiteUrl", "Enter a URL starting with http:// or https://");
+        valid = false;
+      }
+    }
+
+    var description = currentOfferType ? descriptionInput().value.trim() : "";
+    if (currentOfferType && !description) {
+      setFieldError(DESCRIPTION_FIELD_ID[currentOfferType], "This field is required");
+      valid = false;
+    } else if (currentOfferType && description.length > DESCRIPTION_LIMIT[currentOfferType]) {
+      setFieldError(DESCRIPTION_FIELD_ID[currentOfferType], "Too long — " + DESCRIPTION_LIMIT[currentOfferType] + " characters max");
       valid = false;
     }
+
+    if (!currentAdFormat) {
+      setFieldError("offerAdFormat" + capitalize(currentOfferType || ""), "Choose an ad format");
+      valid = false;
+    }
+
+    var sendPhysical = currentOfferType === "product" && sendPhysicalCheckbox.checked;
+    var deliveryInstructions = "";
+    if (sendPhysical) {
+      deliveryInstructions = document.getElementById("offerDeliveryInstructions").value.trim();
+      if (!deliveryInstructions) {
+        setFieldError("offerDeliveryInstructions", "Enter delivery instructions");
+        valid = false;
+      }
+    }
+
+    var clickUrl = clickUrlInput.value.trim();
+    if (currentOfferType === "product") {
+      if (clickUrl && !/^https?:\/\//i.test(clickUrl)) {
+        setFieldError("offerClickUrl", "Enter a URL starting with http:// or https://");
+        valid = false;
+      }
+    } else if (!clickUrl || !/^https?:\/\//i.test(clickUrl)) {
+      setFieldError("offerClickUrl", "Enter a URL starting with http:// or https://");
+      valid = false;
+    }
+
+    var priceEuros = priceInput.value;
     if (!Number.isFinite(Number(priceEuros)) || Number(priceEuros) <= 0) {
       setFieldError("offerPrice", "Enter a price greater than 0");
       valid = false;
     }
-    if (!clickUrl || !/^https?:\/\//i.test(clickUrl)) {
-      setFieldError("offerClickUrl", "Enter a URL starting with http:// or https://");
-      valid = false;
-    }
+
     if (!stripe || !cardElement) {
       setFormMessage("Payments aren't available right now — please try again shortly.");
       valid = false;
@@ -468,13 +596,25 @@
 
     var formData = new FormData();
     formData.append("channelId", channelSelect.value || currentBlogger.channels[0].channel_id);
-    formData.append("contentType", currentContentType);
-    formData.append("clickUrl", clickUrl);
+    formData.append("offerType", currentOfferType);
+    formData.append("adFormat", currentAdFormat);
+    formData.append("contentDescription", description);
     formData.append("priceEuros", priceEuros);
-    if (currentContentType === "brief") {
-      formData.append("briefText", briefInput.value.trim());
-    } else {
-      formData.append("creative", currentCreativeFile);
+    if (clickUrl) {
+      formData.append("clickUrl", clickUrl);
+    }
+    if (currentOfferType === "product") {
+      formData.append("productName", productName);
+      formData.append("sendPhysicalProduct", sendPhysical ? "true" : "false");
+      if (sendPhysical) {
+        formData.append("deliveryInstructions", deliveryInstructions);
+      }
+      if (currentProductImageFile) {
+        formData.append("productImage", currentProductImageFile);
+      }
+    } else if (currentOfferType === "website") {
+      formData.append("productName", productName);
+      formData.append("websiteUrl", websiteUrl);
     }
 
     fetch("/api/blogger-offers", {

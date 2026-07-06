@@ -65,12 +65,19 @@ enum ChannelPlatform {
   youtube
 }
 
-// What an advertiser attaches to a blogger offer — either an uploaded image
-// (fileUrl on Creative) or a text brief (briefText) for the blogger to
-// produce their own content from.
-enum ContentType {
-  ready_file
-  brief
+// What an advertiser is promoting in a blogger offer — drives which fields
+// the offer form shows (see lib/blogger-deals.js).
+enum OfferType {
+  product
+  website
+  other
+}
+
+// The kind of post the advertiser wants the blogger to make.
+enum AdFormat {
+  reels
+  stories
+  post
 }
 
 enum SiteCategory {
@@ -323,6 +330,20 @@ model Deal {
   publishedUrl           String?    @map("published_url")
   publishedAt            DateTime?  @map("published_at")
 
+  // Blogger vertical only: what the advertiser is promoting and how,
+  // collected by the offer-type-specific form in bloggers/bloggers.js
+  // instead of the old ready_file/brief Creative flow. clickUrl lives here
+  // (not on Creative) because a blogger deal never creates a Creative row.
+  offerType              OfferType? @map("offer_type")
+  productName            String?    @map("product_name")
+  productImageUrl        String?    @map("product_image_url")
+  websiteUrl             String?    @map("website_url")
+  adFormat               AdFormat?  @map("ad_format")
+  contentDescription     String?    @map("content_description")
+  sendPhysicalProduct    Boolean    @default(false) @map("send_physical_product")
+  deliveryInstructions   String?    @map("delivery_instructions")
+  clickUrl               String?    @map("click_url")
+
   stripePaymentIntentId  String?    @unique @map("stripe_payment_intent_id")
   stripeChargeId         String?    @map("stripe_charge_id")
   stripeTransferId       String?    @map("stripe_transfer_id")
@@ -349,19 +370,16 @@ model Creative {
   dealId           String         @map("deal_id")
   deal             Deal           @relation(fields: [dealId], references: [id])
 
-  // fileUrl/width/height/mimeType/fileSizeBytes are all required in
-  // practice for a slot-ad creative, but nullable at the schema level to
-  // also support a blogger "brief" creative, which has briefText instead
-  // and no file at all. lib/deals.js (slot ads) and lib/blogger-deals.js
-  // (blogger offers) each enforce what's actually required for their case.
-  fileUrl          String?        @map("file_url")
-  briefText        String?        @map("brief_text")
-  contentType      ContentType?   @map("content_type")
+  // Slot-ad creatives only — a blogger offer no longer creates a Creative
+  // row at all (see Deal's own offerType/productName/etc. fields), so
+  // every field here is required again like before the blogger vertical
+  // temporarily widened this model.
+  fileUrl          String         @map("file_url")
   clickUrl         String         @map("click_url")
-  width            Int?
-  height           Int?
-  mimeType         String?        @map("mime_type")
-  fileSizeBytes    Int?           @map("file_size_bytes")
+  width            Int
+  height           Int
+  mimeType         String         @map("mime_type")
+  fileSizeBytes    Int            @map("file_size_bytes")
 
   status           CreativeStatus @default(submitted)
   rejectionReason  String?        @map("rejection_reason")

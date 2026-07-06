@@ -43,6 +43,30 @@
     return STATUS_LABELS[status] || status;
   }
 
+  var OFFER_TYPE_ICONS = {
+    product: "📦",
+    website: "🌐",
+    other: "🎯",
+  };
+
+  var OFFER_TYPE_LABELS = {
+    product: "Product",
+    website: "Website / Service",
+    other: "Other",
+  };
+
+  var AD_FORMAT_ICONS = {
+    reels: "🎬",
+    stories: "📱",
+    post: "📸",
+  };
+
+  var AD_FORMAT_LABELS = {
+    reels: "Reels/Video",
+    stories: "Stories",
+    post: "Post/Photo",
+  };
+
   var PLATFORM_ICONS = {
     instagram: "📷",
     tiktok: "🎵",
@@ -155,7 +179,8 @@
       empty.hidden = true;
       data.deals.forEach(function (deal) {
         var row = document.createElement("tr");
-        row.appendChild(el("td", null, deal.site));
+        var siteLabel = deal.offerType ? (OFFER_TYPE_ICONS[deal.offerType] || "") + " " + deal.site : deal.site;
+        row.appendChild(el("td", null, siteLabel));
         row.appendChild(el("td", null, deal.price));
         var statusCell = document.createElement("td");
         statusCell.appendChild(statusPill(deal.status));
@@ -813,6 +838,68 @@
     return (PLATFORM_ICONS[offer.channelPlatform] || "") + " " + (offer.channelHandle || PLATFORM_LABELS[offer.channelPlatform] || offer.channelPlatform);
   }
 
+  // Falls back to the channel label for any deal that predates the
+  // offer-type fields (offerType null) — never a blank title.
+  function offerTitle(offer) {
+    if (!offer.offerType) {
+      return offerSubject(offer);
+    }
+    var icon = OFFER_TYPE_ICONS[offer.offerType] || "";
+    if (offer.offerType === "other") {
+      return icon + " " + OFFER_TYPE_LABELS.other;
+    }
+    return icon + " " + (offer.productName || OFFER_TYPE_LABELS[offer.offerType]);
+  }
+
+  // The full "what is this campaign" block — used on both the incoming
+  // offer card (blogger deciding whether to accept) and the active
+  // campaign card, so a blogger never has to message the advertiser to
+  // understand what's being asked of them.
+  function buildOfferDetails(offer) {
+    var wrap = el("div", "offer-details");
+
+    if (offer.productImageUrl) {
+      var img = document.createElement("img");
+      img.src = offer.productImageUrl;
+      img.alt = offer.productName || "Product photo";
+      img.className = "offer-details__image";
+      wrap.appendChild(img);
+    }
+
+    var tags = el("div", "offer-details__tags");
+    if (offer.adFormat) {
+      tags.appendChild(el("span", "offer-details__tag", (AD_FORMAT_ICONS[offer.adFormat] || "") + " " + (AD_FORMAT_LABELS[offer.adFormat] || offer.adFormat)));
+    }
+    if (offer.websiteUrl) {
+      var link = document.createElement("a");
+      link.href = offer.websiteUrl;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = offer.websiteUrl;
+      link.className = "offer-details__tag offer-details__tag--link";
+      tags.appendChild(link);
+    }
+    if (tags.children.length) {
+      wrap.appendChild(tags);
+    }
+
+    if (offer.contentDescription) {
+      wrap.appendChild(el("p", "offer-details__description", offer.contentDescription));
+    }
+
+    if (offer.sendPhysicalProduct) {
+      wrap.appendChild(
+        el(
+          "p",
+          "offer-details__note",
+          "📦 Advertiser will send a physical product" + (offer.deliveryInstructions ? ": " + offer.deliveryInstructions : "")
+        )
+      );
+    }
+
+    return wrap;
+  }
+
   function renderIncomingOffers(offers, onAction) {
     var list = document.getElementById("incomingOffersList");
     var empty = document.getElementById("incomingOffersEmpty");
@@ -827,12 +914,13 @@
     empty.hidden = true;
 
     offers.forEach(function (offer) {
-      var item = el("div", "approval-item");
+      var item = el("div", "approval-item approval-item--offer");
       item.dataset.dealId = offer.id;
 
       var info = el("div", "approval-item__info");
-      info.appendChild(el("span", "approval-item__site", offer.advertiserName + " — " + offerSubject(offer)));
-      info.appendChild(el("span", "approval-item__meta", offer.price + " · " + (offer.contentType === "brief" ? "Brief" : "Ready file")));
+      info.appendChild(el("span", "approval-item__site", offer.advertiserName + " — " + offerTitle(offer)));
+      info.appendChild(el("span", "approval-item__meta", offerSubject(offer) + " · " + offer.price));
+      info.appendChild(buildOfferDetails(offer));
       item.appendChild(info);
 
       var actions = el("div", "approval-item__actions");
@@ -985,11 +1073,12 @@
     empty.hidden = true;
 
     campaigns.forEach(function (campaign) {
-      var item = el("div", "approval-item");
+      var item = el("div", "approval-item approval-item--offer");
 
       var info = el("div", "approval-item__info");
-      info.appendChild(el("span", "approval-item__site", campaign.advertiserName + " — " + offerSubject(campaign)));
-      info.appendChild(el("span", "approval-item__meta", campaign.price));
+      info.appendChild(el("span", "approval-item__site", campaign.advertiserName + " — " + offerTitle(campaign)));
+      info.appendChild(el("span", "approval-item__meta", offerSubject(campaign) + " · " + campaign.price));
+      info.appendChild(buildOfferDetails(campaign));
       item.appendChild(info);
 
       var actions = el("div", "approval-item__actions");
@@ -1026,7 +1115,7 @@
     deals.forEach(function (deal) {
       var row = document.createElement("tr");
       row.appendChild(el("td", null, deal.advertiserName));
-      row.appendChild(el("td", null, offerSubject(deal)));
+      row.appendChild(el("td", null, offerTitle(deal)));
       var statusCell = document.createElement("td");
       statusCell.appendChild(statusPill(deal.status));
       row.appendChild(statusCell);

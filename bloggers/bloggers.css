@@ -92,17 +92,154 @@
   margin-top: 6px;
 }
 
-/* Offer modal: content-type toggle */
-.content-type-toggle {
+/* Offer modal is a lot taller than the shared 480px modal now (type
+   picker + a whole sub-form + summary + card element). */
+.modal--lg {
+  max-width: 640px;
+}
+
+/* This page doesn't load register.css (where these two are normally
+   defined) — restyled here to match exactly. */
+.form-field__error {
+  margin: -2px 0 0;
+  font-size: 13px;
+  color: #dc2626;
+}
+
+.form-field__input--error {
+  border-color: #dc2626;
+}
+
+.form-field__input--error:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+.form-field__optional {
+  font-weight: 400;
+  color: var(--text-muted);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.form-field__hint {
+  margin: -2px 0 0;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.form-field__char-count {
+  margin: -2px 0 0;
+  font-size: 12px;
+  color: var(--text-light);
+  text-align: right;
+}
+
+.checkbox-field {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 4px 0;
+  font-size: 14px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.checkbox-field input {
+  margin-top: 2px;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--purple);
+  cursor: pointer;
+}
+
+/* Step 1: offer type picker */
+.offer-type-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.offer-type-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+  padding: 16px 10px;
+  background: var(--bg-muted);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: var(--font);
+}
+
+.offer-type-card:hover {
+  border-color: var(--purple);
+}
+
+.offer-type-card--active {
+  background: var(--brand-gradient);
+  border-color: transparent;
+}
+
+.offer-type-card--active .offer-type-card__title,
+.offer-type-card--active .offer-type-card__desc {
+  color: #fff;
+}
+
+.offer-type-card__icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.offer-type-card__title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.offer-type-card__desc {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+/* Type-specific sub-form: fades/slides in once a type is chosen. An
+   ID selector beats the UA [hidden] rule on specificity, so the [hidden]
+   override here is required or this would stay visible even when hidden
+   is set (same gotcha as .form-field[hidden] above). */
+#offerTypeFields {
+  display: grid;
+  gap: 16px;
+  animation: offerFieldsIn 0.25s ease;
+}
+
+#offerTypeFields[hidden] {
+  display: none;
+}
+
+@keyframes offerFieldsIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ad-format-toggle {
   display: flex;
   gap: 8px;
 }
 
-.content-type-toggle__btn {
+.ad-format-toggle__btn {
   flex: 1;
-  padding: 9px 12px;
+  padding: 9px 8px;
   font-family: var(--font);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-muted);
   background: var(--bg-muted);
@@ -111,7 +248,7 @@
   cursor: pointer;
 }
 
-.content-type-toggle__btn--active {
+.ad-format-toggle__btn--active {
   color: #fff;
   background: var(--brand-gradient);
   border-color: transparent;
@@ -120,5 +257,13 @@
 @media (max-width: 560px) {
   .bloggers-grid {
     grid-template-columns: 1fr;
+  }
+
+  .offer-type-card__desc {
+    display: none;
+  }
+
+  .ad-format-toggle {
+    flex-direction: column;
   }
 }

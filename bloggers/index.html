@@ -83,7 +83,7 @@
   </main>
 
   <div class="modal-backdrop" id="offerBackdrop" hidden>
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="offerModalTitle">
+    <div class="modal modal--lg" role="dialog" aria-modal="true" aria-labelledby="offerModalTitle">
       <button type="button" class="modal__close" id="offerModalCloseBtn" aria-label="Close">&times;</button>
       <h2 class="modal__title" id="offerModalTitle">Make an offer</h2>
       <p class="modal__subtitle" id="offerBloggerInfo"></p>
@@ -96,47 +96,148 @@
         </div>
 
         <div class="form-field">
-          <label class="form-field__label">Content</label>
-          <div class="content-type-toggle">
-            <button type="button" class="content-type-toggle__btn content-type-toggle__btn--active" data-content-type="ready_file">Ready file</button>
-            <button type="button" class="content-type-toggle__btn" data-content-type="brief">Brief</button>
+          <label class="form-field__label">What are you promoting?</label>
+          <div class="offer-type-grid" id="offerTypeGrid">
+            <button type="button" class="offer-type-card" data-offer-type="product">
+              <span class="offer-type-card__icon">📦</span>
+              <span class="offer-type-card__title">Product</span>
+              <span class="offer-type-card__desc">A physical or digital product</span>
+            </button>
+            <button type="button" class="offer-type-card" data-offer-type="website">
+              <span class="offer-type-card__icon">🌐</span>
+              <span class="offer-type-card__title">Website / Service</span>
+              <span class="offer-type-card__desc">A site, app, or service</span>
+            </button>
+            <button type="button" class="offer-type-card" data-offer-type="other">
+              <span class="offer-type-card__icon">🎯</span>
+              <span class="offer-type-card__title">Other</span>
+              <span class="offer-type-card__desc">Describe it in your own words</span>
+            </button>
           </div>
+          <p class="form-field__error" id="offerTypeError" hidden></p>
         </div>
 
-        <div class="form-field" id="offerFileFieldWrap">
-          <label class="form-field__label" for="offerCreativeFile">Creative (JPG, PNG, GIF, or WebP — max 2MB)</label>
-          <input class="form-field__input" type="file" id="offerCreativeFile" accept="image/png,image/jpeg,image/gif,image/webp">
-          <p class="form-field__error" id="offerCreativeFileError" hidden></p>
+        <div id="offerTypeFields" hidden>
+
+          <!-- Product -->
+          <div id="offerFieldsProduct" hidden>
+            <div class="form-field">
+              <label class="form-field__label" for="offerProductName">Product name</label>
+              <input class="form-field__input" type="text" id="offerProductName" placeholder="e.g. Aroma Diffuser Pro">
+              <p class="form-field__error" id="offerProductNameError" hidden></p>
+            </div>
+
+            <div class="form-field">
+              <label class="form-field__label" for="offerProductImage">Product photo <span class="form-field__optional">(optional)</span></label>
+              <input class="form-field__input" type="file" id="offerProductImage" accept="image/png,image/jpeg,image/gif,image/webp">
+              <p class="form-field__error" id="offerProductImageError" hidden></p>
+            </div>
+
+            <div class="form-field">
+              <label class="form-field__label">Ad format</label>
+              <div class="ad-format-toggle">
+                <button type="button" class="ad-format-toggle__btn" data-ad-format="reels">🎬 Reels/Video</button>
+                <button type="button" class="ad-format-toggle__btn" data-ad-format="stories">📱 Stories</button>
+                <button type="button" class="ad-format-toggle__btn" data-ad-format="post">📸 Post/Photo</button>
+              </div>
+              <p class="form-field__error" id="offerAdFormatProductError" hidden></p>
+            </div>
+
+            <div class="form-field">
+              <label class="form-field__label" for="offerProductDescription">What would you like to see in the content?</label>
+              <textarea class="form-field__input" id="offerProductDescription" rows="4" maxlength="500" placeholder="Describe in your own words. For example: “Unbox the product, show it up close, try using it and share your impressions.”"></textarea>
+              <p class="form-field__char-count"><span id="offerProductDescriptionCount">0</span>/500</p>
+              <p class="form-field__error" id="offerProductDescriptionError" hidden></p>
+            </div>
+
+            <label class="checkbox-field">
+              <input type="checkbox" id="offerSendPhysicalProduct">
+              <span>I'll send the blogger a physical product</span>
+            </label>
+
+            <div class="form-field" id="offerDeliveryInstructionsWrap" hidden>
+              <label class="form-field__label" for="offerDeliveryInstructions">Delivery instructions</label>
+              <textarea class="form-field__input" id="offerDeliveryInstructions" rows="3" placeholder="Address, shipping notes, timing…"></textarea>
+              <p class="form-field__error" id="offerDeliveryInstructionsError" hidden></p>
+            </div>
+          </div>
+
+          <!-- Website / Service -->
+          <div id="offerFieldsWebsite" hidden>
+            <div class="form-field">
+              <label class="form-field__label" for="offerWebsiteName">Website/App name</label>
+              <input class="form-field__input" type="text" id="offerWebsiteName" placeholder="e.g. Vybridge">
+              <p class="form-field__error" id="offerWebsiteNameError" hidden></p>
+            </div>
+
+            <div class="form-field">
+              <label class="form-field__label" for="offerWebsiteUrl">Website URL</label>
+              <input class="form-field__input" type="url" id="offerWebsiteUrl" placeholder="https://example.com">
+              <p class="form-field__error" id="offerWebsiteUrlError" hidden></p>
+            </div>
+
+            <div class="form-field">
+              <label class="form-field__label">Ad format</label>
+              <div class="ad-format-toggle">
+                <button type="button" class="ad-format-toggle__btn" data-ad-format="reels">🎬 Reels/Video</button>
+                <button type="button" class="ad-format-toggle__btn" data-ad-format="stories">📱 Stories</button>
+                <button type="button" class="ad-format-toggle__btn" data-ad-format="post">📸 Post/Photo</button>
+              </div>
+              <p class="form-field__error" id="offerAdFormatWebsiteError" hidden></p>
+            </div>
+
+            <div class="form-field">
+              <label class="form-field__label" for="offerWebsiteDescription">What would you like the blogger to say or show?</label>
+              <textarea class="form-field__input" id="offerWebsiteDescription" rows="4" maxlength="500" placeholder="For example: “Visit the site, show the main features, explain why you’d recommend it.”"></textarea>
+              <p class="form-field__char-count"><span id="offerWebsiteDescriptionCount">0</span>/500</p>
+              <p class="form-field__error" id="offerWebsiteDescriptionError" hidden></p>
+            </div>
+          </div>
+
+          <!-- Other -->
+          <div id="offerFieldsOther" hidden>
+            <div class="form-field">
+              <label class="form-field__label" for="offerOtherDescription">Describe what you need</label>
+              <textarea class="form-field__input" id="offerOtherDescription" rows="6" maxlength="1000" placeholder="Describe your campaign in your own words. No professional terms needed — just explain what you want."></textarea>
+              <p class="form-field__char-count"><span id="offerOtherDescriptionCount">0</span>/1000</p>
+              <p class="form-field__error" id="offerOtherDescriptionError" hidden></p>
+            </div>
+
+            <div class="form-field">
+              <label class="form-field__label">Ad format</label>
+              <div class="ad-format-toggle">
+                <button type="button" class="ad-format-toggle__btn" data-ad-format="reels">🎬 Reels/Video</button>
+                <button type="button" class="ad-format-toggle__btn" data-ad-format="stories">📱 Stories</button>
+                <button type="button" class="ad-format-toggle__btn" data-ad-format="post">📸 Post/Photo</button>
+              </div>
+              <p class="form-field__error" id="offerAdFormatOtherError" hidden></p>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-field__label" for="offerPrice">Budget (EUR)</label>
+            <input class="form-field__input" type="number" id="offerPrice" min="1" step="0.01">
+            <p class="form-field__hint">The blogger may counter-offer a different price</p>
+            <p class="form-field__error" id="offerPriceError" hidden></p>
+          </div>
+
+          <div class="form-field" id="offerClickUrlWrap">
+            <label class="form-field__label" for="offerClickUrl">Click URL <span class="form-field__optional" id="offerClickUrlOptionalTag" hidden>(optional)</span></label>
+            <input class="form-field__input" type="url" id="offerClickUrl" placeholder="https://example.com/landing">
+            <p class="form-field__error" id="offerClickUrlError" hidden></p>
+          </div>
+
+          <dl class="booking-summary" id="offerSummary"></dl>
+
+          <div class="form-field" id="offerCardFieldWrap">
+            <label class="form-field__label">Card details</label>
+            <div id="offerCardElement" class="booking-card-element"></div>
+            <p class="form-field__error" id="offerCardError" hidden></p>
+          </div>
+
+          <button type="submit" class="btn btn--purple btn--lg register-submit" id="offerPayBtn">Send offer &amp; Pay</button>
+          <p class="form-message form-message--error" id="offerFormMessage" hidden></p>
         </div>
-
-        <div class="form-field" id="offerBriefFieldWrap" hidden>
-          <label class="form-field__label" for="offerBriefText">Brief for the blogger</label>
-          <textarea class="form-field__input" id="offerBriefText" rows="4" placeholder="What should the post cover? Key points, tone, hashtags…"></textarea>
-          <p class="form-field__error" id="offerBriefTextError" hidden></p>
-        </div>
-
-        <div class="form-field">
-          <label class="form-field__label" for="offerPrice">Offer price (EUR)</label>
-          <input class="form-field__input" type="number" id="offerPrice" min="1" step="0.01">
-          <p class="form-field__error" id="offerPriceError" hidden></p>
-        </div>
-
-        <div class="form-field">
-          <label class="form-field__label" for="offerClickUrl">Click URL</label>
-          <input class="form-field__input" type="url" id="offerClickUrl" placeholder="https://example.com/landing">
-          <p class="form-field__error" id="offerClickUrlError" hidden></p>
-        </div>
-
-        <dl class="booking-summary" id="offerSummary"></dl>
-
-        <div class="form-field" id="offerCardFieldWrap">
-          <label class="form-field__label">Card details</label>
-          <div id="offerCardElement" class="booking-card-element"></div>
-          <p class="form-field__error" id="offerCardError" hidden></p>
-        </div>
-
-        <button type="submit" class="btn btn--purple btn--lg register-submit" id="offerPayBtn">Send offer &amp; Pay</button>
-        <p class="form-message form-message--error" id="offerFormMessage" hidden></p>
       </form>
     </div>
   </div>
