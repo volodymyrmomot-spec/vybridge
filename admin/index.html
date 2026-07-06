@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vybridge — Admin</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+  <div id="loginGate" class="admin-login">
+    <div class="admin-login__card">
+      <div class="admin-login__brand">vybridge <span>admin</span></div>
+      <p class="admin-login__subtitle">Platform administration. Owner access only.</p>
+      <form id="adminLoginForm">
+        <label class="admin-field__label" for="adminPassword">Password</label>
+        <input class="admin-field__input" type="password" id="adminPassword" autocomplete="current-password" autofocus>
+        <button type="submit" class="admin-btn admin-btn--primary admin-login__submit">Log in</button>
+        <p id="adminLoginError" class="admin-error" hidden></p>
+      </form>
+    </div>
+  </div>
+
+  <div id="adminPanel" class="admin-panel" hidden>
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar__brand">vybridge <span>admin</span></div>
+      <nav class="admin-nav">
+        <button type="button" class="admin-nav__item admin-nav__item--active" data-section="overview">Overview</button>
+        <button type="button" class="admin-nav__item" data-section="users">Users</button>
+        <button type="button" class="admin-nav__item" data-section="deals">Deals</button>
+        <button type="button" class="admin-nav__item" data-section="sites">Sites &amp; Slots</button>
+      </nav>
+      <button type="button" id="adminLogoutBtn" class="admin-btn admin-btn--ghost admin-sidebar__logout">Log out</button>
+    </aside>
+
+    <main class="admin-main">
+      <!-- Overview -->
+      <section id="section-overview" class="admin-section">
+        <h1 class="admin-section__title">Overview</h1>
+        <div class="admin-stat-grid" id="overviewGrid"></div>
+      </section>
+
+      <!-- Users -->
+      <section id="section-users" class="admin-section" hidden>
+        <h1 class="admin-section__title">Users</h1>
+        <div class="admin-toolbar">
+          <input type="search" id="usersSearchInput" class="admin-field__input admin-toolbar__search" placeholder="Search by name or email…">
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Country</th>
+                <th>Registered</th>
+                <th>Deals</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody"></tbody>
+          </table>
+        </div>
+        <p class="admin-empty" id="usersEmpty" hidden>No users found.</p>
+        <div class="admin-pagination" id="usersPagination"></div>
+      </section>
+
+      <!-- Deals -->
+      <section id="section-deals" class="admin-section" hidden>
+        <h1 class="admin-section__title">Deals</h1>
+        <div class="admin-toolbar">
+          <select id="dealsStatusFilter" class="admin-field__input admin-toolbar__select">
+            <option value="">All statuses</option>
+          </select>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Subject</th>
+                <th>Advertiser</th>
+                <th>Publisher / Blogger</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="dealsTableBody"></tbody>
+          </table>
+        </div>
+        <p class="admin-empty" id="dealsEmpty" hidden>No deals found.</p>
+        <div class="admin-pagination" id="dealsPagination"></div>
+      </section>
+
+      <!-- Sites & Slots -->
+      <section id="section-sites" class="admin-section" hidden>
+        <h1 class="admin-section__title">Sites &amp; Slots</h1>
+        <div class="admin-sites-list" id="sitesList"></div>
+        <p class="admin-empty" id="sitesEmpty" hidden>No sites found.</p>
+        <div class="admin-pagination" id="sitesPagination"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="admin-modal-backdrop" id="dealModalBackdrop" hidden>
+    <div class="admin-modal">
+      <button type="button" class="admin-modal__close" id="dealModalClose" aria-label="Close">&times;</button>
+      <h2 class="admin-modal__title">Deal details</h2>
+      <div id="dealModalBody" class="admin-modal__body"></div>
+    </div>
+  </div>
+
+  <div class="admin-modal-backdrop" id="confirmModalBackdrop" hidden>
+    <div class="admin-modal admin-modal--sm">
+      <p id="confirmModalText" class="admin-modal__text"></p>
+      <div class="admin-modal__actions">
+        <button type="button" class="admin-btn admin-btn--ghost" id="confirmModalCancel">Cancel</button>
+        <button type="button" class="admin-btn admin-btn--danger" id="confirmModalConfirm">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/admin/admin.js"></script>
+</body>
+</html>
