@@ -35,7 +35,7 @@
       <form id="newSlotForm" class="register-form" novalidate>
         <div class="form-field">
           <label class="form-field__label" for="slotLabel">Label</label>
-          <input class="form-field__input" type="text" id="slotLabel" name="label" placeholder="e.g. Header banner">
+          <input class="form-field__input" type="text" id="slotLabel" name="label" placeholder="e.g. Header banner" autocomplete="off">
           <p class="form-field__error" id="slotLabelError" hidden></p>
         </div>
 
@@ -56,13 +56,13 @@
 
         <div class="form-field">
           <label class="form-field__label" for="slotPrice">Price (EUR)</label>
-          <input class="form-field__input" type="number" id="slotPrice" name="priceEuros" min="1" step="0.01" placeholder="50.00">
+          <input class="form-field__input" type="number" id="slotPrice" name="priceEuros" min="1" step="0.01" placeholder="50.00" autocomplete="off">
           <p class="form-field__error" id="slotPriceError" hidden></p>
         </div>
 
         <div class="form-field">
           <label class="form-field__label" for="slotDuration">Placement duration (days)</label>
-          <input class="form-field__input" type="number" id="slotDuration" name="durationDays" min="1" max="365" step="1" placeholder="30">
+          <input class="form-field__input" type="number" id="slotDuration" name="durationDays" min="1" max="365" step="1" placeholder="30" autocomplete="off">
           <p class="form-field__error" id="slotDurationError" hidden></p>
         </div>
 
