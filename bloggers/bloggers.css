@@ -92,6 +92,19 @@
   margin-top: 6px;
 }
 
+.blogger-card__negotiation-tag {
+  display: inline-flex;
+  align-self: flex-start;
+  margin-top: -4px;
+  margin-bottom: 6px;
+  padding: 3px 9px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--green-dark);
+  background: var(--green-light);
+  border-radius: 999px;
+}
+
 /* Offer modal is a lot taller than the shared 480px modal now (type
    picker + a whole sub-form + summary + card element). */
 .modal--lg {

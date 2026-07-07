@@ -188,6 +188,7 @@
         followersCount: document.getElementById("channel" + p + "Followers").value,
         contentCategory: document.getElementById("channel" + p + "Category").value,
         pricePerPostEuros: document.getElementById("channel" + p + "Price").value,
+        openToNegotiation: document.getElementById("channel" + p + "OpenToOffers").checked,
       };
     });
   }

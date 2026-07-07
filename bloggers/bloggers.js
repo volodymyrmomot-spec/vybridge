@@ -31,6 +31,7 @@
   var clickUrlOptionalTag = document.getElementById("offerClickUrlOptionalTag");
   var summaryEl = document.getElementById("offerSummary");
   var priceInput = document.getElementById("offerPrice");
+  var priceHintEl = document.getElementById("offerPriceHint");
   var clickUrlInput = document.getElementById("offerClickUrl");
   var payBtn = document.getElementById("offerPayBtn");
   var cardElementWrap = document.getElementById("offerCardElement");
@@ -242,6 +243,9 @@
 
     card.appendChild(el("div", "blogger-card__meta", blogger.total_followers.toLocaleString() + " total followers"));
     card.appendChild(el("div", "slot-card__price", "From " + money(blogger.min_price_cents)));
+    if (blogger.open_to_negotiation) {
+      card.appendChild(el("span", "blogger-card__negotiation-tag", "Open to offers"));
+    }
 
     var offerBtn = el("button", "btn btn--purple", "Make an offer");
     offerBtn.type = "button";
@@ -357,6 +361,13 @@
     deliveryInstructionsWrap.hidden = !sendPhysicalCheckbox.checked;
   });
 
+  function updatePriceHint() {
+    var channel = selectedChannel();
+    priceHintEl.textContent = channel && channel.open_to_negotiation
+      ? "This blogger accepts custom offers"
+      : "The blogger may counter-offer a different price";
+  }
+
   function updateSummary() {
     var channel = selectedChannel();
     if (!channel) {
@@ -383,6 +394,7 @@
       priceInput.value = (channel.price_per_post_cents / 100).toFixed(2);
     }
     updateSummary();
+    updatePriceHint();
   });
 
   function openModal(blogger) {
@@ -423,6 +435,7 @@
 
     priceInput.value = (blogger.channels[0].price_per_post_cents / 100).toFixed(2);
     updateSummary();
+    updatePriceHint();
 
     backdrop.hidden = false;
   }

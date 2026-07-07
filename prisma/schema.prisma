@@ -208,6 +208,9 @@ model BloggerChannel {
   followersCount    Int              @default(0) @map("followers_count")
   contentCategory   SiteCategory?    @map("content_category")
   pricePerPostCents Int              @map("price_per_post_cents")
+  // If true, the catalog and offer form tell an advertiser they can propose
+  // a different price on this channel instead of just paying the listed one.
+  openToNegotiation Boolean          @default(true) @map("open_to_negotiation")
 
   createdAt         DateTime         @default(now()) @map("created_at")
   updatedAt         DateTime         @updatedAt @map("updated_at")
