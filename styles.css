@@ -187,6 +187,18 @@ ul {
   flex-shrink: 0;
 }
 
+/* Shown instead of Log in/Sign up once script.js's session check (see
+   /script.js) confirms the visitor is logged in. */
+.header__user {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
 .lang-switch {
   display: flex;
   align-items: center;
