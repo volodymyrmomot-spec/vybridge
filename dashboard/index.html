@@ -64,57 +64,84 @@
           <dl class="dashboard-site-info" id="mySiteInfo"></dl>
 
           <div class="install-guide" id="mySiteSnippet" hidden>
-            <h3 class="install-guide__title">Step 1: Install Vybridge on your website</h3>
-            <p class="install-guide__intro">Add this one snippet to your site — pick how your site is built below.</p>
+            <h3 class="install-guide__title">Connect Vybridge to your website</h3>
+            <p class="install-guide__intro">Choose how your website was made and follow the simple steps.</p>
 
-            <div class="install-guide__tabs" id="installTabs" role="tablist">
-              <button type="button" class="install-guide__tab install-guide__tab--active" data-tab="wordpress" role="tab" aria-selected="true">
-                <span class="install-guide__tab-icon install-guide__tab-icon--wp" aria-hidden="true">W</span>
-                WordPress
+            <div class="help-cards" id="helpCards">
+              <a href="#" class="help-card" id="helpCardDeveloper" target="_blank" rel="noopener">
+                <span class="help-card__icon" aria-hidden="true">🧑‍💻</span>
+                <span class="help-card__title">Send to my developer</span>
+                <span class="help-card__desc">If someone built your website for you</span>
+              </a>
+              <button type="button" class="help-card" id="helpCardAi">
+                <span class="help-card__icon" aria-hidden="true">🤖</span>
+                <span class="help-card__title">Send to my AI agent</span>
+                <span class="help-card__desc">If an AI agent built or manages your website</span>
               </button>
-              <button type="button" class="install-guide__tab" data-tab="wix" role="tab" aria-selected="false">
-                <svg class="install-guide__tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-                Wix / Squarespace
-              </button>
-              <button type="button" class="install-guide__tab" data-tab="html" role="tab" aria-selected="false">
-                <svg class="install-guide__tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-                Other site
+              <button type="button" class="help-card" id="helpCardMyself" aria-expanded="false">
+                <span class="help-card__icon" aria-hidden="true">🔧</span>
+                <span class="help-card__title">I'll do it myself</span>
+                <span class="help-card__desc">If you have access to your website's code</span>
               </button>
             </div>
 
-            <div class="install-guide__panel" data-panel="wordpress">
-              <ol class="install-guide__steps">
-                <li>In your WordPress admin, go to <strong>Appearance → Theme Editor → header.php</strong></li>
-                <li>Find the line <code>&lt;/head&gt;</code></li>
-                <li>Paste the code below just above that line</li>
-                <li>Click <strong>Update File</strong></li>
-              </ol>
-              <button type="button" class="btn btn--outline btn--sm install-guide__wp-plugin-btn" id="downloadWpPluginBtn">Download WordPress Plugin</button>
+            <div class="install-guide__self" id="installSelfPanel" hidden>
+              <div class="install-guide__tabs" id="installTabs" role="tablist">
+                <button type="button" class="install-guide__tab install-guide__tab--active" data-tab="wordpress" role="tab" aria-selected="true">
+                  <span class="install-guide__tab-icon install-guide__tab-icon--wp" aria-hidden="true">W</span>
+                  WordPress
+                </button>
+                <button type="button" class="install-guide__tab" data-tab="wix" role="tab" aria-selected="false">
+                  <svg class="install-guide__tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                  Wix / Squarespace
+                </button>
+                <button type="button" class="install-guide__tab" data-tab="html" role="tab" aria-selected="false">
+                  <svg class="install-guide__tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                  Other site
+                </button>
+              </div>
+
+              <div class="install-guide__panel" data-panel="wordpress">
+                <ol class="install-guide__steps">
+                  <li>In your WordPress admin, go to <strong>Appearance → Theme Editor → header.php</strong></li>
+                  <li>Find the line <code>&lt;/head&gt;</code></li>
+                  <li>Paste the code below just above that line</li>
+                  <li>Click <strong>Update File</strong></li>
+                </ol>
+                <button type="button" class="btn btn--outline btn--sm install-guide__wp-plugin-btn" id="downloadWpPluginBtn">Download WordPress Plugin</button>
+              </div>
+
+              <div class="install-guide__panel" data-panel="wix" hidden>
+                <ol class="install-guide__steps">
+                  <li>Go to your site's <strong>Settings</strong></li>
+                  <li>Find <strong>Custom Code</strong> or <strong>Tracking &amp; Analytics</strong></li>
+                  <li>Click <strong>Add Code</strong></li>
+                  <li>Paste the code below, choose <strong>Head</strong>, and save</li>
+                </ol>
+              </div>
+
+              <div class="install-guide__panel" data-panel="html" hidden>
+                <p class="install-guide__steps install-guide__steps--text">
+                  Open any HTML file on your site, find the tag <code>&lt;/head&gt;</code>, and paste the code below right before it.
+                </p>
+              </div>
+
+              <code class="dashboard-snippet__code" id="mySiteSnippetCode"></code>
+
+              <div class="install-guide__actions">
+                <button type="button" class="btn btn--purple" id="copyCodeBtn">Copy code</button>
+              </div>
             </div>
 
-            <div class="install-guide__panel" data-panel="wix" hidden>
-              <ol class="install-guide__steps">
-                <li>Go to your site's <strong>Settings</strong></li>
-                <li>Find <strong>Custom Code</strong> or <strong>Tracking &amp; Analytics</strong></li>
-                <li>Click <strong>Add Code</strong></li>
-                <li>Paste the code below, choose <strong>Head</strong>, and save</li>
-              </ol>
+            <div class="connection-status connection-status--pending" id="connectionStatus">
+              <span class="connection-status__icon" id="connectionStatusIcon">⏳</span>
+              <span class="connection-status__text" id="connectionStatusText">Not connected yet</span>
             </div>
 
-            <div class="install-guide__panel" data-panel="html" hidden>
-              <p class="install-guide__steps install-guide__steps--text">
-                Open any HTML file on your site, find the tag <code>&lt;/head&gt;</code>, and paste the code below right before it.
-              </p>
+            <div class="next-step" id="nextStepBlock" hidden>
+              <p class="next-step__text">Great! Now pick where you want ads to appear →</p>
+              <button type="button" class="btn btn--purple btn--lg" id="openPickerBtn">Open visual picker</button>
             </div>
-
-            <code class="dashboard-snippet__code" id="mySiteSnippetCode"></code>
-
-            <div class="install-guide__actions">
-              <button type="button" class="btn btn--purple" id="copyCodeBtn">Copy code</button>
-              <span class="install-guide__status" id="installStatus" hidden></span>
-            </div>
-
-            <a href="#" class="install-guide__dev-link" id="emailDevLink" target="_blank" rel="noopener">Not sure? Send these instructions to your developer →</a>
           </div>
         </div>
 
@@ -293,6 +320,17 @@
       </section>
     </div>
   </main>
+
+  <div class="modal-backdrop" id="aiPromptBackdrop" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="aiPromptModalTitle">
+      <button type="button" class="modal__close" id="aiPromptModalCloseBtn" aria-label="Close">&times;</button>
+      <h2 class="modal__title" id="aiPromptModalTitle">Send to my AI agent</h2>
+      <p class="modal__subtitle">Paste this into Cursor, Claude, or any AI coding assistant</p>
+
+      <pre class="ai-prompt__text" id="aiPromptText"></pre>
+      <button type="button" class="btn btn--purple" id="copyAiPromptBtn">Copy prompt</button>
+    </div>
+  </div>
 
   <div class="modal-backdrop" id="publishBackdrop" hidden>
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="publishModalTitle">

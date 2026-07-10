@@ -263,6 +263,66 @@
     });
   });
 
+  var helpCardMyself = document.getElementById("helpCardMyself");
+  var installSelfPanel = document.getElementById("installSelfPanel");
+  if (helpCardMyself) {
+    helpCardMyself.addEventListener("click", function () {
+      var expanded = !installSelfPanel.hidden;
+      installSelfPanel.hidden = expanded;
+      helpCardMyself.setAttribute("aria-expanded", expanded ? "false" : "true");
+      helpCardMyself.classList.toggle("help-card--active", !expanded);
+    });
+  }
+
+  var helpCardAi = document.getElementById("helpCardAi");
+  var aiPromptBackdrop = document.getElementById("aiPromptBackdrop");
+  var aiPromptModalCloseBtn = document.getElementById("aiPromptModalCloseBtn");
+  if (helpCardAi) {
+    helpCardAi.addEventListener("click", function () {
+      aiPromptBackdrop.hidden = false;
+    });
+  }
+  if (aiPromptModalCloseBtn) {
+    aiPromptModalCloseBtn.addEventListener("click", function () {
+      aiPromptBackdrop.hidden = true;
+    });
+  }
+  if (aiPromptBackdrop) {
+    aiPromptBackdrop.addEventListener("click", function (event) {
+      if (event.target === aiPromptBackdrop) {
+        aiPromptBackdrop.hidden = true;
+      }
+    });
+  }
+
+  var copyAiPromptBtn = document.getElementById("copyAiPromptBtn");
+  if (copyAiPromptBtn) {
+    copyAiPromptBtn.addEventListener("click", function () {
+      var text = document.getElementById("aiPromptText").textContent;
+      var showCopied = function () {
+        var original = "Copy prompt";
+        copyAiPromptBtn.textContent = "Copied ✓";
+        setTimeout(function () {
+          copyAiPromptBtn.textContent = original;
+        }, 1800);
+      };
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(showCopied, function () {
+          if (fallbackCopy(text)) {
+            showCopied();
+          } else {
+            window.alert("Could not copy automatically — please select the text and copy it manually.");
+          }
+        });
+      } else if (fallbackCopy(text)) {
+        showCopied();
+      } else {
+        window.alert("Could not copy automatically — please select the text and copy it manually.");
+      }
+    });
+  }
+
   function fallbackCopy(text) {
     var textarea = document.createElement("textarea");
     textarea.value = text;
@@ -309,17 +369,20 @@
   }
 
   function setInstallStatus(state) {
-    var status = document.getElementById("installStatus");
+    var block = document.getElementById("connectionStatus");
+    var icon = document.getElementById("connectionStatusIcon");
+    var text = document.getElementById("connectionStatusText");
+    var nextStep = document.getElementById("nextStepBlock");
     if (state === "detected") {
-      status.textContent = "Code detected ✓";
-      status.className = "install-guide__status install-guide__status--detected";
-      status.hidden = false;
-    } else if (state === "pending") {
-      status.textContent = "Not detected yet — install the code above";
-      status.className = "install-guide__status install-guide__status--pending";
-      status.hidden = false;
+      icon.textContent = "✅";
+      text.textContent = "Connected!";
+      block.className = "connection-status connection-status--connected";
+      nextStep.hidden = false;
     } else {
-      status.hidden = true;
+      icon.textContent = "⏳";
+      text.textContent = "Not connected yet";
+      block.className = "connection-status connection-status--pending";
+      nextStep.hidden = true;
     }
   }
 
@@ -525,13 +588,26 @@
   }
 
   function buildDevEmailHref(snippetCode) {
-    var subject = "Please add this code to our website";
+    var subject = "Please connect our website to Vybridge ad platform";
     var body =
       "Hi,\n\n" +
-      "Could you please add the code below to our website, just before the closing </head> tag?\n\n" +
+      "I'd like to start monetizing our website with Vybridge — an advertising marketplace.\n\n" +
+      "Please add the following script tag to the <head> section of our website:\n\n" +
       snippetCode +
-      "\n\nThanks!";
+      "\n\nAfter adding the script, I'll handle the rest through the Vybridge dashboard myself.\n\n" +
+      "This is a one-time change and takes about 2 minutes.\n\n" +
+      "Thank you!";
     return "mailto:?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+  }
+
+  function buildAiPrompt(snippetCode) {
+    return (
+      "Please add the Vybridge advertising widget to this website.\n\n" +
+      "Add the following script tag inside the <head> section of the main layout file (or every page if there's no shared layout):\n\n" +
+      snippetCode +
+      "\n\nThis script must load on every page of the website. It is lightweight (under 5KB), loads asynchronously and will not affect page speed.\n\n" +
+      "After adding it, please confirm which file was modified and deploy the changes."
+    );
   }
 
   function renderMySite(site) {
@@ -562,7 +638,8 @@
     var snippetCode =
       '<script src="' + window.location.origin + '/w.js" data-site="' + site.siteKey + '" async></' + "script>";
     document.getElementById("mySiteSnippetCode").textContent = snippetCode;
-    document.getElementById("emailDevLink").href = buildDevEmailHref(snippetCode);
+    document.getElementById("helpCardDeveloper").href = buildDevEmailHref(snippetCode);
+    document.getElementById("aiPromptText").textContent = buildAiPrompt(snippetCode);
     snippetWrap.hidden = false;
 
     setInstallStatus(null);
@@ -692,7 +769,39 @@
       });
   }
 
+  // A slot's domSelector starts out as this auto-generated placeholder
+  // (see lib/slots.js) until the visual picker overwrites it with a real,
+  // hand-picked selector — so an unchanged placeholder means "not picked yet".
+  var currentSlots = [];
+
+  function findSlotNeedingPicker() {
+    for (var i = 0; i < currentSlots.length; i++) {
+      var slot = currentSlots[i];
+      if (slot.domSelector === "#vybridge-slot-" + slot.id) {
+        return slot;
+      }
+    }
+    return null;
+  }
+
+  var openPickerBtn = document.getElementById("openPickerBtn");
+  if (openPickerBtn) {
+    openPickerBtn.addEventListener("click", function () {
+      if (!currentSlots.length) {
+        window.location.href = "/slots/new";
+        return;
+      }
+      var slot = findSlotNeedingPicker();
+      if (!slot) {
+        window.location.href = "/slots/new";
+        return;
+      }
+      startPlacementPicker(slot.id, openPickerBtn);
+    });
+  }
+
   function renderSlots(slots) {
+    currentSlots = slots;
     var body = document.getElementById("publisherSlotsBody");
     var table = body.closest(".dashboard-table-wrap");
     var empty = document.getElementById("publisherSlotsEmpty");
