@@ -1,8 +1,10 @@
 (function () {
   "use strict";
 
-  var form = document.getElementById("newSlotForm");
-  if (!form) {
+  var step1 = document.getElementById("step1");
+  var workspace = document.getElementById("workspace");
+  var notDetected = document.getElementById("notDetected");
+  if (!step1) {
     return;
   }
 
@@ -27,11 +29,35 @@
     })
     .catch(function () {});
 
-  function formMessageEl() {
-    return document.getElementById("newSlotFormMessage");
-  }
+  var pageUrlInput = document.getElementById("pageUrlInput");
+  var pageUrlError = document.getElementById("pageUrlError");
+  var openPickerBtn = document.getElementById("openPickerBtn");
 
-  function clearFormErrors() {
+  var frameLoading = document.getElementById("frameLoading");
+  var iframe = document.getElementById("pickerIframe");
+
+  var panelWaiting = document.getElementById("panelWaiting");
+  var confirmForm = document.getElementById("confirmForm");
+  var panelFormat = document.getElementById("panelFormat");
+  var slotLabelInput = document.getElementById("slotLabel");
+  var slotPriceInput = document.getElementById("slotPrice");
+  var slotDurationInput = document.getElementById("slotDuration");
+  var createSlotBtn = document.getElementById("createSlotBtn");
+  var pickDifferentBtn = document.getElementById("pickDifferentBtn");
+  var confirmFormMessage = document.getElementById("confirmFormMessage");
+
+  // How long we wait for w.js on the publisher's page to check in before
+  // assuming it isn't installed there (or the site refused to be framed —
+  // both look identical from here: silence).
+  var READY_TIMEOUT_MS = 8000;
+
+  var state = {
+    slotId: null,
+    picked: null, // { selector, width, height, format, formatLabel, label }
+  };
+  var readyTimer = null;
+
+  function clearFieldErrors(form) {
     form.querySelectorAll(".form-field__error").forEach(function (el) {
       el.hidden = true;
       el.textContent = "";
@@ -39,16 +65,9 @@
     form.querySelectorAll(".form-field__input").forEach(function (el) {
       el.classList.remove("form-field__input--error");
     });
-    var msg = formMessageEl();
-    msg.hidden = true;
-    msg.textContent = "";
   }
 
-  function setFieldError(fieldName, message) {
-    var input = form.querySelector('[name="' + fieldName + '"]');
-    if (!input) {
-      return;
-    }
+  function setFieldError(input, message) {
     input.classList.add("form-field__input--error");
     var errorEl = document.getElementById(input.id + "Error");
     if (errorEl) {
@@ -57,62 +76,172 @@
     }
   }
 
-  function setFormMessage(message) {
-    var msg = formMessageEl();
-    msg.textContent = message;
-    msg.hidden = false;
-  }
+  // ---------- Step 1: submit the page URL ----------
 
-  function validateClientSide() {
-    var valid = true;
-    var label = form.label.value.trim();
-    var format = form.format.value;
-    var price = parseFloat(form.priceEuros.value);
-    var duration = parseInt(form.durationDays.value, 10);
+  function startPickerSession() {
+    var pageUrl = pageUrlInput.value.trim();
+    pageUrlError.hidden = true;
+    pageUrlInput.classList.remove("form-field__input--error");
 
-    if (!label) {
-      setFieldError("label", "Label is required");
-      valid = false;
-    }
-    if (!format) {
-      setFieldError("format", "Choose an ad size");
-      valid = false;
-    }
-    if (!(price > 0)) {
-      setFieldError("priceEuros", "Enter a price greater than 0");
-      valid = false;
-    }
-    if (!(duration >= 1 && duration <= 365)) {
-      setFieldError("durationDays", "Duration must be between 1 and 365 days");
-      valid = false;
-    }
-
-    return valid;
-  }
-
-  form.addEventListener("submit", function (event) {
-    event.preventDefault();
-    clearFormErrors();
-
-    if (!validateClientSide()) {
+    if (!pageUrl) {
+      pageUrlError.textContent = "Enter your page URL";
+      pageUrlError.hidden = false;
+      pageUrlInput.classList.add("form-field__input--error");
       return;
     }
 
-    var payload = {
-      label: form.label.value.trim(),
-      format: form.format.value,
-      priceEuros: parseFloat(form.priceEuros.value),
-      durationDays: parseInt(form.durationDays.value, 10),
-    };
+    openPickerBtn.disabled = true;
 
-    var submitBtn = form.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-
-    fetch("/api/slots", {
+    fetch("/api/slots/picker-session", {
       method: "POST",
       credentials: "same-origin",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ pageUrl: pageUrl }),
+    })
+      .then(function (res) {
+        return res.json().then(function (data) {
+          return { ok: res.ok, body: data };
+        });
+      })
+      .then(function (result) {
+        openPickerBtn.disabled = false;
+        if (!result.ok) {
+          pageUrlError.textContent = result.body.error || "Could not open that page. Please try again.";
+          pageUrlError.hidden = false;
+          pageUrlInput.classList.add("form-field__input--error");
+          return;
+        }
+
+        state.slotId = result.body.slotId;
+
+        step1.hidden = true;
+        workspace.hidden = false;
+        frameLoading.hidden = false;
+        iframe.hidden = true;
+        iframe.src = result.body.pickerUrl;
+
+        readyTimer = setTimeout(handleNotDetected, READY_TIMEOUT_MS);
+      })
+      .catch(function () {
+        openPickerBtn.disabled = false;
+        pageUrlError.textContent = "Network error. Please try again.";
+        pageUrlError.hidden = false;
+      });
+  }
+
+  openPickerBtn.addEventListener("click", startPickerSession);
+  pageUrlInput.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      startPickerSession();
+    }
+  });
+
+  function handleNotDetected() {
+    readyTimer = null;
+    workspace.hidden = true;
+    notDetected.hidden = false;
+  }
+
+  // ---------- Step 2/3: messages from the framed page ----------
+
+  window.addEventListener("message", function (event) {
+    // Checking event.source (rather than event.origin) is what actually
+    // matters here: it's tied to the specific window object, so it can't be
+    // spoofed by another frame — and it still works if the publisher's page
+    // redirects to a different scheme/subdomain than the URL they typed in,
+    // which event.origin wouldn't survive.
+    if (event.source !== iframe.contentWindow) {
+      return;
+    }
+    var data = event.data;
+    if (!data) {
+      return;
+    }
+
+    if (data.vybridgePickerReady) {
+      if (readyTimer) {
+        clearTimeout(readyTimer);
+        readyTimer = null;
+      }
+      frameLoading.hidden = true;
+      iframe.hidden = false;
+      return;
+    }
+
+    if (data.vybridgePicked) {
+      state.picked = {
+        selector: data.selector,
+        width: data.width,
+        height: data.height,
+        format: data.format,
+        formatLabel: data.formatLabel,
+      };
+
+      panelFormat.textContent = "Selected format: " + data.formatLabel;
+      slotLabelInput.value = data.label || "New ad slot";
+      panelWaiting.hidden = true;
+      confirmForm.hidden = false;
+    }
+  });
+
+  // ---------- Step 3: confirm and create ----------
+
+  pickDifferentBtn.addEventListener("click", function () {
+    state.picked = null;
+    confirmForm.hidden = true;
+    panelWaiting.hidden = false;
+    confirmFormMessage.hidden = true;
+    if (iframe.contentWindow) {
+      iframe.contentWindow.postMessage({ vybridgeResetPick: true }, "*");
+    }
+  });
+
+  confirmForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+    clearFieldErrors(confirmForm);
+    confirmFormMessage.hidden = true;
+
+    if (!state.picked) {
+      return;
+    }
+
+    var label = slotLabelInput.value.trim();
+    var price = parseFloat(slotPriceInput.value);
+    var duration = parseInt(slotDurationInput.value, 10);
+
+    var valid = true;
+    if (!label) {
+      setFieldError(slotLabelInput, "Label is required");
+      valid = false;
+    }
+    if (!(price > 0)) {
+      setFieldError(slotPriceInput, "Enter a price greater than 0");
+      valid = false;
+    }
+    if (!(duration >= 1 && duration <= 365)) {
+      setFieldError(slotDurationInput, "Duration must be between 1 and 365 days");
+      valid = false;
+    }
+    if (!valid) {
+      return;
+    }
+
+    createSlotBtn.disabled = true;
+
+    fetch("/api/slots/" + encodeURIComponent(state.slotId) + "/finalize", {
+      method: "PUT",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        label: label,
+        format: state.picked.format,
+        width: state.picked.width,
+        height: state.picked.height,
+        domSelector: state.picked.selector,
+        priceEuros: price,
+        durationDays: duration,
+      }),
     })
       .then(function (res) {
         return res.json().then(function (data) {
@@ -121,21 +250,33 @@
       })
       .then(function (result) {
         if (!result.ok) {
-          submitBtn.disabled = false;
+          createSlotBtn.disabled = false;
           if (result.body.errors) {
-            Object.keys(result.body.errors).forEach(function (field) {
-              setFieldError(field, result.body.errors[field]);
-            });
+            if (result.body.errors.label) {
+              setFieldError(slotLabelInput, result.body.errors.label);
+            }
+            if (result.body.errors.priceEuros) {
+              setFieldError(slotPriceInput, result.body.errors.priceEuros);
+            }
+            if (result.body.errors.durationDays) {
+              setFieldError(slotDurationInput, result.body.errors.durationDays);
+            }
+            if (result.body.errors.format) {
+              confirmFormMessage.textContent = result.body.errors.format;
+              confirmFormMessage.hidden = false;
+            }
           } else {
-            setFormMessage(result.body.error || "Could not create slot. Please try again.");
+            confirmFormMessage.textContent = result.body.error || "Could not create slot. Please try again.";
+            confirmFormMessage.hidden = false;
           }
           return;
         }
         window.location.href = "/dashboard";
       })
       .catch(function () {
-        submitBtn.disabled = false;
-        setFormMessage("Network error. Please try again.");
+        createSlotBtn.disabled = false;
+        confirmFormMessage.textContent = "Network error. Please try again.";
+        confirmFormMessage.hidden = false;
       });
   });
 })();

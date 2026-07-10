@@ -4,16 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>vybridge — Create an ad slot</title>
-  <meta name="description" content="Create a new ad slot on your site.">
+  <meta name="description" content="Pick where an ad should appear on your site.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="/auth/auth.css">
-  <!-- Shares the register page's form/card layout rules (role-select cards
-       aren't used here, but .register-page/.register-form/.form-field__error
-       etc. are generic enough to reuse rather than duplicate). -->
-  <link rel="stylesheet" href="/register/register.css">
+  <link rel="stylesheet" href="/slots/new/new.css">
 </head>
 <body>
   <header class="header">
@@ -28,47 +25,62 @@
     </div>
   </header>
 
-  <main class="register-page">
-    <div class="container register-container">
-      <h1 class="register-title">Create an ad slot</h1>
+  <main class="slot-picker-page">
+    <div class="container">
+      <h1 class="slot-picker-title">Create an ad slot</h1>
 
-      <form id="newSlotForm" class="register-form" novalidate>
-        <div class="form-field">
-          <label class="form-field__label" for="slotLabel">Label</label>
-          <input class="form-field__input" type="text" id="slotLabel" name="label" placeholder="e.g. Header banner" autocomplete="off">
-          <p class="form-field__error" id="slotLabelError" hidden></p>
+      <section class="slot-picker-step1" id="step1">
+        <div class="slot-picker-url-card">
+          <label class="form-field__label" for="pageUrlInput">Your page URL</label>
+          <input class="slot-picker-url-input" type="url" id="pageUrlInput" placeholder="https://yoursite.com/page" autocomplete="off">
+          <p class="form-field__error" id="pageUrlError" hidden></p>
+          <button type="button" class="btn btn--purple btn--lg" id="openPickerBtn">Open and pick ad spot</button>
+          <p class="slot-picker-url-hint">We'll open your page and let you click where you want the ad to appear</p>
+        </div>
+      </section>
+
+      <section class="slot-picker-workspace" id="workspace" hidden>
+        <div class="slot-picker-frame-wrap">
+          <p class="slot-picker-loading" id="frameLoading">Loading your page…</p>
+          <iframe class="slot-picker-iframe" id="pickerIframe" title="Your website" hidden></iframe>
         </div>
 
-        <div class="form-field">
-          <label class="form-field__label" for="slotFormat">Ad size</label>
-          <select class="form-field__input" id="slotFormat" name="format">
-            <option value="">Select a size</option>
-            <option value="728x90">Leaderboard (728×90)</option>
-            <option value="300x250">Medium Rectangle (300×250)</option>
-            <option value="320x50">Mobile Banner (320×50)</option>
-            <option value="336x280">Large Rectangle (336×280)</option>
-            <option value="160x600">Wide Skyscraper (160×600)</option>
-            <option value="300x600">Half Page (300×600)</option>
-            <option value="970x250">Billboard (970×250)</option>
-          </select>
-          <p class="form-field__error" id="slotFormatError" hidden></p>
-        </div>
+        <aside class="slot-picker-panel">
+          <p class="slot-picker-panel__waiting" id="panelWaiting">Hover over your page and click somewhere to place your ad.</p>
 
-        <div class="form-field">
-          <label class="form-field__label" for="slotPrice">Price (EUR)</label>
-          <input class="form-field__input" type="number" id="slotPrice" name="priceEuros" min="1" step="0.01" placeholder="50.00" autocomplete="off">
-          <p class="form-field__error" id="slotPriceError" hidden></p>
-        </div>
+          <form class="slot-picker-panel__form" id="confirmForm" novalidate hidden>
+            <p class="slot-picker-panel__format" id="panelFormat"></p>
 
-        <div class="form-field">
-          <label class="form-field__label" for="slotDuration">Placement duration (days)</label>
-          <input class="form-field__input" type="number" id="slotDuration" name="durationDays" min="1" max="365" step="1" placeholder="30" autocomplete="off">
-          <p class="form-field__error" id="slotDurationError" hidden></p>
-        </div>
+            <div class="form-field">
+              <label class="form-field__label" for="slotLabel">Label</label>
+              <input class="form-field__input" type="text" id="slotLabel" autocomplete="off">
+              <p class="form-field__error" id="slotLabelError" hidden></p>
+            </div>
 
-        <button type="submit" class="btn btn--purple btn--lg register-submit">Create slot</button>
-        <p class="form-message form-message--error" id="newSlotFormMessage" hidden></p>
-      </form>
+            <div class="form-field">
+              <label class="form-field__label" for="slotPrice">Price (EUR)</label>
+              <input class="form-field__input" type="number" id="slotPrice" min="1" step="0.01" placeholder="50.00" autocomplete="off">
+              <p class="form-field__error" id="slotPriceError" hidden></p>
+            </div>
+
+            <div class="form-field">
+              <label class="form-field__label" for="slotDuration">Placement duration (days)</label>
+              <input class="form-field__input" type="number" id="slotDuration" min="1" max="365" step="1" placeholder="30" autocomplete="off">
+              <p class="form-field__error" id="slotDurationError" hidden></p>
+            </div>
+
+            <button type="submit" class="btn btn--purple btn--lg" id="createSlotBtn">Create slot</button>
+            <button type="button" class="btn btn--outline" id="pickDifferentBtn">Pick different spot</button>
+            <p class="form-message form-message--error" id="confirmFormMessage" hidden></p>
+          </form>
+        </aside>
+      </section>
+
+      <section class="slot-picker-error" id="notDetected" hidden>
+        <h2 class="slot-picker-error__title">Vybridge script not detected on this page</h2>
+        <p class="slot-picker-error__text">Install the script first, then come back to pick your ad spot.</p>
+        <a href="/dashboard" class="btn btn--purple">Back to installation guide</a>
+      </section>
     </div>
   </main>
 
