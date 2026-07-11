@@ -62,9 +62,10 @@
 
   // ---------- Ad serving ----------
 
-  // Shown on every page running w.js in normal ad-serving mode, regardless
-  // of whether this particular page has any slots — not gated on the
-  // /api/widget response, so it never depends on that call succeeding.
+  // Shown only once we know this site actually has at least one slot
+  // (draft or active) — called from inside startAdServing's /api/widget
+  // response handler below, never unconditionally, so a site with no slots
+  // at all gets neither the badge nor a placeholder.
   function injectBadge() {
     if (document.getElementById("vybridge-badge")) {
       return;
@@ -89,16 +90,15 @@
   }
 
   function startAdServing(siteKey) {
-    injectBadge();
-
     fetch(apiOrigin + "/api/widget/" + encodeURIComponent(siteKey))
       .then(function (res) {
         return res.json();
       })
       .then(function (slots) {
-        if (!Array.isArray(slots)) {
+        if (!Array.isArray(slots) || !slots.length) {
           return;
         }
+        injectBadge();
         slots.forEach(scheduleSlot);
       })
       .catch(function () {});
