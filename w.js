@@ -62,43 +62,15 @@
 
   // ---------- Ad serving ----------
 
-  // Shown only once we know this site actually has at least one slot
-  // (draft or active) — called from inside startAdServing's /api/widget
-  // response handler below, never unconditionally, so a site with no slots
-  // at all gets neither the badge nor a placeholder.
-  function injectBadge() {
-    if (document.getElementById("vybridge-badge")) {
-      return;
-    }
-
-    var style = document.createElement("style");
-    style.textContent =
-      "#vybridge-badge{position:fixed;bottom:12px;right:12px;z-index:9999;" +
-      "display:inline-flex;align-items:center;gap:4px;padding:5px 10px;" +
-      "background:#6366F1;color:#fff;font:600 11px/1.2 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;" +
-      "border-radius:6px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,0.18);opacity:0.92;}" +
-      "#vybridge-badge:hover{opacity:1;}";
-    document.head.appendChild(style);
-
-    var badge = document.createElement("a");
-    badge.id = "vybridge-badge";
-    badge.href = apiOrigin || "https://vybridge-production.up.railway.app";
-    badge.target = "_blank";
-    badge.rel = "noopener";
-    badge.textContent = "⚡ Ads by Vybridge";
-    document.body.appendChild(badge);
-  }
-
   function startAdServing(siteKey) {
     fetch(apiOrigin + "/api/widget/" + encodeURIComponent(siteKey))
       .then(function (res) {
         return res.json();
       })
       .then(function (slots) {
-        if (!Array.isArray(slots) || !slots.length) {
+        if (!Array.isArray(slots)) {
           return;
         }
-        injectBadge();
         slots.forEach(scheduleSlot);
       })
       .catch(function () {});
@@ -139,6 +111,10 @@
     clickDestinations[slot.slot_id] = slot.click_tracking_url;
     ensureClickListener();
 
+    var wrap = document.createElement("div");
+    wrap.style.cssText =
+      "position:relative;display:inline-block;width:" + slot.width + "px;height:" + slot.height + "px;";
+
     var iframe = document.createElement("iframe");
     iframe.width = slot.width;
     iframe.height = slot.height;
@@ -152,7 +128,25 @@
       '" onclick="parent.postMessage({vybridgeClick:\'' +
       slot.slot_id +
       "'},'*')\">";
-    target.appendChild(iframe);
+    wrap.appendChild(iframe);
+    wrap.appendChild(createSlotBadge());
+    target.appendChild(wrap);
+  }
+
+  // Small, unobtrusive attribution link — lives inside the slot itself
+  // (bottom-right corner of the placeholder box or, for a real ad, the
+  // relative-positioned wrapper around the creative iframe) rather than
+  // fixed to the page, so it never floats over unrelated site content.
+  function createSlotBadge() {
+    var badge = document.createElement("a");
+    badge.href = "https://vybridge.com";
+    badge.target = "_blank";
+    badge.rel = "noopener";
+    badge.style.cssText =
+      "position:absolute;bottom:4px;right:6px;font-size:9px;color:#9CA3AF;" +
+      "text-decoration:none;opacity:0.7;";
+    badge.textContent = "⚡ Ads by Vybridge";
+    return badge;
   }
 
   // Shown in an active slot with nothing booked yet — our own trusted
@@ -161,8 +155,8 @@
   function renderPlaceholder(target, slot) {
     var box = document.createElement("div");
     box.style.cssText =
-      "box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;" +
-      "gap:6px;width:" +
+      "position:relative;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;" +
+      "justify-content:center;gap:6px;width:" +
       slot.width +
       "px;height:" +
       slot.height +
@@ -182,6 +176,7 @@
     link.style.cssText = "color:#7c3aed;text-decoration:underline;font-weight:700;";
     box.appendChild(link);
 
+    box.appendChild(createSlotBadge());
     target.appendChild(box);
   }
 
