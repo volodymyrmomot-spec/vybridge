@@ -62,7 +62,35 @@
 
   // ---------- Ad serving ----------
 
+  // Shown on every page running w.js in normal ad-serving mode, regardless
+  // of whether this particular page has any slots — not gated on the
+  // /api/widget response, so it never depends on that call succeeding.
+  function injectBadge() {
+    if (document.getElementById("vybridge-badge")) {
+      return;
+    }
+
+    var style = document.createElement("style");
+    style.textContent =
+      "#vybridge-badge{position:fixed;bottom:12px;right:12px;z-index:9999;" +
+      "display:inline-flex;align-items:center;gap:4px;padding:5px 10px;" +
+      "background:#6366F1;color:#fff;font:600 11px/1.2 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;" +
+      "border-radius:6px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,0.18);opacity:0.92;}" +
+      "#vybridge-badge:hover{opacity:1;}";
+    document.head.appendChild(style);
+
+    var badge = document.createElement("a");
+    badge.id = "vybridge-badge";
+    badge.href = apiOrigin || "https://vybridge-production.up.railway.app";
+    badge.target = "_blank";
+    badge.rel = "noopener";
+    badge.textContent = "⚡ Ads by Vybridge";
+    document.body.appendChild(badge);
+  }
+
   function startAdServing(siteKey) {
+    injectBadge();
+
     fetch(apiOrigin + "/api/widget/" + encodeURIComponent(siteKey))
       .then(function (res) {
         return res.json();

@@ -836,7 +836,100 @@
       actionCell.appendChild(pickBtn);
       row.appendChild(actionCell);
 
+      var deleteCell = document.createElement("td");
+      var deleteBtn = el("button", "btn btn--danger btn--sm", "Delete");
+      deleteBtn.type = "button";
+      deleteBtn.addEventListener("click", function () {
+        openDeleteSlotModal(slot.id, row);
+      });
+      deleteCell.appendChild(deleteBtn);
+      row.appendChild(deleteCell);
+
       body.appendChild(row);
+    });
+  }
+
+  // ---------- Delete slot ----------
+
+  var deleteSlotBackdrop = document.getElementById("deleteSlotBackdrop");
+  var deleteSlotConfirmBtn = document.getElementById("deleteSlotConfirmBtn");
+  var deleteSlotCancelBtn = document.getElementById("deleteSlotCancelBtn");
+  var deleteSlotModalCloseBtn = document.getElementById("deleteSlotModalCloseBtn");
+  var deleteSlotFormMessage = document.getElementById("deleteSlotFormMessage");
+  var pendingDeleteSlotId = null;
+  var pendingDeleteRow = null;
+
+  function openDeleteSlotModal(slotId, row) {
+    pendingDeleteSlotId = slotId;
+    pendingDeleteRow = row;
+    deleteSlotFormMessage.hidden = true;
+    deleteSlotBackdrop.hidden = false;
+  }
+
+  function closeDeleteSlotModal() {
+    pendingDeleteSlotId = null;
+    pendingDeleteRow = null;
+    deleteSlotBackdrop.hidden = true;
+  }
+
+  if (deleteSlotCancelBtn) {
+    deleteSlotCancelBtn.addEventListener("click", closeDeleteSlotModal);
+  }
+  if (deleteSlotModalCloseBtn) {
+    deleteSlotModalCloseBtn.addEventListener("click", closeDeleteSlotModal);
+  }
+  if (deleteSlotBackdrop) {
+    deleteSlotBackdrop.addEventListener("click", function (event) {
+      if (event.target === deleteSlotBackdrop) {
+        closeDeleteSlotModal();
+      }
+    });
+  }
+
+  if (deleteSlotConfirmBtn) {
+    deleteSlotConfirmBtn.addEventListener("click", function () {
+      if (!pendingDeleteSlotId) {
+        return;
+      }
+      var slotId = pendingDeleteSlotId;
+      var row = pendingDeleteRow;
+      deleteSlotConfirmBtn.disabled = true;
+
+      fetch("/api/slots/" + encodeURIComponent(slotId), {
+        method: "DELETE",
+        credentials: "same-origin",
+      })
+        .then(function (res) {
+          return res.json().then(function (data) {
+            return { ok: res.ok, body: data };
+          });
+        })
+        .then(function (result) {
+          deleteSlotConfirmBtn.disabled = false;
+          if (!result.ok) {
+            deleteSlotFormMessage.textContent = result.body.error || "Could not delete this slot. Please try again.";
+            deleteSlotFormMessage.hidden = false;
+            return;
+          }
+
+          currentSlots = currentSlots.filter(function (slot) {
+            return slot.id !== slotId;
+          });
+          if (row) {
+            row.remove();
+          }
+          var body = document.getElementById("publisherSlotsBody");
+          if (!body.children.length) {
+            body.closest(".dashboard-table-wrap").hidden = true;
+            document.getElementById("publisherSlotsEmpty").hidden = false;
+          }
+          closeDeleteSlotModal();
+        })
+        .catch(function () {
+          deleteSlotConfirmBtn.disabled = false;
+          deleteSlotFormMessage.textContent = "Network error. Please try again.";
+          deleteSlotFormMessage.hidden = false;
+        });
     });
   }
 
