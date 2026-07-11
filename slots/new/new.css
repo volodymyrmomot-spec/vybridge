@@ -76,6 +76,11 @@
   text-align: center;
 }
 
+.slot-picker-url-hint--warning {
+  color: #dc2626;
+  font-weight: 600;
+}
+
 /* Step 2/3 — iframe + confirm panel */
 .slot-picker-workspace[hidden] {
   display: none;

@@ -32,6 +32,18 @@
   var pageUrlInput = document.getElementById("pageUrlInput");
   var pageUrlError = document.getElementById("pageUrlError");
   var openPickerBtn = document.getElementById("openPickerBtn");
+  var urlHint = document.getElementById("urlHint");
+  var desktopOnlyNotice = document.getElementById("desktopOnlyNotice");
+
+  // Drag-to-select needs a real mouse and enough screen to draw a rectangle
+  // on — checked once at load, not on resize, since a publisher opening
+  // this on a phone isn't expected to rotate their way into a picker.
+  var MIN_PICKER_WIDTH = 1024;
+  if (window.innerWidth < MIN_PICKER_WIDTH) {
+    openPickerBtn.disabled = true;
+    urlHint.hidden = true;
+    desktopOnlyNotice.hidden = false;
+  }
 
   var frameLoading = document.getElementById("frameLoading");
   var iframe = document.getElementById("pickerIframe");

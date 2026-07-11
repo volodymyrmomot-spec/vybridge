@@ -64,6 +64,54 @@
 
   // ---------- Ad serving ----------
 
+  // A visitor who closes a slot shouldn't see it again for a while, but
+  // shouldn't have it gone forever either — localStorage (not a cookie, no
+  // server round-trip needed) keyed per slot, checked against this window
+  // before ever rendering that slot.
+  var CLOSE_HIDE_MS = 12 * 60 * 60 * 1000;
+
+  function closedStorageKey(slotId) {
+    return "vybridge_closed_" + slotId;
+  }
+
+  function isClosedRecently(slotId) {
+    try {
+      var raw = window.localStorage.getItem(closedStorageKey(slotId));
+      if (!raw) {
+        return false;
+      }
+      var closedAt = Number(raw);
+      return Number.isFinite(closedAt) && Date.now() - closedAt < CLOSE_HIDE_MS;
+    } catch (err) {
+      // localStorage can throw (private browsing, disabled storage) — treat
+      // as "never closed" rather than breaking ad serving over it.
+      return false;
+    }
+  }
+
+  function markClosed(slotId) {
+    try {
+      window.localStorage.setItem(closedStorageKey(slotId), String(Date.now()));
+    } catch (err) {}
+  }
+
+  function createCloseButton(slotId, containerEl) {
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = "×";
+    btn.setAttribute("aria-label", "Close");
+    btn.style.cssText =
+      "position:absolute;top:4px;right:4px;width:16px;height:16px;font-size:12px;" +
+      "cursor:pointer;color:#9CA3AF;background:transparent;border:none;line-height:1;z-index:1;";
+    btn.addEventListener("click", function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      containerEl.style.display = "none";
+      markClosed(slotId);
+    });
+    return btn;
+  }
+
   function startAdServing(siteKey) {
     fetch(apiOrigin + "/api/widget/" + encodeURIComponent(siteKey))
       .then(function (res) {
@@ -101,6 +149,10 @@
   }
 
   function scheduleSlot(slot) {
+    if (isClosedRecently(slot.slot_id)) {
+      return;
+    }
+
     // Drawn-area slots render at a fixed viewport position, independent of
     // any page element — nothing to look up or wait to scroll into view.
     if (hasFixedPosition(slot)) {
@@ -167,6 +219,7 @@
       "'},'*')\">";
     wrap.appendChild(iframe);
     wrap.appendChild(createSlotBadge());
+    wrap.appendChild(createCloseButton(slot.slot_id, wrap));
     target.appendChild(wrap);
   }
 
@@ -219,6 +272,7 @@
     box.appendChild(link);
 
     box.appendChild(createSlotBadge());
+    box.appendChild(createCloseButton(slot.slot_id, box));
     target.appendChild(box);
   }
 
