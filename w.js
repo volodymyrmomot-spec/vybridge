@@ -38,6 +38,8 @@
   var toastEl = null;
   var lastHighlighted = null;
   var previewEl = null;
+  var dragStart = null;
+  var dragEl = null;
 
   function ready(fn) {
     if (document.readyState === "loading") {
@@ -76,7 +78,38 @@
       .catch(function () {});
   }
 
+  // True once a slot has been through the drag-to-select picker (see
+  // onMouseUp below) — pos_width/pos_height are only ever both set
+  // together with pos_x/pos_y, never independently.
+  function hasFixedPosition(slot) {
+    return (
+      slot.pos_x !== null &&
+      slot.pos_x !== undefined &&
+      slot.pos_y !== null &&
+      slot.pos_y !== undefined &&
+      !!slot.pos_width &&
+      !!slot.pos_height
+    );
+  }
+
+  function effectiveWidth(slot) {
+    return hasFixedPosition(slot) ? slot.pos_width : slot.width;
+  }
+
+  function effectiveHeight(slot) {
+    return hasFixedPosition(slot) ? slot.pos_height : slot.height;
+  }
+
   function scheduleSlot(slot) {
+    // Drawn-area slots render at a fixed viewport position, independent of
+    // any page element — nothing to look up or wait to scroll into view.
+    if (hasFixedPosition(slot)) {
+      renderAd(document.body, slot);
+      return;
+    }
+
+    // Fallback for any slot picked before drag-to-select existed — still
+    // positioned via its CSS selector, same as always.
     var target;
     try {
       target = document.querySelector(slot.dom_selector);
@@ -111,16 +144,20 @@
     clickDestinations[slot.slot_id] = slot.click_tracking_url;
     ensureClickListener();
 
+    var w = effectiveWidth(slot);
+    var h = effectiveHeight(slot);
+
     var wrap = document.createElement("div");
-    wrap.style.cssText =
-      "position:relative;display:inline-block;width:" + slot.width + "px;height:" + slot.height + "px;";
+    wrap.style.cssText = hasFixedPosition(slot)
+      ? "position:fixed;left:" + slot.pos_x + "px;top:" + slot.pos_y + "px;width:" + w + "px;height:" + h + "px;z-index:999997;"
+      : "position:relative;display:inline-block;width:" + w + "px;height:" + h + "px;";
 
     var iframe = document.createElement("iframe");
-    iframe.width = slot.width;
-    iframe.height = slot.height;
+    iframe.width = w;
+    iframe.height = h;
     iframe.setAttribute("scrolling", "no");
     iframe.setAttribute("sandbox", "allow-scripts allow-same-origin");
-    iframe.style.cssText = "border:0;display:block;width:" + slot.width + "px;height:" + slot.height + "px;";
+    iframe.style.cssText = "border:0;display:block;width:" + w + "px;height:" + h + "px;";
     iframe.srcdoc =
       "<style>body{margin:0}img{display:block;width:100%;height:100%;cursor:pointer}</style>" +
       '<img src="' +
@@ -153,13 +190,18 @@
   // content (not an advertiser's), so a plain styled block instead of the
   // sandboxed iframe renderAd() uses for real creatives.
   function renderPlaceholder(target, slot) {
+    var w = effectiveWidth(slot);
+    var h = effectiveHeight(slot);
     var box = document.createElement("div");
     box.style.cssText =
-      "position:relative;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;" +
+      (hasFixedPosition(slot)
+        ? "position:fixed;left:" + slot.pos_x + "px;top:" + slot.pos_y + "px;z-index:999997;"
+        : "position:relative;") +
+      "box-sizing:border-box;display:flex;flex-direction:column;align-items:center;" +
       "justify-content:center;gap:6px;width:" +
-      slot.width +
+      w +
       "px;height:" +
-      slot.height +
+      h +
       "px;max-width:100%;padding:8px;text-align:center;" +
       "border:2px dashed #7c3aed;border-radius:8px;background:rgba(124,58,237,0.06);" +
       "font:600 13px/1.3 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#4f46e5;";
@@ -199,42 +241,6 @@
   }
 
   // ---------- Visual placement picker ----------
-
-  // Same buckets described to the publisher on /slots/new — checked in this
-  // order, first match wins, so a very wide-but-short element still lands on
-  // Leaderboard before the mobile-banner check below it gets a chance.
-  function suggestFormat(width, height) {
-    if (width > 600) {
-      return { value: "728x90", label: "Leaderboard (728×90)", width: 728, height: 90 };
-    }
-    if (width >= 280 && width <= 400 && height >= 230 && height <= 270) {
-      return { value: "300x250", label: "Medium Rectangle (300×250)", width: 300, height: 250 };
-    }
-    if (width > 280 && height < 100) {
-      return { value: "320x50", label: "Mobile Banner (320×50)", width: 320, height: 50 };
-    }
-    if (width >= 150 && width <= 170 && height >= 580 && height <= 620) {
-      return { value: "160x600", label: "Wide Skyscraper (160×600)", width: 160, height: 600 };
-    }
-    return { value: "custom", label: "Custom (" + width + "×" + height + ")", width: width, height: height };
-  }
-
-  // Rough position-based guess for the label field, which the publisher can
-  // always edit before creating the slot — this only saves them typing.
-  function suggestLabel(rect) {
-    var pageY = rect.top + window.scrollY;
-    var pageHeight = document.documentElement.scrollHeight;
-    if (pageY < 400) {
-      return "Header banner";
-    }
-    if (pageY > pageHeight - 600) {
-      return "Footer banner";
-    }
-    if (rect.left < 120 || window.innerWidth - rect.right < 120) {
-      return "Sidebar banner";
-    }
-    return "Content banner";
-  }
 
   function computeSelector(el) {
     if (el.id) {
@@ -278,7 +284,9 @@
       "#vybridge-picker-toast button:hover{background:rgba(255,255,255,0.2);}" +
       "#vybridge-picker-toast.vybridge-picker-toast--success{background:#059669;}" +
       "#vybridge-picker-toast.vybridge-picker-toast--error{background:#dc2626;}" +
-      "#vybridge-picker-preview{position:absolute;z-index:2147483646;box-sizing:border-box;" +
+      "#vybridge-picker-drag{position:fixed;border:2px dashed #6366F1;background:rgba(99,102,241,0.1);" +
+      "pointer-events:none;z-index:999999;}" +
+      "#vybridge-picker-preview{position:fixed;z-index:999998;box-sizing:border-box;" +
       "display:flex;align-items:center;justify-content:center;text-align:center;padding:8px;" +
       "background:rgba(124,58,237,0.15);border:2px solid #7c3aed;border-radius:6px;" +
       "font:600 13px/1.3 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#4f46e5;" +
@@ -286,16 +294,19 @@
     document.head.appendChild(style);
   }
 
-  function showPickPreview(el, format) {
+  // Confirmed-selection box, shown after mouseup — position:fixed with
+  // plain viewport coordinates (no scrollX/scrollY), same as the drag
+  // rectangle and the final ad render, so it lines up exactly regardless
+  // of page scroll position.
+  function showAreaPreview(x, y, width, height) {
     removePickPreview();
-    var rect = el.getBoundingClientRect();
     previewEl = document.createElement("div");
     previewEl.id = "vybridge-picker-preview";
-    previewEl.style.left = rect.left + window.scrollX + "px";
-    previewEl.style.top = rect.top + window.scrollY + "px";
-    previewEl.style.width = rect.width + "px";
-    previewEl.style.height = rect.height + "px";
-    previewEl.textContent = "Your ad will appear here · " + format.label;
+    previewEl.style.left = x + "px";
+    previewEl.style.top = y + "px";
+    previewEl.style.width = width + "px";
+    previewEl.style.height = height + "px";
+    previewEl.textContent = "Your ad will appear here (" + width + "×" + height + ")";
     document.body.appendChild(previewEl);
   }
 
@@ -371,46 +382,76 @@
       });
   }
 
-  // New flow: framed by /slots/new on the vybridge app. Nothing is written
-  // to the backend from here — the selector/size/suggested format are
+  // New flow: framed by /slots/new on the vybridge app. Drag-to-select —
+  // no DOM element detection at all, just the rectangle the publisher
+  // drew. Nothing is written to the backend from here; the coordinates are
   // relayed to the parent page, which already holds the token and finishes
-  // the slot itself once the publisher confirms label/price/duration.
-  function onClickEmbedded(event) {
-    event.preventDefault();
-    event.stopPropagation();
-
-    var el = event.target;
-    var selector = computeSelector(el);
-    var rect = el.getBoundingClientRect();
-    var width = Math.round(rect.width);
-    var height = Math.round(rect.height);
-    var format = suggestFormat(width, height);
-
-    document.removeEventListener("mouseover", onMouseOver, true);
-    document.removeEventListener("click", onClickEmbedded, true);
-    if (lastHighlighted) {
-      lastHighlighted.classList.remove("vybridge-picker-highlight");
-      lastHighlighted = null;
+  // the slot itself once the publisher confirms label/format/price/duration.
+  function onMouseDown(event) {
+    if (event.button !== 0) {
+      return;
     }
+    event.preventDefault();
+
+    dragStart = { x: event.clientX, y: event.clientY };
+    dragEl = document.createElement("div");
+    dragEl.id = "vybridge-picker-drag";
+    dragEl.style.left = dragStart.x + "px";
+    dragEl.style.top = dragStart.y + "px";
+    dragEl.style.width = "0px";
+    dragEl.style.height = "0px";
+    document.body.appendChild(dragEl);
+
+    document.addEventListener("mousemove", onMouseMove, true);
+    document.addEventListener("mouseup", onMouseUp, true);
+  }
+
+  function onMouseMove(event) {
+    if (!dragStart || !dragEl) {
+      return;
+    }
+    var x = Math.min(dragStart.x, event.clientX);
+    var y = Math.min(dragStart.y, event.clientY);
+    var width = Math.abs(event.clientX - dragStart.x);
+    var height = Math.abs(event.clientY - dragStart.y);
+    dragEl.style.left = x + "px";
+    dragEl.style.top = y + "px";
+    dragEl.style.width = width + "px";
+    dragEl.style.height = height + "px";
+  }
+
+  function onMouseUp(event) {
+    document.removeEventListener("mousemove", onMouseMove, true);
+    document.removeEventListener("mouseup", onMouseUp, true);
+    if (!dragStart) {
+      return;
+    }
+
+    var x = Math.min(dragStart.x, event.clientX);
+    var y = Math.min(dragStart.y, event.clientY);
+    var width = Math.abs(event.clientX - dragStart.x);
+    var height = Math.abs(event.clientY - dragStart.y);
+    dragStart = null;
+    if (dragEl) {
+      dragEl.remove();
+      dragEl = null;
+    }
+
+    // Too small to be a deliberate drag (a stray click or a jitter) —
+    // ignore it and keep listening for a real one.
+    if (width < 10 || height < 10) {
+      return;
+    }
+
+    document.removeEventListener("mousedown", onMouseDown, true);
     if (toastEl) {
       toastEl.remove();
       toastEl = null;
     }
 
-    showPickPreview(el, format);
+    showAreaPreview(x, y, width, height);
 
-    window.parent.postMessage(
-      {
-        vybridgePicked: true,
-        selector: selector,
-        width: width,
-        height: height,
-        format: format.value,
-        formatLabel: format.label,
-        label: suggestLabel(rect),
-      },
-      "*"
-    );
+    window.parent.postMessage({ vybridgePicked: true, x: x, y: y, width: width, height: height }, "*");
   }
 
   function onParentMessage(event) {
@@ -418,9 +459,8 @@
       return;
     }
     removePickPreview();
-    showToast("Hover over any area and click to place your ad here");
-    document.addEventListener("mouseover", onMouseOver, true);
-    document.addEventListener("click", onClickEmbedded, true);
+    showToast("Click and drag to draw your ad area");
+    document.addEventListener("mousedown", onMouseDown, true);
   }
 
   function exitPickerMode() {
@@ -441,9 +481,8 @@
     if (embedded) {
       window.parent.postMessage({ vybridgePickerReady: true }, "*");
       window.addEventListener("message", onParentMessage);
-      showToast("Hover over any area and click to place your ad here");
-      document.addEventListener("mouseover", onMouseOver, true);
-      document.addEventListener("click", onClickEmbedded, true);
+      showToast("Click and drag to draw your ad area");
+      document.addEventListener("mousedown", onMouseDown, true);
       return;
     }
 

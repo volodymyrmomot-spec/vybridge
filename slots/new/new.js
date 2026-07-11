@@ -38,8 +38,9 @@
 
   var panelWaiting = document.getElementById("panelWaiting");
   var confirmForm = document.getElementById("confirmForm");
-  var panelFormat = document.getElementById("panelFormat");
+  var panelArea = document.getElementById("panelArea");
   var slotLabelInput = document.getElementById("slotLabel");
+  var slotFormatSelect = document.getElementById("slotFormat");
   var slotPriceInput = document.getElementById("slotPrice");
   var slotDurationInput = document.getElementById("slotDuration");
   var createSlotBtn = document.getElementById("createSlotBtn");
@@ -53,7 +54,7 @@
 
   var state = {
     slotId: null,
-    picked: null, // { selector, width, height, format, formatLabel, label }
+    picked: null, // { x, y, width, height } — the drawn rectangle, viewport pixels
   };
   var readyTimer = null;
 
@@ -171,15 +172,17 @@
 
     if (data.vybridgePicked) {
       state.picked = {
-        selector: data.selector,
+        x: data.x,
+        y: data.y,
         width: data.width,
         height: data.height,
-        format: data.format,
-        formatLabel: data.formatLabel,
       };
 
-      panelFormat.textContent = "Selected format: " + data.formatLabel;
-      slotLabelInput.value = data.label || "New ad slot";
+      panelArea.textContent = "Selected area: " + data.width + " × " + data.height + " px";
+      if (!slotLabelInput.value.trim()) {
+        slotLabelInput.value = "New ad slot";
+      }
+      slotFormatSelect.value = "";
       panelWaiting.hidden = true;
       confirmForm.hidden = false;
     }
@@ -235,10 +238,11 @@
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         label: label,
-        format: state.picked.format,
+        format: slotFormatSelect.value,
+        posX: state.picked.x,
+        posY: state.picked.y,
         width: state.picked.width,
         height: state.picked.height,
-        domSelector: state.picked.selector,
         priceEuros: price,
         durationDays: duration,
       }),
@@ -261,8 +265,8 @@
             if (result.body.errors.durationDays) {
               setFieldError(slotDurationInput, result.body.errors.durationDays);
             }
-            if (result.body.errors.format) {
-              confirmFormMessage.textContent = result.body.errors.format;
+            if (result.body.errors.area) {
+              confirmFormMessage.textContent = result.body.errors.area;
               confirmFormMessage.hidden = false;
             }
           } else {

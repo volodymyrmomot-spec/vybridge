@@ -770,15 +770,22 @@
   }
 
   // A slot's domSelector starts out as this auto-generated placeholder
-  // (see lib/slots.js) until the visual picker overwrites it with a real,
-  // hand-picked selector — so an unchanged placeholder means "not picked yet".
+  // (see lib/slots.js) until either the old CSS-selector picker overwrites
+  // it with a real one, or the drag-to-select picker sets posX/posY
+  // instead (domSelector stays the placeholder forever for those, by
+  // design) — so "not picked yet" means neither has happened.
   var currentSlots = [];
+
+  function needsPicker(slot) {
+    var domUnset = slot.domSelector === "#vybridge-slot-" + slot.id;
+    var posUnset = slot.posX === null || slot.posX === undefined;
+    return domUnset && posUnset;
+  }
 
   function findSlotNeedingPicker() {
     for (var i = 0; i < currentSlots.length; i++) {
-      var slot = currentSlots[i];
-      if (slot.domSelector === "#vybridge-slot-" + slot.id) {
-        return slot;
+      if (needsPicker(currentSlots[i])) {
+        return currentSlots[i];
       }
     }
     return null;
@@ -825,15 +832,25 @@
       var statusCell = document.createElement("td");
       statusCell.appendChild(statusPill(slot.status));
       row.appendChild(statusCell);
-      row.appendChild(el("td", "dashboard-cell--code", slot.domSelector));
+      var placementText =
+        slot.posX !== null && slot.posX !== undefined
+          ? slot.posX + ", " + slot.posY + " (" + slot.posWidth + "×" + slot.posHeight + ")"
+          : slot.domSelector;
+      row.appendChild(el("td", "dashboard-cell--code", placementText));
 
       var actionCell = document.createElement("td");
-      var pickBtn = el("button", "btn btn--outline btn--sm", "Pick placement");
-      pickBtn.type = "button";
-      pickBtn.addEventListener("click", function () {
-        startPlacementPicker(slot.id, pickBtn);
-      });
-      actionCell.appendChild(pickBtn);
+      // Only offered for a slot that was never positioned at all (legacy
+      // recovery case) — re-running the old element-click picker on a slot
+      // already positioned by drag-to-select would write a domSelector
+      // that w.js then ignores in favor of the existing posX/posY.
+      if (needsPicker(slot)) {
+        var pickBtn = el("button", "btn btn--outline btn--sm", "Pick placement");
+        pickBtn.type = "button";
+        pickBtn.addEventListener("click", function () {
+          startPlacementPicker(slot.id, pickBtn);
+        });
+        actionCell.appendChild(pickBtn);
+      }
       row.appendChild(actionCell);
 
       var deleteCell = document.createElement("td");

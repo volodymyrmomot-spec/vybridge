@@ -229,11 +229,25 @@ model Slot {
   publisher        User       @relation("PublisherSlots", fields: [publisherId], references: [id])
 
   label            String
+  // Legacy positioning: a CSS selector on the publisher's page, resolved
+  // client-side by w.js. Still required (and still how existing slots
+  // render), but a new slot from the drag-to-select picker no longer picks
+  // a real element — it's written the auto-generated placeholder value and
+  // ignored in favor of posX/posY/posWidth/posHeight below.
   domSelector      String     @map("dom_selector")
   fallbackAnchorId String?    @map("fallback_anchor_id")
   format           String
   width            Int
   height           Int
+
+  // Drag-to-select positioning: viewport-relative pixel coordinates from
+  // the picker's mousedown/mouseup rectangle, rendered by w.js via
+  // `position: fixed`. Null for any slot picked before this existed —
+  // those keep rendering off domSelector above.
+  posX             Int?       @map("pos_x")
+  posY             Int?       @map("pos_y")
+  posWidth         Int?       @map("pos_width")
+  posHeight        Int?       @map("pos_height")
 
   priceCents       Int        @map("price_cents")
   currency         String     @default("eur")
