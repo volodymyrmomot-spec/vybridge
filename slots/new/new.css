@@ -92,10 +92,23 @@
   gap: 24px;
 }
 
-.slot-picker-frame-wrap {
+.slot-picker-frame-col {
   flex: 0 0 70%;
+  min-width: 0;
+}
+
+.slot-picker-frame-label {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.slot-picker-frame-wrap {
   position: relative;
-  min-height: 640px;
+  /* Pre-JS/loading-state fallback — applyPickerScale() (new.js) overrides
+     this with the real computed height (900px true viewport * scale,
+     floored at this same 500px) once the iframe is shown. */
+  min-height: 500px;
   background: var(--bg-muted);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -117,10 +130,17 @@
   color: var(--text-muted);
 }
 
+/* True width/height/transform are set inline by applyPickerScale() (new.js)
+   — always a real 1440x900 desktop viewport, visually scaled down to fit
+   the wrapper. Positioning it here as absolute/top-left keeps its scaled
+   footprint from affecting the wrapper's own layout size (that's driven by
+   the JS-set height on .slot-picker-frame-wrap instead). */
 .slot-picker-iframe {
   display: block;
-  width: 100%;
-  height: 640px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
   border: 0;
 }
 

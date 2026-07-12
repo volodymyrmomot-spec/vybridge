@@ -47,6 +47,35 @@
 
   var frameLoading = document.getElementById("frameLoading");
   var iframe = document.getElementById("pickerIframe");
+  var frameWrap = document.getElementById("pickerFrameWrap");
+
+  // Forces the framed page to render at a real desktop layout — publisher
+  // sites are responsive and would otherwise drop to their tablet/mobile
+  // breakpoint at the frame's actual (narrow) on-page width. The iframe's
+  // TRUE size is always a fixed 1440x900 desktop viewport; only its visual
+  // appearance is scaled down via CSS transform to fit the wrapper. This is
+  // a pure paint-time effect — event.clientX/clientY captured by w.js
+  // running inside the iframe are relative to the iframe's own document
+  // viewport, never affected by an ancestor's transform (verified directly
+  // in-browser before writing this), so the drag-select coordinates it
+  // posts back are already in this same 1440x900 space with no rescale
+  // needed here.
+  var PICKER_VIEWPORT_WIDTH = 1440;
+  var PICKER_VIEWPORT_HEIGHT = 900;
+  var PICKER_MIN_VISIBLE_HEIGHT = 500;
+
+  function applyPickerScale() {
+    if (!frameWrap || iframe.hidden) {
+      return;
+    }
+    var scale = frameWrap.clientWidth / PICKER_VIEWPORT_WIDTH;
+    iframe.style.width = PICKER_VIEWPORT_WIDTH + "px";
+    iframe.style.height = PICKER_VIEWPORT_HEIGHT + "px";
+    iframe.style.transform = "scale(" + scale + ")";
+    frameWrap.style.height = Math.max(PICKER_VIEWPORT_HEIGHT * scale, PICKER_MIN_VISIBLE_HEIGHT) + "px";
+  }
+
+  window.addEventListener("resize", applyPickerScale);
 
   var panelWaiting = document.getElementById("panelWaiting");
   var confirmForm = document.getElementById("confirmForm");
@@ -66,7 +95,7 @@
 
   var state = {
     slotId: null,
-    picked: null, // { x, y, width, height } — the drawn rectangle, viewport pixels
+    picked: null, // { x, y, width, height } — the drawn rectangle, in the iframe's fixed 1440x900 viewport pixels
   };
   var readyTimer = null;
 
@@ -179,6 +208,7 @@
       }
       frameLoading.hidden = true;
       iframe.hidden = false;
+      applyPickerScale();
       return;
     }
 
