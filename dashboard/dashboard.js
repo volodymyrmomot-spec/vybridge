@@ -947,6 +947,7 @@
     slots.forEach(function (slot) {
       var row = document.createElement("tr");
       row.appendChild(el("td", null, slot.label));
+      row.appendChild(el("td", null, slot.viewportType === "mobile" ? "Mobile" : "Desktop"));
       row.appendChild(el("td", null, slot.format));
       row.appendChild(el("td", null, slot.price));
       row.appendChild(el("td", null, slot.durationDays + " days"));

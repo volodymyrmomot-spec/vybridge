@@ -42,6 +42,51 @@
   box-shadow: var(--shadow-sm);
 }
 
+.slot-picker-viewport-label {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.slot-picker-viewport-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.slot-picker-viewport-btn {
+  padding: 14px 12px;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--bg-muted);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.slot-picker-viewport-btn:hover {
+  border-color: var(--purple);
+}
+
+.slot-picker-viewport-btn.is-active {
+  color: #fff;
+  background: var(--purple);
+  border-color: var(--purple);
+}
+
+.slot-picker-url-input:disabled,
+.slot-picker-url-card .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .slot-picker-url-input {
   padding: 14px 16px;
   font-family: var(--font);
@@ -145,6 +190,54 @@
 }
 
 .slot-picker-iframe[hidden] {
+  display: none;
+}
+
+/* Mobile mode — the iframe renders at true 400x800 size with no transform
+   (see applyMobilePreview() in new.js), so instead of the desktop
+   top/left-anchored absolute box above, it's centered in the wrap and
+   wrapped in a purely decorative "phone frame" border. */
+.slot-picker-frame-wrap.is-mobile .slot-picker-iframe {
+  position: static;
+  border-radius: 22px;
+  box-shadow: 0 0 0 8px #1f2430, 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.slot-picker-frame-wrap.is-mobile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 0;
+}
+
+/* Existing-placement reference overlays — read-only, pointer-events: none,
+   drawn by new.js over the iframe. Deliberately very low visual weight
+   (opacity, thin dashed border, near-transparent fill) so they never read
+   as "solid" or obscure the actual website while picking a new spot; the
+   in-progress selection rectangle w.js draws inside the iframe stays its
+   existing fully-opaque style, so the two are never visually ambiguous. */
+.slot-picker-overlay {
+  position: absolute;
+  box-sizing: border-box;
+  opacity: 0.25;
+  border: 1.5px dashed var(--purple);
+  background: rgba(124, 58, 237, 0.06);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.slot-picker-overlap-warning {
+  margin: 0;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #b45309;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: var(--radius-sm);
+}
+
+.slot-picker-overlap-warning[hidden] {
   display: none;
 }
 

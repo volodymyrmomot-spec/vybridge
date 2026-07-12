@@ -76,6 +76,7 @@
       specs.appendChild(el("dd", null, value));
     }
     if (slot) {
+      addSpec("Viewport", slot.viewportType === "mobile" ? "Mobile" : "Desktop");
       addSpec("Size", slot.width + " × " + slot.height + " px");
       addSpec("Format", slot.format);
       addSpec("Duration", slot.durationDays + " days");

@@ -45,6 +45,15 @@ enum SlotStatus {
   paused
 }
 
+// The viewport coordinate system a placement was captured against and
+// should render against — not a physical device. Kept intentionally
+// two-valued (no "all") to avoid ambiguous absolute-coordinate behavior;
+// see Slot.viewportType below.
+enum ViewportType {
+  desktop
+  mobile
+}
+
 enum DealStatus {
   created
   paid_escrow
@@ -321,6 +330,30 @@ model Slot {
   durationDays Int    @map("duration_days")
 
   status SlotStatus @default(draft)
+
+  // Which viewport coordinate system posX/posY/posWidth/posHeight were
+  // captured against — desktop and mobile placements are fully independent
+  // Slot rows, never a single row covering both. Defaults to desktop since
+  // every slot before this field existed was captured by the desktop-only
+  // picker.
+  viewportType ViewportType @default(desktop) @map("viewport_type")
+
+  // Immutable capture metadata — the exact reference viewport this slot's
+  // pos_x/pos_y/pos_width/pos_height were drawn against (1440x900 for
+  // desktop, 400x800 for mobile — a neutral virtual coordinate system, not
+  // tied to any specific real device). Set once by finalizeSlot() from the
+  // validated viewportType and never written to again by anything, ever.
+  // w.js's mobile scale formula divides by this value; changing it after
+  // the fact would silently misposition an already-live ad without
+  // changing pos_x/pos_y at all.
+  pickerViewportWidth  Int @default(1440) @map("picker_viewport_width")
+  pickerViewportHeight Int @default(900)  @map("picker_viewport_height")
+
+  // Immutable — the version of the picker implementation that produced
+  // this slot's coordinates (distinct from the reference viewport size
+  // above — this is the capture ALGORITHM's version). Set once by
+  // finalizeSlot(), never updated after.
+  captureVersion Int @default(1) @map("capture_version")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

@@ -125,6 +125,16 @@
       body.appendChild(badges);
     }
 
+    if (site.viewports && site.viewports.length) {
+      var viewportBadges = el("div", "site-card__formats");
+      site.viewports.forEach(function (viewport) {
+        viewportBadges.appendChild(
+          el("span", "site-card__badge site-card__badge--viewport", viewport === "mobile" ? "Mobile" : "Desktop")
+        );
+      });
+      body.appendChild(viewportBadges);
+    }
+
     var footer = el("div", "site-card__footer");
 
     var stats = el("div", "site-card__stats");

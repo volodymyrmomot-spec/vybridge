@@ -31,18 +31,24 @@
 
       <section class="slot-picker-step1" id="step1">
         <div class="slot-picker-url-card">
+          <p class="slot-picker-viewport-label">Choose viewport</p>
+          <div class="slot-picker-viewport-toggle" id="viewportToggle">
+            <button type="button" class="slot-picker-viewport-btn" data-viewport="desktop">Desktop placement</button>
+            <button type="button" class="slot-picker-viewport-btn" data-viewport="mobile">Mobile placement</button>
+          </div>
+
           <label class="form-field__label" for="pageUrlInput">Your page URL</label>
-          <input class="slot-picker-url-input" type="url" id="pageUrlInput" placeholder="https://yoursite.com/page" autocomplete="off">
+          <input class="slot-picker-url-input" type="url" id="pageUrlInput" placeholder="https://yoursite.com/page" autocomplete="off" disabled>
           <p class="form-field__error" id="pageUrlError" hidden></p>
-          <button type="button" class="btn btn--purple btn--lg" id="openPickerBtn">Open and pick ad spot</button>
-          <p class="slot-picker-url-hint" id="urlHint">We'll open your page and let you click where you want the ad to appear</p>
+          <button type="button" class="btn btn--purple btn--lg" id="openPickerBtn" disabled>Open and pick ad spot</button>
+          <p class="slot-picker-url-hint" id="urlHint">Choose a viewport above, then we'll open your page and let you click where you want the ad to appear</p>
           <p class="slot-picker-url-hint slot-picker-url-hint--warning" id="desktopOnlyNotice" hidden>Ad placement selection requires a desktop browser. Please open this page on your computer to pick the ad spot.</p>
         </div>
       </section>
 
       <section class="slot-picker-workspace" id="workspace" hidden>
         <div class="slot-picker-frame-col">
-          <p class="slot-picker-frame-label">Desktop preview · 1440 px</p>
+          <p class="slot-picker-frame-label" id="frameLabel">Desktop preview · 1440 px</p>
           <div class="slot-picker-frame-wrap" id="pickerFrameWrap">
             <p class="slot-picker-loading" id="frameLoading">Loading your page…</p>
             <iframe class="slot-picker-iframe" id="pickerIframe" title="Your website" hidden></iframe>
@@ -51,6 +57,7 @@
 
         <aside class="slot-picker-panel">
           <p class="slot-picker-panel__waiting" id="panelWaiting">Click and drag on your page to draw where the ad should appear.</p>
+          <p class="slot-picker-overlap-warning" id="overlapWarning" hidden>This placement overlaps an existing ad.</p>
 
           <form class="slot-picker-panel__form" id="confirmForm" novalidate hidden>
             <p class="slot-picker-panel__format" id="panelArea"></p>

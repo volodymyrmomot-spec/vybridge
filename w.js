@@ -41,6 +41,18 @@
   var dragStart = null;
   var dragEl = null;
 
+  // Live ad-serving viewport detection — a different, unrelated threshold
+  // from the picker tool's own MIN_PICKER_WIDTH gate in new.js (that one
+  // decides who can use the picker at all; this one decides which
+  // viewport's slots a real visitor sees). 767/768 is the standard
+  // mobile/tablet boundary. This is the ONE and only window.matchMedia()
+  // call in this file — every other function that needs to know the
+  // current viewport calls currentViewportType() below instead.
+  var MOBILE_MEDIA_QUERY = "(max-width: 767px)";
+  var mobileMql = window.matchMedia(MOBILE_MEDIA_QUERY);
+  var allSlots = []; // full fetched list, both viewport types, fetched once
+  var renderedSlots = {}; // slot_id -> { wrap, io } currently in the DOM
+
   function ready(fn) {
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", fn);
@@ -95,14 +107,22 @@
     } catch (err) {}
   }
 
-  function createCloseButton(slotId, containerEl) {
+  function createCloseButton(slotId, containerEl, viewportType) {
     var btn = document.createElement("button");
     btn.type = "button";
     btn.textContent = "×";
     btn.setAttribute("aria-label", "Close");
+    // 40x40 minimum tap target on mobile, per the mobile safety
+    // requirements — the visible glyph stays small (font-size), the
+    // invisible transparent hit box around it grows instead, so it never
+    // reads as an oversized button. Desktop keeps its existing small size.
+    var isMobile = viewportType === "mobile";
+    var boxSize = isMobile ? 40 : 18;
+    var fontSize = isMobile ? 20 : 14;
     btn.style.cssText =
-      "position:absolute;top:4px;right:4px;width:16px;height:16px;font-size:12px;" +
-      "cursor:pointer;color:#9CA3AF;background:transparent;border:none;line-height:1;z-index:1;";
+      "position:absolute;top:8px;right:8px;width:" + boxSize + "px;height:" + boxSize + "px;" +
+      "display:flex;align-items:center;justify-content:center;font-size:" + fontSize + "px;" +
+      "cursor:pointer;color:#9CA3AF;background:transparent;border:none;line-height:1;z-index:2;padding:0;";
     btn.addEventListener("click", function (event) {
       event.preventDefault();
       event.stopPropagation();
@@ -112,18 +132,76 @@
     return btn;
   }
 
+  // Single source of truth for "what viewport is this visitor on right
+  // now" — per the plan, no other function in this file calls
+  // window.matchMedia() directly; they all call this instead.
+  function currentViewportType() {
+    return mobileMql.matches ? "mobile" : "desktop";
+  }
+
+  // Current implementation detail — a pure client-side filter over the
+  // already-fetched list.
+  function getSlotsForCurrentViewport(slots) {
+    var viewport = currentViewportType();
+    return slots.filter(function (slot) {
+      return slot.viewport_type === viewport;
+    });
+  }
+
+  // The single, stable call site every renderer goes through to ask "what
+  // should render right now" — one extra layer of indirection beyond
+  // getSlotsForCurrentViewport() so a future move to server-side filtering
+  // only ever touches THIS function.
+  function getRenderableSlots(slots) {
+    return getSlotsForCurrentViewport(slots);
+  }
+
+  function removeSlotNode(entry) {
+    if (!entry) {
+      return;
+    }
+    if (entry.io) {
+      entry.io.disconnect();
+    }
+    if (entry.wrap && entry.wrap.parentNode) {
+      entry.wrap.parentNode.removeChild(entry.wrap);
+    }
+  }
+
+  function applyViewportFilter() {
+    var matchingSlots = getRenderableSlots(allSlots);
+    var matching = {};
+    matchingSlots.forEach(function (slot) {
+      matching[slot.slot_id] = true;
+      if (!renderedSlots[slot.slot_id]) {
+        renderedSlots[slot.slot_id] = scheduleSlot(slot);
+      }
+    });
+    Object.keys(renderedSlots).forEach(function (id) {
+      if (!matching[id]) {
+        removeSlotNode(renderedSlots[id]);
+        delete renderedSlots[id];
+      }
+    });
+  }
+
   function startAdServing(siteKey) {
     fetch(apiOrigin + "/api/widget/" + encodeURIComponent(siteKey))
       .then(function (res) {
         return res.json();
       })
       .then(function (slots) {
-        if (!Array.isArray(slots)) {
-          return;
-        }
-        slots.forEach(scheduleSlot);
+        allSlots = Array.isArray(slots) ? slots : [];
+        applyViewportFilter();
       })
       .catch(function () {});
+
+    if (mobileMql.addEventListener) {
+      mobileMql.addEventListener("change", applyViewportFilter);
+    } else if (mobileMql.addListener) {
+      mobileMql.addListener(applyViewportFilter); // older Safari
+    }
+    window.addEventListener("orientationchange", applyViewportFilter);
   }
 
   // True once a slot has been through the drag-to-select picker (see
@@ -140,24 +218,61 @@
     );
   }
 
-  function effectiveWidth(slot) {
-    return hasFixedPosition(slot) ? slot.pos_width : slot.width;
+  // Real phone viewports vary meaningfully (320-428px wide) around the
+  // reference width a mobile slot's coordinates were captured against
+  // (slot.picker_viewport_width — per-slot and immutable, never a
+  // hardcoded constant, so a future change to the picker's reference size
+  // can never silently reinterpret an already-created slot's coordinates).
+  // Desktop's raw-pixel positioning is completely untouched below.
+  function mobileRenderRect(slot) {
+    var referenceWidth = slot.picker_viewport_width || 400; // fallback only in case of unexpected null
+    var scale = window.innerWidth / referenceWidth;
+    var renderWidth = slot.pos_width * scale;
+    var renderHeight = slot.pos_height * scale;
+    var renderX = slot.pos_x * scale;
+    var renderY = slot.pos_y * scale;
+
+    // Horizontal safety — the actual mechanism behind "never past the
+    // left/right edge, min 8px margin, no horizontal overflow":
+    renderWidth = Math.min(renderWidth, window.innerWidth - 16);
+    renderX = Math.max(8, Math.min(renderX, window.innerWidth - renderWidth - 8));
+
+    // Vertical — a light sanity clamp only (never negative), not a
+    // reference-height-based recalculation. position:fixed is always
+    // relative to the CURRENT viewport regardless of scroll position, so —
+    // unlike the horizontal case — there's no fixed "bottom edge of the
+    // page" to clamp against; picker_viewport_height is never read here.
+    renderY = Math.max(8, renderY);
+
+    return { left: renderX, top: renderY, width: renderWidth, height: renderHeight };
   }
 
-  function effectiveHeight(slot) {
-    return hasFixedPosition(slot) ? slot.pos_height : slot.height;
+  // Resolves the on-screen rect a fixed-position slot should render at —
+  // desktop keeps its existing raw-pixel behavior untouched; mobile routes
+  // through the scale-factor formula above. A slot without a fixed
+  // position (legacy dom_selector-based) just keeps its plain width/height.
+  function effectiveRect(slot) {
+    if (!hasFixedPosition(slot)) {
+      return { left: null, top: null, width: slot.width, height: slot.height };
+    }
+    if (slot.viewport_type === "mobile") {
+      return mobileRenderRect(slot);
+    }
+    return { left: slot.pos_x, top: slot.pos_y, width: slot.pos_width, height: slot.pos_height };
   }
 
   function scheduleSlot(slot) {
     if (isClosedRecently(slot.slot_id)) {
-      return;
+      return null;
     }
+
+    var entry = { wrap: null, io: null };
 
     // Drawn-area slots render at a fixed viewport position, independent of
     // any page element — nothing to look up or wait to scroll into view.
     if (hasFixedPosition(slot)) {
-      renderAd(document.body, slot);
-      return;
+      entry.wrap = renderAd(document.body, slot);
+      return entry;
     }
 
     // Fallback for any slot picked before drag-to-select existed — still
@@ -166,42 +281,55 @@
     try {
       target = document.querySelector(slot.dom_selector);
     } catch (err) {
-      return;
+      return entry;
     }
     if (!target) {
-      return;
+      return entry;
     }
 
     if ("IntersectionObserver" in window) {
       var io = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
+        entries.forEach(function (intersectionEntry) {
+          if (intersectionEntry.isIntersecting) {
             io.unobserve(target);
-            renderAd(target, slot);
+            entry.wrap = renderAd(target, slot);
           }
         });
       });
       io.observe(target);
+      entry.io = io;
     } else {
-      renderAd(target, slot);
+      entry.wrap = renderAd(target, slot);
     }
+
+    return entry;
   }
 
   function renderAd(target, slot) {
     if (slot.kind === "placeholder") {
-      renderPlaceholder(target, slot);
-      return;
+      return renderPlaceholder(target, slot);
     }
 
     clickDestinations[slot.slot_id] = slot.click_tracking_url;
     ensureClickListener();
 
-    var w = effectiveWidth(slot);
-    var h = effectiveHeight(slot);
+    var rect = effectiveRect(slot);
+    var w = rect.width;
+    var h = rect.height;
+    var isMobileFixed = hasFixedPosition(slot) && slot.viewport_type === "mobile";
 
     var wrap = document.createElement("div");
     wrap.style.cssText = hasFixedPosition(slot)
-      ? "position:fixed;left:" + slot.pos_x + "px;top:" + slot.pos_y + "px;width:" + w + "px;height:" + h + "px;z-index:999997;"
+      ? "position:fixed;left:" +
+        rect.left +
+        "px;top:" +
+        rect.top +
+        "px;width:" +
+        w +
+        "px;height:" +
+        h +
+        "px;z-index:999997;" +
+        (isMobileFixed ? "max-width:calc(100vw - 16px);" : "")
       : "position:relative;display:inline-block;width:" + w + "px;height:" + h + "px;";
 
     var iframe = document.createElement("iframe");
@@ -219,8 +347,9 @@
       "'},'*')\">";
     wrap.appendChild(iframe);
     wrap.appendChild(createSlotBadge());
-    wrap.appendChild(createCloseButton(slot.slot_id, wrap));
+    wrap.appendChild(createCloseButton(slot.slot_id, wrap, slot.viewport_type));
     target.appendChild(wrap);
+    return wrap;
   }
 
   // Small, unobtrusive attribution link — lives inside the slot itself
@@ -243,12 +372,19 @@
   // content (not an advertiser's), so a plain styled block instead of the
   // sandboxed iframe renderAd() uses for real creatives.
   function renderPlaceholder(target, slot) {
-    var w = effectiveWidth(slot);
-    var h = effectiveHeight(slot);
+    var rect = effectiveRect(slot);
+    var w = rect.width;
+    var h = rect.height;
+    var isMobileFixed = hasFixedPosition(slot) && slot.viewport_type === "mobile";
     var box = document.createElement("div");
     box.style.cssText =
       (hasFixedPosition(slot)
-        ? "position:fixed;left:" + slot.pos_x + "px;top:" + slot.pos_y + "px;z-index:999997;"
+        ? "position:fixed;left:" +
+          rect.left +
+          "px;top:" +
+          rect.top +
+          "px;z-index:999997;" +
+          (isMobileFixed ? "max-width:calc(100vw - 16px);" : "")
         : "position:relative;") +
       "box-sizing:border-box;display:flex;flex-direction:column;align-items:center;" +
       "justify-content:center;gap:6px;width:" +
@@ -272,8 +408,9 @@
     box.appendChild(link);
 
     box.appendChild(createSlotBadge());
-    box.appendChild(createCloseButton(slot.slot_id, box));
+    box.appendChild(createCloseButton(slot.slot_id, box, slot.viewport_type));
     target.appendChild(box);
+    return box;
   }
 
   function ensureClickListener() {
@@ -472,6 +609,10 @@
     dragEl.style.top = y + "px";
     dragEl.style.width = width + "px";
     dragEl.style.height = height + "px";
+
+    if (embedded) {
+      window.parent.postMessage({ vybridgeDragging: true, x: x, y: y, width: width, height: height }, "*");
+    }
   }
 
   function onMouseUp(event) {
