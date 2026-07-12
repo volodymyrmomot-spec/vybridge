@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>__VYBRIDGE_TITLE__</title>
+  <meta name="description" content="__VYBRIDGE_DESCRIPTION__">
+  __VYBRIDGE_HEAD_EXTRA__
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/listings/listings.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container header__inner">
+      <a href="/" class="logo">
+        <img src="/assets/logo-icon.svg" alt="" class="logo__icon" width="36" height="36">
+        <span class="logo__text">vybridge</span>
+      </a>
+      <div class="header__actions">
+        <a href="/login" class="header__login">Log in</a>
+        <a href="/register" class="btn btn--purple btn--sm">Sign up</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="public-page">
+    <div class="container">
+      <nav class="breadcrumbs" id="breadcrumbs">__VYBRIDGE_BREADCRUMBS__</nav>
+
+      <p class="dashboard-loading" id="listingLoading">Loading…</p>
+      <p class="dashboard-empty" id="listingNotFound" hidden>This listing isn't available.</p>
+
+      <div class="listing-page" id="listingBody" hidden>
+        <div class="listing-cover" id="listingCover"></div>
+
+        <div class="listing-page__main">
+          <h1 class="listing-title" id="listingTitle"></h1>
+          <p class="listing-type" id="listingType"></p>
+          <p class="listing-description" id="listingDescription" hidden></p>
+
+          <dl class="listing-specs" id="listingSpecs"></dl>
+
+          <a href="/" class="site-link" id="siteLink"></a>
+        </div>
+
+        <aside class="listing-page__side">
+          <div class="listing-price" id="listingPrice"></div>
+          <a href="/slots" class="btn btn--purple btn--lg" id="bookBtn">Book this slot</a>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <footer class="simple-footer">
+    <div class="container simple-footer__inner">
+      <span>© 2026 Vybridge</span>
+    </div>
+  </footer>
+  <script src="/listings/listings.js"></script>
+</body>
+</html>

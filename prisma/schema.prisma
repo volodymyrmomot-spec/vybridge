@@ -115,6 +115,35 @@ enum AudienceLanguage {
   other
 }
 
+// The kind of thing a Listing advertises. website_banner/website_popup are
+// the only values a Slot-sourced listing can get today (see
+// lib/listings.js's mapSlotToListingType) — the rest are reserved for
+// future sourceType values (blogger_channel etc.) so that adding a new kind
+// of listing never needs a schema change here, just a new enum value.
+enum ListingType {
+  website_banner
+  website_popup
+  instagram_post
+  tiktok_video
+  youtube_integration
+  podcast_ad
+  newsletter_ad
+}
+
+// What kind of row sourceId points at. Not a Prisma relation — see the
+// Listing model comment for why.
+enum ListingSourceType {
+  slot
+  blogger_channel
+}
+
+enum ListingStatus {
+  draft
+  active
+  paused
+  archived
+}
+
 model User {
   id                         String    @id @default(uuid())
   email                      String    @unique
@@ -165,6 +194,15 @@ model Site {
   domain        String
   siteKey       String     @unique @map("site_key")
   status        SiteStatus @default(active)
+
+  // Public-facing identity for GET /sites/:slug — generated once from
+  // domain at site-creation time (lib/users.js) and never regenerated, so
+  // an already-shared public URL never breaks.
+  slug          String     @unique
+  // Cover image for the site's own public page — separate from any
+  // Listing's coverImageUrl (a site-level photo, not a per-ad one). Always
+  // null in Stage 1: no upload UI exists yet.
+  coverImageUrl String?    @map("cover_image_url")
 
   // Bumped on every GET /w.js whose Referer host matches this domain — the
   // dashboard's install checklist polls GET /api/sites/:site_key/verify,
@@ -229,6 +267,12 @@ model Slot {
   publisher        User       @relation("PublisherSlots", fields: [publisherId], references: [id])
 
   label            String
+  // Public-facing identity for the Listing that wraps this slot (see the
+  // Listing model) — generated once from label + site domain at finalize
+  // time (lib/slots.js), never regenerated. Not a relation to Listing
+  // itself — see Listing.sourceType/sourceId for why that link is
+  // deliberately not a Prisma FK.
+  slug             String     @unique
   // Legacy positioning: a CSS selector on the publisher's page, resolved
   // client-side by w.js. Still required (and still how existing slots
   // render), but a new slot from the drag-to-select picker no longer picks
@@ -262,6 +306,46 @@ model Slot {
   pickerTokens     PickerToken[]
 
   @@map("slots")
+}
+
+// A publicly-addressable ad listing, independent of what it's actually
+// backed by. sourceType/sourceId point at the origin row (a Slot today,
+// eventually a BloggerChannel) — deliberately NOT a Prisma relation/FK.
+// Unlike Deal.slotId/Deal.bloggerChannelId (two separate typed FK columns
+// for its two known kinds), a Listing's possible source kinds are meant to
+// keep growing (website placements, social posts, podcast reads, ...)
+// without a new nullable FK column on this table every time one is added.
+// Referential integrity for sourceId is therefore enforced in application
+// code (see lib/listings.js's createListingForSlot, which re-checks the
+// Slot exists immediately before writing), not by the database.
+//
+// @@unique([sourceType, sourceId]) is what actually guarantees "at most one
+// Listing per source" — that constraint doesn't need a real FK to hold.
+model Listing {
+  id            String            @id @default(uuid())
+  slug          String            @unique
+  listingType   ListingType       @map("listing_type")
+  sourceType    ListingSourceType @map("source_type")
+  sourceId      String            @map("source_id")
+
+  title         String
+  // Always null in Stage 1 — no editor exists yet to set these.
+  description   String?
+  coverImageUrl String?           @map("cover_image_url")
+
+  priceCents    Int               @map("price_cents")
+  currency      String            @default("eur")
+
+  // Created as `active` directly (see lib/slots.js's finalizeSlot) — there
+  // is no draft/publish step in Stage 1. `paused`/`archived` are reserved
+  // for a later stage's hide/unlist feature.
+  status        ListingStatus     @default(draft)
+
+  createdAt     DateTime          @default(now()) @map("created_at")
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+
+  @@unique([sourceType, sourceId])
+  @@map("listings")
 }
 
 // One-time, short-lived tokens for the visual placement picker. The token

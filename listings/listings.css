@@ -1,0 +1,147 @@
+/* Public listing page (/listings/:slug) */
+
+.public-page {
+  padding: 32px 0 90px;
+  min-height: calc(100vh - var(--header-h));
+}
+
+/* This page doesn't load dashboard.css/sites.css (where these are normally
+   defined) — restyled here to match exactly. */
+.dashboard-loading {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 60px 0;
+}
+
+.dashboard-empty {
+  margin: 16px 0 0;
+  padding: 32px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+  background: var(--bg-muted);
+  border-radius: var(--radius-md);
+}
+
+.breadcrumbs {
+  margin-bottom: 24px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.breadcrumbs a {
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.breadcrumbs a:hover {
+  color: var(--purple);
+  text-decoration: underline;
+}
+
+.listing-page {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 32px;
+  align-items: start;
+}
+
+.listing-cover {
+  grid-column: 1 / -1;
+  width: 100%;
+  aspect-ratio: 21 / 9;
+  border-radius: var(--radius-lg);
+  background: var(--brand-gradient-soft);
+}
+
+.listing-title {
+  margin: 20px 0 4px;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.listing-type {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.listing-description {
+  margin: 0 0 20px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.listing-specs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px 24px;
+  margin: 0 0 20px;
+  padding: 16px 20px;
+  background: var(--bg-muted);
+  border-radius: var(--radius-md);
+}
+
+.listing-specs dt {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.listing-specs dd {
+  margin: 2px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.site-link {
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--purple-dark);
+  text-decoration: none;
+}
+
+.site-link:hover {
+  text-decoration: underline;
+}
+
+.listing-page__side {
+  position: sticky;
+  top: 24px;
+  padding: 24px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.listing-price {
+  margin-bottom: 16px;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--purple-dark);
+}
+
+#bookBtn {
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+
+@media (max-width: 720px) {
+  .listing-page {
+    grid-template-columns: 1fr;
+  }
+
+  .listing-page__side {
+    position: static;
+  }
+}

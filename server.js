@@ -12,6 +12,8 @@ const { handleWidgetRequest } = require("./lib/widget-http");
 const { handleClicksRequest } = require("./lib/clicks-http");
 const { handleConfigRequest } = require("./lib/config-http");
 const { handleSitesRequest } = require("./lib/sites-http");
+const { handleListingsRequest } = require("./lib/listings-http");
+const { handlePublicPagesRequest } = require("./lib/public-pages-http");
 const { handleProfileRequest } = require("./lib/profile-http");
 const { handleBloggerDealsRequest } = require("./lib/blogger-deals-http");
 const { handleBloggersRequest } = require("./lib/bloggers-http");
@@ -268,6 +270,16 @@ async function handleRequest(req, res) {
   }
 
   try {
+    const handled = await handleListingsRequest(req, res, url, readBody, sendJson);
+    if (handled) {
+      return;
+    }
+  } catch (err) {
+    console.error("[server] Listings error:", err);
+    return sendJson(res, 500, { ok: false, error: "Internal server error" });
+  }
+
+  try {
     const handled = await handleProfileRequest(req, res, url, readBody, sendJson);
     if (handled) {
       return;
@@ -304,6 +316,16 @@ async function handleRequest(req, res) {
     }
   } catch (err) {
     console.error("[server] Admin error:", err);
+    return sendJson(res, 500, { ok: false, error: "Internal server error" });
+  }
+
+  try {
+    const handled = await handlePublicPagesRequest(req, res, url);
+    if (handled) {
+      return;
+    }
+  } catch (err) {
+    console.error("[server] Public pages error:", err);
     return sendJson(res, 500, { ok: false, error: "Internal server error" });
   }
 

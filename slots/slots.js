@@ -159,10 +159,29 @@
         allSlots = result.slots;
         setupFilters(allSlots);
         applyFiltersAndRender();
+        openModalFromQueryParam();
       })
       .catch(function () {
         loadingEl.textContent = "Could not load slots. Please refresh.";
       });
+  }
+
+  // Landed here from a Listing's public page ("Book this slot" links to
+  // /slots?slot={id}) — if that slot is in today's catalog, jump straight
+  // to its booking modal instead of making the advertiser find it again.
+  // No-op (plain catalog view) if the param is absent or the slot isn't
+  // found — e.g. already booked by someone else since the listing loaded.
+  function openModalFromQueryParam() {
+    var slotId = new URLSearchParams(window.location.search).get("slot");
+    if (!slotId) {
+      return;
+    }
+    var match = allSlots.find(function (slot) {
+      return slot.slot_id === slotId;
+    });
+    if (match) {
+      openModal(match);
+    }
   }
 
   // The country filter's options are built from whatever audience countries
