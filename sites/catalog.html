@@ -29,16 +29,39 @@
     </div>
   </header>
 
-  <main class="public-page">
+  <main class="public-page marketplace-page">
     <div class="container">
       <nav class="breadcrumbs"><a href="/">Home</a> → <span>Marketplace</span></nav>
 
-      <h1 class="site-domain">Marketplace</h1>
-      <p class="site-description">Discover advertising opportunities across websites, creators and digital media.</p>
+      <h1 class="marketplace-title">Marketplace</h1>
+      <p class="marketplace-subtitle">Discover advertising opportunities across websites, creators and digital media.</p>
+
+      <div class="marketplace-filters" id="marketplaceFilters" hidden>
+        <div class="marketplace-filter">
+          <label for="filterCategory">Category</label>
+          <select id="filterCategory"><option value="">All categories</option></select>
+        </div>
+        <div class="marketplace-filter">
+          <label for="filterCountry">Country</label>
+          <select id="filterCountry"><option value="">All countries</option></select>
+        </div>
+        <div class="marketplace-filter">
+          <label for="filterLanguage">Language</label>
+          <select id="filterLanguage"><option value="">All languages</option></select>
+        </div>
+        <div class="marketplace-filter">
+          <label for="filterFormat">Format</label>
+          <select id="filterFormat"><option value="">All formats</option></select>
+        </div>
+        <button type="button" class="marketplace-filters__clear" id="filtersClear" hidden>Clear filters</button>
+      </div>
+
+      <p class="marketplace-results-count" id="resultsCount" hidden></p>
 
       <p class="dashboard-loading" id="catalogLoading">Loading…</p>
       <div class="sites-grid" id="sitesGrid"></div>
       <p class="dashboard-empty" id="sitesEmpty" hidden>No active placements yet. Check back soon.</p>
+      <p class="dashboard-empty" id="sitesNoMatch" hidden>No sites match your filters. <button type="button" id="noMatchClear" class="marketplace-filters__clear marketplace-filters__clear--inline">Clear filters</button></p>
     </div>
   </main>
 
