@@ -39,7 +39,7 @@
     nav.innerHTML = "";
     nav.appendChild(el("a", null, "Home")).setAttribute("href", "/");
     nav.appendChild(document.createTextNode(" → "));
-    nav.appendChild(el("span", null, "Sites"));
+    nav.appendChild(el("a", null, "Marketplace")).setAttribute("href", "/sites");
     if (site) {
       nav.appendChild(document.createTextNode(" → "));
       var siteCrumb = el("a", null, site.domain);

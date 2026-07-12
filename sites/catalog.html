@@ -31,21 +31,14 @@
 
   <main class="public-page">
     <div class="container">
-      <nav class="breadcrumbs" id="breadcrumbs">__VYBRIDGE_BREADCRUMBS__</nav>
+      <nav class="breadcrumbs"><a href="/">Home</a> → <span>Marketplace</span></nav>
 
-      <p class="dashboard-loading" id="siteLoading">Loading…</p>
-      <p class="dashboard-empty" id="siteNotFound" hidden>This site isn't available.</p>
+      <h1 class="site-domain">Marketplace</h1>
+      <p class="site-description">Discover advertising opportunities across websites, creators and digital media.</p>
 
-      <div id="siteBody" hidden>
-        <div class="site-cover" id="siteCover"></div>
-        <h1 class="site-domain" id="siteDomain"></h1>
-        <dl class="site-meta" id="siteMeta"></dl>
-        <p class="site-description" id="siteDescription" hidden></p>
-
-        <h2 class="public-section-title">Ad placements</h2>
-        <div class="listings-grid" id="listingsGrid"></div>
-        <p class="dashboard-empty" id="listingsEmpty" hidden>No active placements on this site yet.</p>
-      </div>
+      <p class="dashboard-loading" id="catalogLoading">Loading…</p>
+      <div class="sites-grid" id="sitesGrid"></div>
+      <p class="dashboard-empty" id="sitesEmpty" hidden>No active placements yet. Check back soon.</p>
     </div>
   </main>
 
@@ -55,6 +48,6 @@
     </div>
   </footer>
   <script src="/script.js"></script>
-  <script src="/sites/sites.js"></script>
+  <script src="/sites/catalog.js"></script>
 </body>
 </html>

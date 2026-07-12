@@ -96,3 +96,66 @@
     })
     .catch(function () {});
 })();
+
+// Homepage-only — a no-op everywhere else, since /terms and /privacy (the
+// other two pages that load this file) don't have #adPlacementsSection.
+// Renders the first 6 sites from the same public catalog data as /sites, and
+// only reveals the section when there's at least one — an empty/never-shown
+// section beats a "coming soon" placeholder with no real data behind it.
+(function () {
+  var section = document.getElementById("adPlacementsSection");
+  var grid = document.getElementById("placementsGrid");
+  if (!section || !grid) {
+    return;
+  }
+
+  function money(cents, currency) {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: (currency || "eur").toUpperCase(),
+    }).format(cents / 100);
+  }
+
+  function el(tag, className, text) {
+    var node = document.createElement(tag);
+    if (className) {
+      node.className = className;
+    }
+    if (text !== undefined && text !== null) {
+      node.textContent = text;
+    }
+    return node;
+  }
+
+  function placementCard(site) {
+    var card = el("a", "placement-card");
+    card.href = "/sites/" + encodeURIComponent(site.slug);
+
+    var cover = el("div", "placement-card__cover");
+    if (site.coverImageUrl) {
+      cover.style.backgroundImage = 'url("' + site.coverImageUrl.replace(/["\\]/g, "\\$&") + '")';
+    }
+    card.appendChild(cover);
+
+    card.appendChild(el("div", "placement-card__domain", site.domain));
+    card.appendChild(el("div", "placement-card__price", "From " + money(site.minPriceCents, site.currency)));
+    card.appendChild(el("span", "placement-card__cta", "View Site"));
+
+    return card;
+  }
+
+  fetch("/api/sites/public")
+    .then(function (res) {
+      return res.ok ? res.json() : null;
+    })
+    .then(function (result) {
+      if (!result || !result.ok || !result.sites.length) {
+        return;
+      }
+      result.sites.slice(0, 6).forEach(function (site) {
+        grid.appendChild(placementCard(site));
+      });
+      section.hidden = false;
+    })
+    .catch(function () {});
+})();
