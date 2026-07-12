@@ -494,6 +494,125 @@
     addRow("Description", site.siteDescription);
   }
 
+  // ---------- Marketplace Preview (cover image) ----------
+
+  var coverPreview = document.getElementById("coverPreview");
+  var coverUploadInput = document.getElementById("coverUploadInput");
+  var removeCoverBtn = document.getElementById("removeCoverBtn");
+
+  function clearCoverFormMessage() {
+    var msg = document.getElementById("coverFormMessage");
+    msg.hidden = true;
+    msg.textContent = "";
+  }
+
+  function setCoverFormMessage(message) {
+    var msg = document.getElementById("coverFormMessage");
+    msg.textContent = message;
+    msg.hidden = false;
+  }
+
+  // coverImageUrl is the only thing this reads — it never looks at
+  // coverSource, matching every other reader of this field (Marketplace
+  // catalog, site page): the dashboard preview doesn't care whether a
+  // future automatic/AI source produced the image either.
+  function renderCoverSection(site) {
+    if (!coverPreview) {
+      return;
+    }
+    coverPreview.innerHTML = "";
+    if (!site) {
+      return;
+    }
+    if (site.coverImageUrl) {
+      var img = document.createElement("img");
+      img.className = "cover-preview__image";
+      img.src = site.coverImageUrl;
+      img.alt = "";
+      coverPreview.appendChild(img);
+      if (removeCoverBtn) {
+        removeCoverBtn.hidden = false;
+      }
+    } else {
+      coverPreview.appendChild(el("span", "cover-preview__placeholder", "No cover yet"));
+      if (removeCoverBtn) {
+        removeCoverBtn.hidden = true;
+      }
+    }
+  }
+
+  if (coverUploadInput) {
+    coverUploadInput.addEventListener("change", function () {
+      var file = coverUploadInput.files && coverUploadInput.files[0];
+      if (!file || !currentSite) {
+        return;
+      }
+      clearCoverFormMessage();
+
+      var formData = new FormData();
+      formData.append("cover", file);
+
+      // No Content-Type header here — the browser sets
+      // multipart/form-data with the correct boundary itself.
+      fetch("/api/sites/" + encodeURIComponent(currentSite.siteKey) + "/cover", {
+        method: "POST",
+        credentials: "same-origin",
+        body: formData,
+      })
+        .then(function (res) {
+          return res.json().then(function (data) {
+            return { ok: res.ok, body: data };
+          });
+        })
+        .then(function (result) {
+          coverUploadInput.value = "";
+          if (!result.ok) {
+            setCoverFormMessage(result.body.error || "Could not upload the cover image. Please try again.");
+            return;
+          }
+          currentSite = result.body.site;
+          renderCoverSection(currentSite);
+        })
+        .catch(function () {
+          coverUploadInput.value = "";
+          setCoverFormMessage("Network error. Please try again.");
+        });
+    });
+  }
+
+  if (removeCoverBtn) {
+    removeCoverBtn.addEventListener("click", function () {
+      if (!currentSite) {
+        return;
+      }
+      clearCoverFormMessage();
+      removeCoverBtn.disabled = true;
+
+      fetch("/api/sites/" + encodeURIComponent(currentSite.siteKey) + "/cover", {
+        method: "DELETE",
+        credentials: "same-origin",
+      })
+        .then(function (res) {
+          return res.json().then(function (data) {
+            return { ok: res.ok, body: data };
+          });
+        })
+        .then(function (result) {
+          removeCoverBtn.disabled = false;
+          if (!result.ok) {
+            setCoverFormMessage(result.body.error || "Could not remove the cover image. Please try again.");
+            return;
+          }
+          currentSite = result.body.site;
+          renderCoverSection(currentSite);
+        })
+        .catch(function () {
+          removeCoverBtn.disabled = false;
+          setCoverFormMessage("Network error. Please try again.");
+        });
+    });
+  }
+
   function updateDescriptionCounter() {
     siteInfoDescriptionCounter.textContent = siteInfoDescriptionInput.value.length + " / 300";
   }
@@ -624,6 +743,7 @@
         editSiteInfoBtn.hidden = true;
       }
       closeSiteInfoForm();
+      renderCoverSection(null);
       if (installPollTimer) {
         clearInterval(installPollTimer);
         installPollTimer = null;
@@ -650,6 +770,7 @@
     if (editSiteInfoBtn) {
       editSiteInfoBtn.hidden = false;
     }
+    renderCoverSection(site);
   }
 
   function renderPayoutsStatus(payouts, containerId) {

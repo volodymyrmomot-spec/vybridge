@@ -81,7 +81,16 @@
     document.title = site.domain + " on Vybridge";
 
     var cover = document.getElementById("siteCover");
-    cover.textContent = site.domain.charAt(0).toUpperCase();
+    cover.innerHTML = "";
+    if (site.coverImageUrl) {
+      var coverImg = document.createElement("img");
+      coverImg.className = "site-cover__image";
+      coverImg.src = site.coverImageUrl;
+      coverImg.alt = "";
+      cover.appendChild(coverImg);
+    } else {
+      cover.textContent = site.domain.charAt(0).toUpperCase();
+    }
 
     var meta = document.getElementById("siteMeta");
     meta.innerHTML = "";

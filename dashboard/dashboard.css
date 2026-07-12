@@ -150,6 +150,59 @@
   gap: 10px;
 }
 
+/* Marketplace Preview (cover image) */
+
+.cover-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 16 / 10;
+  margin-bottom: 16px;
+  overflow: hidden;
+  background: var(--brand-gradient-soft);
+  border-radius: var(--radius-md);
+}
+
+.cover-preview__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+
+.cover-preview__placeholder {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.cover-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.cover-actions__upload {
+  cursor: pointer;
+}
+
+.badge-soon {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 7px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  background: var(--bg-muted);
+  border-radius: 999px;
+}
+
 .dashboard-snippet__code {
   display: block;
   padding: 10px 14px;

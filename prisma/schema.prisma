@@ -24,6 +24,20 @@ enum SiteStatus {
   suspended
 }
 
+// Where Site.coverImageUrl currently came from — lets any future cover
+// source (a publisher's own upload, an automatic screenshot, an
+// AI-generated image, or a platform-provided default) populate the exact
+// same field without the reader ever needing to know which one did it.
+// "system" is reserved for a platform-provided cover (e.g. branded/
+// category default artwork) — nothing assigns it yet.
+enum CoverSource {
+  placeholder
+  manual
+  automatic
+  ai
+  system
+}
+
 enum SlotStatus {
   draft
   active
@@ -145,64 +159,73 @@ enum ListingStatus {
 }
 
 model User {
-  id                         String    @id @default(uuid())
-  email                      String    @unique
-  passwordHash               String    @map("password_hash")
-  role                       Role
-  name                       String
-  country                    String
-  locale                     String    @default("en")
+  id           String @id @default(uuid())
+  email        String @unique
+  passwordHash String @map("password_hash")
+  role         Role
+  name         String
+  country      String
+  locale       String @default("en")
 
   // Advertiser-only fields
-  stripeCustomerId           String?   @map("stripe_customer_id")
+  stripeCustomerId             String? @map("stripe_customer_id")
   lifetimeAdvertiserSpendCents BigInt  @default(0) @map("lifetime_advertiser_spend_cents")
 
-  createdAt                  DateTime  @default(now()) @map("created_at")
-  updatedAt                  DateTime  @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  stripeAccount              StripeAccount?
-  sites                      Site[]
-  slots                      Slot[]          @relation("PublisherSlots")
-  dealsAsAdvertiser          Deal[]          @relation("AdvertiserDeals")
+  stripeAccount       StripeAccount?
+  sites               Site[]
+  slots               Slot[]               @relation("PublisherSlots")
+  dealsAsAdvertiser   Deal[]               @relation("AdvertiserDeals")
   // Also holds blogger deals — a blogger is "PublisherDeals" in the same
   // sense a site publisher is: the party being paid out (see Deal.publisherId).
-  dealsAsPublisher           Deal[]          @relation("PublisherDeals")
-  bloggerChannels            BloggerChannel[]
-  passwordResetTokens        PasswordResetToken[]
+  dealsAsPublisher    Deal[]               @relation("PublisherDeals")
+  bloggerChannels     BloggerChannel[]
+  passwordResetTokens PasswordResetToken[]
 
   @@map("users")
 }
 
 model StripeAccount {
-  id                String                 @id @default(uuid())
-  userId            String                 @unique @map("user_id")
-  user              User                   @relation(fields: [userId], references: [id])
-  stripeAccountId   String                 @unique @map("stripe_account_id")
-  onboardingStatus  StripeOnboardingStatus @default(not_started) @map("onboarding_status")
-  payoutsEnabled    Boolean                @default(false) @map("payouts_enabled")
+  id               String                 @id @default(uuid())
+  userId           String                 @unique @map("user_id")
+  user             User                   @relation(fields: [userId], references: [id])
+  stripeAccountId  String                 @unique @map("stripe_account_id")
+  onboardingStatus StripeOnboardingStatus @default(not_started) @map("onboarding_status")
+  payoutsEnabled   Boolean                @default(false) @map("payouts_enabled")
 
-  createdAt         DateTime               @default(now()) @map("created_at")
-  updatedAt         DateTime               @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("stripe_accounts")
 }
 
 model Site {
-  id            String     @id @default(uuid())
-  publisherId   String     @map("publisher_id")
-  publisher     User       @relation(fields: [publisherId], references: [id])
-  domain        String
-  siteKey       String     @unique @map("site_key")
-  status        SiteStatus @default(active)
+  id          String     @id @default(uuid())
+  publisherId String     @map("publisher_id")
+  publisher   User       @relation(fields: [publisherId], references: [id])
+  domain      String
+  siteKey     String     @unique @map("site_key")
+  status      SiteStatus @default(active)
 
   // Public-facing identity for GET /sites/:slug — generated once from
   // domain at site-creation time (lib/users.js) and never regenerated, so
   // an already-shared public URL never breaks.
-  slug          String     @unique
-  // Cover image for the site's own public page — separate from any
-  // Listing's coverImageUrl (a site-level photo, not a per-ad one). Always
-  // null in Stage 1: no upload UI exists yet.
-  coverImageUrl String?    @map("cover_image_url")
+  slug               String      @unique
+  // Cover image for the site's own public page and Marketplace card —
+  // separate from any Listing's coverImageUrl (a site-level photo, not a
+  // per-ad one). Deliberately source-agnostic: coverSource below records
+  // provenance, but every reader of coverImageUrl (Marketplace catalog,
+  // site page) only ever sees this one field, regardless of how it was set.
+  coverImageUrl      String?     @map("cover_image_url")
+  // Cloudinary's own asset identifier, captured straight from the upload
+  // response (never parsed back out of coverImageUrl — that would be
+  // fragile, and the URL already carries transformation segments that
+  // aren't part of the id). Used only to delete the previous asset when a
+  // cover is replaced or removed; never exposed outside lib/sites.js.
+  coverImagePublicId String?     @map("cover_image_public_id")
+  coverSource        CoverSource @default(placeholder) @map("cover_source")
 
   // Bumped on every GET /w.js whose Referer host matches this domain — the
   // dashboard's install checklist polls GET /api/sites/:site_key/verify,
@@ -221,10 +244,10 @@ model Site {
   audienceLanguage AudienceLanguage? @map("audience_language")
   siteDescription  String?           @map("site_description")
 
-  createdAt     DateTime   @default(now()) @map("created_at")
-  updatedAt     DateTime   @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  slots         Slot[]
+  slots Slot[]
 
   @@index([domain])
   @@map("sites")
@@ -234,37 +257,37 @@ model Site {
 // + TikTok + YouTube), each with its own price/category/follower count —
 // an advertiser targets one specific channel per offer (see Deal.bloggerChannelId).
 model BloggerChannel {
-  id                String           @id @default(uuid())
-  userId            String           @map("user_id")
-  user              User             @relation(fields: [userId], references: [id])
+  id     String @id @default(uuid())
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id])
 
   platform          ChannelPlatform
-  channelUrl        String           @map("channel_url")
+  channelUrl        String          @map("channel_url")
   // Parsed from channelUrl at creation time (e.g. "@name") — best-effort
   // display convenience, never re-derived or trusted for anything else.
-  channelHandle     String?          @map("channel_handle")
-  followersCount    Int              @default(0) @map("followers_count")
-  contentCategory   SiteCategory?    @map("content_category")
-  pricePerPostCents Int              @map("price_per_post_cents")
+  channelHandle     String?         @map("channel_handle")
+  followersCount    Int             @default(0) @map("followers_count")
+  contentCategory   SiteCategory?   @map("content_category")
+  pricePerPostCents Int             @map("price_per_post_cents")
   // If true, the catalog and offer form tell an advertiser they can propose
   // a different price on this channel instead of just paying the listed one.
-  openToNegotiation Boolean          @default(true) @map("open_to_negotiation")
+  openToNegotiation Boolean         @default(true) @map("open_to_negotiation")
 
-  createdAt         DateTime         @default(now()) @map("created_at")
-  updatedAt         DateTime         @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  deals             Deal[]
+  deals Deal[]
 
   @@index([userId])
   @@map("blogger_channels")
 }
 
 model Slot {
-  id               String     @id @default(uuid())
-  siteId           String     @map("site_id")
-  site             Site       @relation(fields: [siteId], references: [id])
-  publisherId      String     @map("publisher_id")
-  publisher        User       @relation("PublisherSlots", fields: [publisherId], references: [id])
+  id          String @id @default(uuid())
+  siteId      String @map("site_id")
+  site        Site   @relation(fields: [siteId], references: [id])
+  publisherId String @map("publisher_id")
+  publisher   User   @relation("PublisherSlots", fields: [publisherId], references: [id])
 
   label            String
   // Public-facing identity for the Listing that wraps this slot (see the
@@ -272,14 +295,14 @@ model Slot {
   // time (lib/slots.js), never regenerated. Not a relation to Listing
   // itself — see Listing.sourceType/sourceId for why that link is
   // deliberately not a Prisma FK.
-  slug             String     @unique
+  slug             String  @unique
   // Legacy positioning: a CSS selector on the publisher's page, resolved
   // client-side by w.js. Still required (and still how existing slots
   // render), but a new slot from the drag-to-select picker no longer picks
   // a real element — it's written the auto-generated placeholder value and
   // ignored in favor of posX/posY/posWidth/posHeight below.
-  domSelector      String     @map("dom_selector")
-  fallbackAnchorId String?    @map("fallback_anchor_id")
+  domSelector      String  @map("dom_selector")
+  fallbackAnchorId String? @map("fallback_anchor_id")
   format           String
   width            Int
   height           Int
@@ -288,22 +311,22 @@ model Slot {
   // the picker's mousedown/mouseup rectangle, rendered by w.js via
   // `position: fixed`. Null for any slot picked before this existed —
   // those keep rendering off domSelector above.
-  posX             Int?       @map("pos_x")
-  posY             Int?       @map("pos_y")
-  posWidth         Int?       @map("pos_width")
-  posHeight        Int?       @map("pos_height")
+  posX      Int? @map("pos_x")
+  posY      Int? @map("pos_y")
+  posWidth  Int? @map("pos_width")
+  posHeight Int? @map("pos_height")
 
-  priceCents       Int        @map("price_cents")
-  currency         String     @default("eur")
-  durationDays     Int        @map("duration_days")
+  priceCents   Int    @map("price_cents")
+  currency     String @default("eur")
+  durationDays Int    @map("duration_days")
 
-  status           SlotStatus @default(draft)
+  status SlotStatus @default(draft)
 
-  createdAt        DateTime   @default(now()) @map("created_at")
-  updatedAt        DateTime   @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  deals            Deal[]
-  pickerTokens     PickerToken[]
+  deals        Deal[]
+  pickerTokens PickerToken[]
 
   @@map("slots")
 }
@@ -322,27 +345,27 @@ model Slot {
 // @@unique([sourceType, sourceId]) is what actually guarantees "at most one
 // Listing per source" — that constraint doesn't need a real FK to hold.
 model Listing {
-  id            String            @id @default(uuid())
-  slug          String            @unique
-  listingType   ListingType       @map("listing_type")
-  sourceType    ListingSourceType @map("source_type")
-  sourceId      String            @map("source_id")
+  id          String            @id @default(uuid())
+  slug        String            @unique
+  listingType ListingType       @map("listing_type")
+  sourceType  ListingSourceType @map("source_type")
+  sourceId    String            @map("source_id")
 
   title         String
   // Always null in Stage 1 — no editor exists yet to set these.
   description   String?
-  coverImageUrl String?           @map("cover_image_url")
+  coverImageUrl String? @map("cover_image_url")
 
-  priceCents    Int               @map("price_cents")
-  currency      String            @default("eur")
+  priceCents Int    @map("price_cents")
+  currency   String @default("eur")
 
   // Created as `active` directly (see lib/slots.js's finalizeSlot) — there
   // is no draft/publish step in Stage 1. `paused`/`archived` are reserved
   // for a later stage's hide/unlist feature.
-  status        ListingStatus     @default(draft)
+  status ListingStatus @default(draft)
 
-  createdAt     DateTime          @default(now()) @map("created_at")
-  updatedAt     DateTime          @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@unique([sourceType, sourceId])
   @@map("listings")
@@ -354,15 +377,15 @@ model Listing {
 // available there), so possession of a valid, unused, unexpired token is
 // the entire security model for that single write.
 model PickerToken {
-  id          String    @id @default(uuid())
-  slotId      String    @map("slot_id")
-  slot        Slot      @relation(fields: [slotId], references: [id])
-  publisherId String    @map("publisher_id")
+  id          String @id @default(uuid())
+  slotId      String @map("slot_id")
+  slot        Slot   @relation(fields: [slotId], references: [id])
+  publisherId String @map("publisher_id")
 
-  expiresAt   DateTime  @map("expires_at")
-  usedAt      DateTime? @map("used_at")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
 
-  createdAt   DateTime  @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@map("picker_tokens")
 }
@@ -372,10 +395,10 @@ model PickerToken {
 // marks any previous token for the same user as used, so an old email
 // link can never be replayed once a newer one has been sent.
 model PasswordResetToken {
-  id        String   @id @default(uuid())
-  userId    String   @map("user_id")
-  user      User     @relation(fields: [userId], references: [id])
-  token     String   @unique
+  id     String @id @default(uuid())
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id])
+  token  String @unique
 
   expiresAt DateTime @map("expires_at")
   used      Boolean  @default(false)
@@ -387,94 +410,94 @@ model PasswordResetToken {
 }
 
 model FeeTier {
-  id                     String   @id @default(uuid())
-  name                   String
-  minLifetimeSpendCents  BigInt   @map("min_lifetime_spend_cents")
-  feeBps                 Int      @map("fee_bps")
+  id                    String @id @default(uuid())
+  name                  String
+  minLifetimeSpendCents BigInt @map("min_lifetime_spend_cents")
+  feeBps                Int    @map("fee_bps")
 
-  createdAt              DateTime @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@map("fee_tiers")
 }
 
 model Deal {
-  id                     String     @id @default(uuid())
+  id String @id @default(uuid())
 
   // Exactly one of slotId/bloggerChannelId is set — slotId for the ad-slot
   // vertical, bloggerChannelId for the blogger vertical. Never both, never
   // neither; enforced in application code (lib/deals.js vs
   // lib/blogger-deals.js), not at the DB level.
-  slotId                 String?    @map("slot_id")
-  slot                   Slot?      @relation(fields: [slotId], references: [id])
+  slotId String? @map("slot_id")
+  slot   Slot?   @relation(fields: [slotId], references: [id])
 
-  bloggerChannelId       String?    @map("blogger_channel_id")
-  bloggerChannel         BloggerChannel? @relation(fields: [bloggerChannelId], references: [id])
+  bloggerChannelId String?         @map("blogger_channel_id")
+  bloggerChannel   BloggerChannel? @relation(fields: [bloggerChannelId], references: [id])
 
   // The party being paid out: the site publisher for a slot deal, or the
   // blogger for a blogger deal (see bloggerChannel.userId) — always set
   // either way, so payout-cron.js's releaseCompletedPayouts needs no branch.
-  publisherId            String     @map("publisher_id")
-  publisher              User       @relation("PublisherDeals", fields: [publisherId], references: [id])
+  publisherId String @map("publisher_id")
+  publisher   User   @relation("PublisherDeals", fields: [publisherId], references: [id])
 
-  advertiserId           String     @map("advertiser_id")
-  advertiser             User       @relation("AdvertiserDeals", fields: [advertiserId], references: [id])
+  advertiserId String @map("advertiser_id")
+  advertiser   User   @relation("AdvertiserDeals", fields: [advertiserId], references: [id])
 
   // Snapshots taken at booking time so later edits to slot price or fee
   // tiers never change the economics of an already-created deal. For a
   // blogger deal, slotPriceCents holds the agreed price per post instead.
-  slotPriceCents         Int        @map("slot_price_cents")
-  platformFeeBps         Int        @map("platform_fee_bps")
-  platformFeeCents       Int        @map("platform_fee_cents")
-  totalChargedCents      Int        @map("total_charged_cents")
-  currency               String     @default("eur")
+  slotPriceCents    Int    @map("slot_price_cents")
+  platformFeeBps    Int    @map("platform_fee_bps")
+  platformFeeCents  Int    @map("platform_fee_cents")
+  totalChargedCents Int    @map("total_charged_cents")
+  currency          String @default("eur")
   // Not meaningful for a blogger deal (a post isn't "live" for N days) — 0 there.
-  durationDays           Int        @map("duration_days")
+  durationDays      Int    @map("duration_days")
 
-  status                 DealStatus @default(created)
-  statusHistory          Json       @default("[]") @map("status_history")
+  status        DealStatus @default(created)
+  statusHistory Json       @default("[]") @map("status_history")
 
   // Set the moment the deal enters pending_approval — the auto-approve cron
   // filters on this to find deals that have sat unreviewed past the
   // AUTO_APPROVE_HOURS window.
-  pendingApprovalAt      DateTime?  @map("pending_approval_at")
+  pendingApprovalAt DateTime? @map("pending_approval_at")
 
   // startsAt/endsAt/payoutEligibleAt are written together in the same
   // update as the approved->live transition (see lib/deals.js
   // transitionDealToLive) — never set independently.
-  startsAt               DateTime?  @map("starts_at")
-  endsAt                 DateTime?  @map("ends_at")
-  payoutEligibleAt       DateTime?  @map("payout_eligible_at")
+  startsAt         DateTime? @map("starts_at")
+  endsAt           DateTime? @map("ends_at")
+  payoutEligibleAt DateTime? @map("payout_eligible_at")
 
   // Blogger vertical only: set when the blogger marks the deal as
   // published. publishedAt drives the 48h auto-confirm cron the same way
   // pendingApprovalAt drives auto-approve.
-  publishedUrl           String?    @map("published_url")
-  publishedAt            DateTime?  @map("published_at")
+  publishedUrl String?   @map("published_url")
+  publishedAt  DateTime? @map("published_at")
 
   // Blogger vertical only: what the advertiser is promoting and how,
   // collected by the offer-type-specific form in bloggers/bloggers.js
   // instead of the old ready_file/brief Creative flow. clickUrl lives here
   // (not on Creative) because a blogger deal never creates a Creative row.
-  offerType              OfferType? @map("offer_type")
-  productName            String?    @map("product_name")
-  productImageUrl        String?    @map("product_image_url")
-  websiteUrl             String?    @map("website_url")
-  adFormat               AdFormat?  @map("ad_format")
-  contentDescription     String?    @map("content_description")
-  sendPhysicalProduct    Boolean    @default(false) @map("send_physical_product")
-  deliveryInstructions   String?    @map("delivery_instructions")
-  clickUrl               String?    @map("click_url")
+  offerType            OfferType? @map("offer_type")
+  productName          String?    @map("product_name")
+  productImageUrl      String?    @map("product_image_url")
+  websiteUrl           String?    @map("website_url")
+  adFormat             AdFormat?  @map("ad_format")
+  contentDescription   String?    @map("content_description")
+  sendPhysicalProduct  Boolean    @default(false) @map("send_physical_product")
+  deliveryInstructions String?    @map("delivery_instructions")
+  clickUrl             String?    @map("click_url")
 
-  stripePaymentIntentId  String?    @unique @map("stripe_payment_intent_id")
-  stripeChargeId         String?    @map("stripe_charge_id")
-  stripeTransferId       String?    @map("stripe_transfer_id")
-  stripeRefundId         String?    @map("stripe_refund_id")
+  stripePaymentIntentId String? @unique @map("stripe_payment_intent_id")
+  stripeChargeId        String? @map("stripe_charge_id")
+  stripeTransferId      String? @map("stripe_transfer_id")
+  stripeRefundId        String? @map("stripe_refund_id")
 
-  createdAt              DateTime   @default(now()) @map("created_at")
-  updatedAt              DateTime   @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  creatives              Creative[]
-  clicks                 Click[]
+  creatives Creative[]
+  clicks    Click[]
 
   @@index([status])
   @@index([slotId])
@@ -487,28 +510,28 @@ model Deal {
 }
 
 model Creative {
-  id               String         @id @default(uuid())
-  dealId           String         @map("deal_id")
-  deal             Deal           @relation(fields: [dealId], references: [id])
+  id     String @id @default(uuid())
+  dealId String @map("deal_id")
+  deal   Deal   @relation(fields: [dealId], references: [id])
 
   // Slot-ad creatives only — a blogger offer no longer creates a Creative
   // row at all (see Deal's own offerType/productName/etc. fields), so
   // every field here is required again like before the blogger vertical
   // temporarily widened this model.
-  fileUrl          String         @map("file_url")
-  clickUrl         String         @map("click_url")
-  width            Int
-  height           Int
-  mimeType         String         @map("mime_type")
-  fileSizeBytes    Int            @map("file_size_bytes")
+  fileUrl       String @map("file_url")
+  clickUrl      String @map("click_url")
+  width         Int
+  height        Int
+  mimeType      String @map("mime_type")
+  fileSizeBytes Int    @map("file_size_bytes")
 
-  status           CreativeStatus @default(submitted)
-  rejectionReason  String?        @map("rejection_reason")
+  status          CreativeStatus @default(submitted)
+  rejectionReason String?        @map("rejection_reason")
 
-  submittedAt      DateTime       @default(now()) @map("submitted_at")
-  reviewedAt       DateTime?      @map("reviewed_at")
+  submittedAt DateTime  @default(now()) @map("submitted_at")
+  reviewedAt  DateTime? @map("reviewed_at")
 
-  clicks           Click[]
+  clicks Click[]
 
   @@map("creatives")
 }
@@ -517,16 +540,16 @@ model Creative {
 // deal, not the creative, so click history survives if a rejected creative
 // is ever resubmitted under the same deal.
 model Click {
-  id         String   @id @default(uuid())
-  dealId     String   @map("deal_id")
-  deal       Deal     @relation(fields: [dealId], references: [id])
-  creativeId String?  @map("creative_id")
+  id         String    @id @default(uuid())
+  dealId     String    @map("deal_id")
+  deal       Deal      @relation(fields: [dealId], references: [id])
+  creativeId String?   @map("creative_id")
   creative   Creative? @relation(fields: [creativeId], references: [id])
 
-  ip         String
-  userAgent  String?  @map("user_agent")
+  ip        String
+  userAgent String? @map("user_agent")
 
-  createdAt  DateTime @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([dealId, ip, createdAt])
   @@map("clicks")
@@ -535,9 +558,9 @@ model Click {
 // Stripe webhook idempotency ledger — every processed event id is recorded
 // here before its side effects are applied, so a redelivered event is a no-op.
 model StripeEvent {
-  id           String   @id
-  type         String
-  processedAt  DateTime @default(now()) @map("processed_at")
+  id          String   @id
+  type        String
+  processedAt DateTime @default(now()) @map("processed_at")
 
   @@map("stripe_events")
 }

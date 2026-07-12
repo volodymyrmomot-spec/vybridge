@@ -235,6 +235,28 @@
         </div>
 
         <div class="dashboard-card">
+          <h2 class="dashboard-card__title">Marketplace Preview</h2>
+          <p class="site-info__hint">This image appears on your site's Marketplace card and public page.</p>
+
+          <div class="cover-preview" id="coverPreview"></div>
+
+          <div class="cover-actions">
+            <label class="btn btn--purple btn--sm cover-actions__upload">
+              Upload Cover
+              <input type="file" id="coverUploadInput" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
+            </label>
+            <button type="button" class="btn btn--outline btn--sm" id="removeCoverBtn">Remove Cover</button>
+            <button type="button" class="btn btn--outline btn--sm" disabled>
+              Generate Screenshot <span class="badge-soon">Coming soon</span>
+            </button>
+            <button type="button" class="btn btn--outline btn--sm" disabled>
+              Automatic Screenshot <span class="badge-soon">Coming soon</span>
+            </button>
+          </div>
+          <p class="form-message form-message--error" id="coverFormMessage" hidden></p>
+        </div>
+
+        <div class="dashboard-card">
           <h2 class="dashboard-card__title">Payouts</h2>
           <div class="dashboard-payouts" id="payoutsStatus"></div>
         </div>
