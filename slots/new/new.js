@@ -397,6 +397,14 @@
         y: data.y,
         width: data.width,
         height: data.height,
+        // Anchor-relative capture data (desktop only) — best-effort,
+        // possibly undefined if w.js couldn't find a containing anchor;
+        // finalizeSlot() already treats these as fully optional.
+        anchorSelector: data.anchorSelector,
+        relativeX: data.relativeX,
+        relativeY: data.relativeY,
+        relativeWidth: data.relativeWidth,
+        relativeHeight: data.relativeHeight,
       };
 
       panelArea.textContent = "Selected area: " + data.width + " × " + data.height + " px";
@@ -468,6 +476,11 @@
         priceEuros: price,
         durationDays: duration,
         viewportType: state.viewportType,
+        anchorSelector: state.picked.anchorSelector,
+        relativeX: state.picked.relativeX,
+        relativeY: state.picked.relativeY,
+        relativeWidth: state.picked.relativeWidth,
+        relativeHeight: state.picked.relativeHeight,
       }),
     })
       .then(function (res) {

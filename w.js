@@ -310,19 +310,76 @@
     return { left: renderX, top: renderY, width: renderWidth, height: renderHeight };
   }
 
-  // Resolves the on-screen rect a fixed-position slot should render at —
-  // both desktop and mobile route through their own scale-factor formula
-  // above, each keyed off the slot's own immutable picker_viewport_width. A
-  // slot without a fixed position (legacy dom_selector-based) just keeps
-  // its plain width/height.
+  // Resolves a desktop slot's on-screen rect relative to its captured
+  // anchor container's CURRENT box, instead of a scale factor off window
+  // width — correct even when the anchor's own box doesn't scale uniformly
+  // with window.innerWidth (e.g. a centered max-width container that stops
+  // growing past its cap, the actual root cause window-relative scaling
+  // can't account for). Returns null if the anchor can't be resolved on
+  // this page load (selector drift, anchor removed), so the caller falls
+  // back to desktopRenderRect().
+  function anchorRenderRect(slot) {
+    var anchorEl;
+    try {
+      anchorEl = document.querySelector(slot.anchor_selector);
+    } catch (err) {
+      anchorEl = null;
+    }
+    if (!anchorEl) {
+      return null;
+    }
+    var anchorRect = anchorEl.getBoundingClientRect();
+    if (!anchorRect.width || !anchorRect.height) {
+      return null;
+    }
+
+    var renderWidth = slot.anchor_rel_width * anchorRect.width;
+    var renderHeight = slot.anchor_rel_height * anchorRect.height;
+    // Document-relative (not viewport-relative) since this renders via
+    // position:absolute — adds the current scroll offset once, the
+    // standard technique for placing an absolutely-positioned element
+    // under a viewport-relative point; the browser then scrolls it with
+    // the page natively.
+    var renderX = anchorRect.left + window.scrollX + slot.anchor_rel_x * anchorRect.width;
+    var renderY = anchorRect.top + window.scrollY + slot.anchor_rel_y * anchorRect.height;
+
+    // Horizontal safety, evaluated against the CURRENT viewport (what's
+    // actually visible right now) — same guarantee as the other render
+    // formulas: never past the left/right edge, min 8px margin, no
+    // horizontal overflow.
+    var viewportLeft = window.scrollX;
+    var viewportRight = window.scrollX + window.innerWidth;
+    renderWidth = Math.min(renderWidth, window.innerWidth - 16);
+    renderX = Math.max(viewportLeft + 8, Math.min(renderX, viewportRight - renderWidth - 8));
+
+    return { left: renderX, top: renderY, width: renderWidth, height: renderHeight, positioning: "absolute" };
+  }
+
+  // Resolves the on-screen rect a fixed-position slot should render at.
+  // Mobile always uses its own scale-factor formula (untouched). Desktop
+  // tries the anchor-relative path first when anchor data was captured —
+  // falling back to the window-relative scale-factor formula only if no
+  // anchor was captured, or the anchor can no longer be found on this page
+  // (legacy slots, or a redesigned site). A slot without a fixed position
+  // (legacy dom_selector-based) just keeps its plain width/height.
   function effectiveRect(slot) {
     if (!hasFixedPosition(slot)) {
       return { left: null, top: null, width: slot.width, height: slot.height };
     }
     if (slot.viewport_type === "mobile") {
-      return mobileRenderRect(slot);
+      var mobileRect = mobileRenderRect(slot);
+      mobileRect.positioning = "fixed";
+      return mobileRect;
     }
-    return desktopRenderRect(slot);
+    if (slot.anchor_selector && slot.anchor_rel_width != null) {
+      var anchorRect = anchorRenderRect(slot);
+      if (anchorRect) {
+        return anchorRect;
+      }
+    }
+    var desktopRect = desktopRenderRect(slot);
+    desktopRect.positioning = "fixed";
+    return desktopRect;
   }
 
   function scheduleSlot(slot) {
@@ -383,7 +440,9 @@
 
     var wrap = document.createElement("div");
     wrap.style.cssText = hasFixedPosition(slot)
-      ? "position:fixed;left:" +
+      ? "position:" +
+        (rect.positioning || "fixed") +
+        ";left:" +
         rect.left +
         "px;top:" +
         rect.top +
@@ -440,7 +499,9 @@
     var box = document.createElement("div");
     box.style.cssText =
       (hasFixedPosition(slot)
-        ? "position:fixed;left:" +
+        ? "position:" +
+          (rect.positioning || "fixed") +
+          ";left:" +
           rect.left +
           "px;top:" +
           rect.top +
@@ -519,6 +580,68 @@
       node = node.parentElement;
     }
     return path.join(" > ") || "body";
+  }
+
+  // Walks up from the selection's center point to find the smallest
+  // element whose box fully contains the selection — the real, stable DOM
+  // container the selection was actually drawn inside. Generic and
+  // site-agnostic: for a selection inside a centered, max-width content
+  // box, this naturally resolves to that box; for a selection in a
+  // full-bleed section's side gutter, it resolves to the section itself.
+  // Falls back to document.body if nothing smaller qualifies, mirroring
+  // computeSelector()'s own body boundary above.
+  function findAnchorContainer(rect) {
+    var centerX = rect.x + rect.width / 2;
+    var centerY = rect.y + rect.height / 2;
+    var el = document.elementFromPoint(centerX, centerY);
+    if (!el) {
+      return null;
+    }
+
+    var right = rect.x + rect.width;
+    var bottom = rect.y + rect.height;
+    function fullyContains(box) {
+      return box.left <= rect.x && box.top <= rect.y && box.right >= right && box.bottom >= bottom;
+    }
+
+    var node = el;
+    while (node && node.nodeType === 1) {
+      if (fullyContains(node.getBoundingClientRect())) {
+        return node;
+      }
+      node = node.parentElement;
+    }
+    return document.body;
+  }
+
+  // Computes anchor-relative capture data for a just-drawn selection —
+  // desktop's replacement for raw viewport pixels alone (responsive pages
+  // don't scale uniformly with window width, so a fixed scale factor off
+  // window.innerWidth alone can't correctly reposition a slot; anchoring to
+  // the real container it was drawn inside can). Wrapped in try/catch so
+  // any failure simply yields no anchor data — the parent/finalizeSlot
+  // already treat these fields as optional and fall back to the raw
+  // x/y/width/height captured alongside them.
+  function computeAnchorData(x, y, width, height) {
+    try {
+      var anchorEl = findAnchorContainer({ x: x, y: y, width: width, height: height });
+      if (!anchorEl) {
+        return {};
+      }
+      var anchorRect = anchorEl.getBoundingClientRect();
+      if (!anchorRect.width || !anchorRect.height) {
+        return {};
+      }
+      return {
+        anchorSelector: computeSelector(anchorEl),
+        relativeX: (x - anchorRect.left) / anchorRect.width,
+        relativeY: (y - anchorRect.top) / anchorRect.height,
+        relativeWidth: width / anchorRect.width,
+        relativeHeight: height / anchorRect.height,
+      };
+    } catch (err) {
+      return {};
+    }
   }
 
   function injectPickerStyles() {
@@ -706,7 +829,22 @@
 
     showAreaPreview(x, y, width, height);
 
-    window.parent.postMessage({ vybridgePicked: true, x: x, y: y, width: width, height: height }, "*");
+    var anchorData = computeAnchorData(x, y, width, height);
+    window.parent.postMessage(
+      {
+        vybridgePicked: true,
+        x: x,
+        y: y,
+        width: width,
+        height: height,
+        anchorSelector: anchorData.anchorSelector,
+        relativeX: anchorData.relativeX,
+        relativeY: anchorData.relativeY,
+        relativeWidth: anchorData.relativeWidth,
+        relativeHeight: anchorData.relativeHeight,
+      },
+      "*"
+    );
   }
 
   function onParentMessage(event) {

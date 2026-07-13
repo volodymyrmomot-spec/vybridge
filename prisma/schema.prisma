@@ -306,10 +306,13 @@ model Slot {
   // deliberately not a Prisma FK.
   slug             String  @unique
   // Legacy positioning: a CSS selector on the publisher's page, resolved
-  // client-side by w.js. Still required (and still how existing slots
-  // render), but a new slot from the drag-to-select picker no longer picks
-  // a real element — it's written the auto-generated placeholder value and
-  // ignored in favor of posX/posY/posWidth/posHeight below.
+  // client-side by w.js. For a slot picked before drag-to-select existed,
+  // this is the ad's own element. For a drag-to-select slot with no anchor
+  // (below), it's an auto-generated placeholder, ignored in favor of
+  // posX/posY/posWidth/posHeight. For a drag-to-select slot WITH a working
+  // anchor, this field is reused to hold the anchor container's selector
+  // (see anchorRelX/Y/Width/Height below) — disambiguated at render time by
+  // hasFixedPosition()/the presence of anchor data, never ambiguous.
   domSelector      String  @map("dom_selector")
   fallbackAnchorId String? @map("fallback_anchor_id")
   format           String
@@ -317,13 +320,31 @@ model Slot {
   height           Int
 
   // Drag-to-select positioning: viewport-relative pixel coordinates from
-  // the picker's mousedown/mouseup rectangle, rendered by w.js via
-  // `position: fixed`. Null for any slot picked before this existed —
-  // those keep rendering off domSelector above.
+  // the picker's mousedown/mouseup rectangle. Still captured for every
+  // drag-to-select slot as the fallback (see anchorRelX/Y/Width/Height
+  // below) — used verbatim, rendered via `position: fixed`, whenever no
+  // anchor was captured or the anchor can no longer be found on the page.
+  // Null for any slot picked before drag-to-select existed — those keep
+  // rendering off domSelector above.
   posX      Int? @map("pos_x")
   posY      Int? @map("pos_y")
   posWidth  Int? @map("pos_width")
   posHeight Int? @map("pos_height")
+
+  // Anchor-relative positioning (desktop only) — the selection expressed as
+  // a fraction of the real DOM container it was drawn inside (domSelector
+  // above holds that container's CSS selector), rather than as raw window
+  // pixels. Responsive pages don't scale uniformly with window width (e.g.
+  // a centered `max-width` container stops growing past its cap) — window-
+  // relative pixels drift once the container's own box diverges from the
+  // raw viewport, which relative-to-the-actual-container coordinates don't.
+  // Null for legacy slots and for any slot whose anchor container wasn't
+  // captured; w.js falls back to posX/Y/Width/Height in that case. Mobile
+  // slots never populate these — mobile positioning is unchanged.
+  anchorRelX      Float? @map("anchor_rel_x")
+  anchorRelY      Float? @map("anchor_rel_y")
+  anchorRelWidth  Float? @map("anchor_rel_width")
+  anchorRelHeight Float? @map("anchor_rel_height")
 
   priceCents   Int    @map("price_cents")
   currency     String @default("eur")
