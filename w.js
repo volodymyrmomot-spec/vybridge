@@ -223,7 +223,6 @@
   // (slot.picker_viewport_width — per-slot and immutable, never a
   // hardcoded constant, so a future change to the picker's reference size
   // can never silently reinterpret an already-created slot's coordinates).
-  // Desktop's raw-pixel positioning is completely untouched below.
   function mobileRenderRect(slot) {
     var referenceWidth = slot.picker_viewport_width || 400; // fallback only in case of unexpected null
     var scale = window.innerWidth / referenceWidth;
@@ -247,10 +246,38 @@
     return { left: renderX, top: renderY, width: renderWidth, height: renderHeight };
   }
 
+  // Desktop's counterpart to mobileRenderRect() above — same shape, same
+  // horizontal safety clamp, scaled against the slot's own immutable
+  // picker_viewport_width (1440 for every desktop slot today) instead of a
+  // mobile-specific reference. Bug fix: a real desktop viewport wider than
+  // 1440px was previously rendering the slot at its raw, un-scaled capture
+  // coordinates, which drifts it left of where it was actually picked as
+  // the page grows wider — this scales it the same way mobile already was.
+  function desktopRenderRect(slot) {
+    var referenceWidth = slot.picker_viewport_width || 1440; // fallback only in case of unexpected null
+    var scale = window.innerWidth / referenceWidth;
+    var renderWidth = slot.pos_width * scale;
+    var renderHeight = slot.pos_height * scale;
+    var renderX = slot.pos_x * scale;
+    var renderY = slot.pos_y * scale;
+
+    // Horizontal safety — the actual mechanism behind "never past the
+    // left/right edge, min 8px margin, no horizontal overflow":
+    renderWidth = Math.min(renderWidth, window.innerWidth - 16);
+    renderX = Math.max(8, Math.min(renderX, window.innerWidth - renderWidth - 8));
+
+    // Vertical — a light sanity clamp only (never negative), not a
+    // reference-height-based recalculation, same reasoning as mobile above.
+    renderY = Math.max(8, renderY);
+
+    return { left: renderX, top: renderY, width: renderWidth, height: renderHeight };
+  }
+
   // Resolves the on-screen rect a fixed-position slot should render at —
-  // desktop keeps its existing raw-pixel behavior untouched; mobile routes
-  // through the scale-factor formula above. A slot without a fixed
-  // position (legacy dom_selector-based) just keeps its plain width/height.
+  // both desktop and mobile route through their own scale-factor formula
+  // above, each keyed off the slot's own immutable picker_viewport_width. A
+  // slot without a fixed position (legacy dom_selector-based) just keeps
+  // its plain width/height.
   function effectiveRect(slot) {
     if (!hasFixedPosition(slot)) {
       return { left: null, top: null, width: slot.width, height: slot.height };
@@ -258,7 +285,7 @@
     if (slot.viewport_type === "mobile") {
       return mobileRenderRect(slot);
     }
-    return { left: slot.pos_x, top: slot.pos_y, width: slot.pos_width, height: slot.pos_height };
+    return desktopRenderRect(slot);
   }
 
   function scheduleSlot(slot) {
@@ -316,7 +343,6 @@
     var rect = effectiveRect(slot);
     var w = rect.width;
     var h = rect.height;
-    var isMobileFixed = hasFixedPosition(slot) && slot.viewport_type === "mobile";
 
     var wrap = document.createElement("div");
     wrap.style.cssText = hasFixedPosition(slot)
@@ -328,8 +354,7 @@
         w +
         "px;height:" +
         h +
-        "px;z-index:999997;" +
-        (isMobileFixed ? "max-width:calc(100vw - 16px);" : "")
+        "px;max-width:calc(100vw - 16px);z-index:999997;"
       : "position:relative;display:inline-block;width:" + w + "px;height:" + h + "px;";
 
     var iframe = document.createElement("iframe");
@@ -375,7 +400,6 @@
     var rect = effectiveRect(slot);
     var w = rect.width;
     var h = rect.height;
-    var isMobileFixed = hasFixedPosition(slot) && slot.viewport_type === "mobile";
     var box = document.createElement("div");
     box.style.cssText =
       (hasFixedPosition(slot)
@@ -383,8 +407,7 @@
           rect.left +
           "px;top:" +
           rect.top +
-          "px;z-index:999997;" +
-          (isMobileFixed ? "max-width:calc(100vw - 16px);" : "")
+          "px;max-width:calc(100vw - 16px);z-index:999997;"
         : "position:relative;") +
       "box-sizing:border-box;display:flex;flex-direction:column;align-items:center;" +
       "justify-content:center;gap:6px;width:" +
