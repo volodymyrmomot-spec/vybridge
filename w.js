@@ -168,6 +168,33 @@
     }
   }
 
+  // Keeps an already-rendered fixed-position slot's on-screen rect in sync
+  // with the current window.innerWidth on resize/orientationchange —
+  // desktopRenderRect()/mobileRenderRect() are pure functions of the
+  // current viewport width, but were previously only ever evaluated once,
+  // at mount time, leaving the slot visually stuck at its original
+  // position after a resize. Updates the existing wrap element in place —
+  // never recreates a DOM node or re-runs scheduleSlot(), so close-button
+  // state and dismiss listeners already attached to it are untouched.
+  function repositionSlot(slot, entry) {
+    if (!entry || !entry.wrap || !hasFixedPosition(slot)) {
+      return;
+    }
+    var rect = effectiveRect(slot);
+    entry.wrap.style.left = rect.left + "px";
+    entry.wrap.style.top = rect.top + "px";
+    entry.wrap.style.width = rect.width + "px";
+    entry.wrap.style.height = rect.height + "px";
+
+    var iframe = entry.wrap.querySelector("iframe");
+    if (iframe) {
+      iframe.width = rect.width;
+      iframe.height = rect.height;
+      iframe.style.width = rect.width + "px";
+      iframe.style.height = rect.height + "px";
+    }
+  }
+
   function applyViewportFilter() {
     var matchingSlots = getRenderableSlots(allSlots);
     var matching = {};
@@ -175,6 +202,8 @@
       matching[slot.slot_id] = true;
       if (!renderedSlots[slot.slot_id]) {
         renderedSlots[slot.slot_id] = scheduleSlot(slot);
+      } else {
+        repositionSlot(slot, renderedSlots[slot.slot_id]);
       }
     });
     Object.keys(renderedSlots).forEach(function (id) {
@@ -202,6 +231,14 @@
       mobileMql.addListener(applyViewportFilter); // older Safari
     }
     window.addEventListener("orientationchange", applyViewportFilter);
+    // mobileMql's "change" only fires when crossing the mobile/desktop
+    // breakpoint, and orientationchange only fires on device rotation —
+    // neither fires for an ordinary desktop window resize that stays on
+    // the same side of the breakpoint (e.g. 1440px -> 1920px). Without
+    // this, repositionSlot() (called from applyViewportFilter()) would
+    // never run for that case, leaving already-rendered slots stuck at
+    // their mount-time position.
+    window.addEventListener("resize", applyViewportFilter);
   }
 
   // True once a slot has been through the drag-to-select picker (see
