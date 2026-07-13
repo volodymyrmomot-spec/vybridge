@@ -588,7 +588,23 @@
   // site-agnostic: for a selection inside a centered, max-width content
   // box, this naturally resolves to that box; for a selection in a
   // full-bleed section's side gutter, it resolves to the section itself.
-  // Falls back to document.body if nothing smaller qualifies, mirroring
+  //
+  // Real-world case that requires one more preference beyond plain
+  // containment: a selection that starts a little outside a centered
+  // content box (e.g. in the gutter beside it) fails that box's full-
+  // containment test and jumps the anchor all the way out to the outer,
+  // unconstrained full-bleed section — which then scales with the window
+  // just like the old model did, reintroducing the exact drift this
+  // feature exists to fix. So: prefer the smallest ancestor that has an
+  // explicit CSS max-width AND still contains the selection's CENTER
+  // point, even if it doesn't fully enclose the whole rectangle, over a
+  // wider ancestor that only qualifies via full containment. An explicit
+  // max-width is the concrete, already-confirmed signal that distinguishes
+  // a real centered content container from an unconstrained full-bleed
+  // section (verified against Stavbahub's own hero/.container markup) —
+  // not a numeric threshold, just a boolean CSS property check.
+  //
+  // Falls back to document.body if nothing qualifies at all, mirroring
   // computeSelector()'s own body boundary above.
   function findAnchorContainer(rect) {
     var centerX = rect.x + rect.width / 2;
@@ -603,15 +619,25 @@
     function fullyContains(box) {
       return box.left <= rect.x && box.top <= rect.y && box.right >= right && box.bottom >= bottom;
     }
+    function containsCenter(box) {
+      return box.left <= centerX && box.right >= centerX && box.top <= centerY && box.bottom >= centerY;
+    }
+
+    var fullyContainingCandidate = null;
+    var constrainedCandidate = null;
 
     var node = el;
     while (node && node.nodeType === 1) {
-      if (fullyContains(node.getBoundingClientRect())) {
-        return node;
+      var box = node.getBoundingClientRect();
+      if (!fullyContainingCandidate && fullyContains(box)) {
+        fullyContainingCandidate = node;
+      }
+      if (!constrainedCandidate && containsCenter(box) && getComputedStyle(node).maxWidth !== "none") {
+        constrainedCandidate = node;
       }
       node = node.parentElement;
     }
-    return document.body;
+    return constrainedCandidate || fullyContainingCandidate || document.body;
   }
 
   // Computes anchor-relative capture data for a just-drawn selection —
