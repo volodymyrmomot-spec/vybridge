@@ -1,6 +1,13 @@
 (function () {
   "use strict";
 
+  // Temporary diagnostic instrumentation for the anchor-relative Picker
+  // positioning investigation — safe to delete entirely (this flag, the
+  // two console.log call sites it gates, and the vybridge_debug passthrough
+  // below) once the investigation is done. Off by default for every normal
+  // publisher — only enabled by explicitly opening /slots/new?debug=1.
+  var PICKER_DEBUG = new URLSearchParams(window.location.search).get("debug") === "1";
+
   var step1 = document.getElementById("step1");
   var workspace = document.getElementById("workspace");
   var notDetected = document.getElementById("notDetected");
@@ -231,7 +238,16 @@
         frameLoading.hidden = false;
         iframe.hidden = true;
         frameWrap.classList.toggle("is-mobile", state.viewportType === "mobile");
-        iframe.src = result.body.pickerUrl;
+
+        var pickerUrl = result.body.pickerUrl;
+        if (PICKER_DEBUG) {
+          // Purely a client-side URL passthrough — the API/session-creation
+          // request itself is untouched. w.js (running inside this iframe,
+          // on the publisher's own origin) reads this same query param to
+          // decide whether to show its own diagnostic panel/overlay.
+          pickerUrl += (pickerUrl.indexOf("?") === -1 ? "?" : "&") + "vybridge_debug=1";
+        }
+        iframe.src = pickerUrl;
 
         readyTimer = setTimeout(handleNotDetected, READY_TIMEOUT_MS);
       })
@@ -407,6 +423,10 @@
         relativeHeight: data.relativeHeight,
       };
 
+      if (PICKER_DEBUG) {
+        console.log("[PICKER_DEBUG] vybridgePicked payload received via postMessage:", data);
+      }
+
       panelArea.textContent = "Selected area: " + data.width + " × " + data.height + " px";
       if (!slotLabelInput.value.trim()) {
         slotLabelInput.value = "New ad slot";
@@ -462,26 +482,28 @@
 
     createSlotBtn.disabled = true;
 
+    var finalizeBody = {
+      label: label,
+      format: slotFormatSelect.value,
+      posX: state.picked.x,
+      posY: state.picked.y,
+      width: state.picked.width,
+      height: state.picked.height,
+      priceEuros: price,
+      durationDays: duration,
+      viewportType: state.viewportType,
+      anchorSelector: state.picked.anchorSelector,
+      relativeX: state.picked.relativeX,
+      relativeY: state.picked.relativeY,
+      relativeWidth: state.picked.relativeWidth,
+      relativeHeight: state.picked.relativeHeight,
+    };
+
     fetch("/api/slots/" + encodeURIComponent(state.slotId) + "/finalize", {
       method: "PUT",
       credentials: "same-origin",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        label: label,
-        format: slotFormatSelect.value,
-        posX: state.picked.x,
-        posY: state.picked.y,
-        width: state.picked.width,
-        height: state.picked.height,
-        priceEuros: price,
-        durationDays: duration,
-        viewportType: state.viewportType,
-        anchorSelector: state.picked.anchorSelector,
-        relativeX: state.picked.relativeX,
-        relativeY: state.picked.relativeY,
-        relativeWidth: state.picked.relativeWidth,
-        relativeHeight: state.picked.relativeHeight,
-      }),
+      body: JSON.stringify(finalizeBody),
     })
       .then(function (res) {
         return res.json().then(function (data) {
@@ -510,6 +532,17 @@
             confirmFormMessage.hidden = false;
           }
           return;
+        }
+        if (PICKER_DEBUG) {
+          console.log("[PICKER_DEBUG] Slot saved — full trace:", {
+            finalizeRequestBody: finalizeBody,
+            finalizeResponseSlot: result.body.slot,
+            anchorSelector: state.picked.anchorSelector,
+            relativeX: state.picked.relativeX,
+            relativeY: state.picked.relativeY,
+            relativeWidth: state.picked.relativeWidth,
+            relativeHeight: state.picked.relativeHeight,
+          });
         }
         window.location.href = "/dashboard";
       })

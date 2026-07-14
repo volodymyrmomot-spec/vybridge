@@ -41,6 +41,20 @@
   var dragStart = null;
   var dragEl = null;
 
+  // Temporary diagnostic instrumentation for the anchor-relative Picker
+  // positioning investigation — safe to delete entirely (this flag, every
+  // function/branch it gates, and the CSS in injectDebugStyles()) once the
+  // investigation is done. Never touches the actual capture/render math.
+  // Off for every normal publisher/visitor by default — only enabled when
+  // the page URL carries vybridge_debug=1, which new.js only ever adds
+  // when /slots/new itself was opened as /slots/new?debug=1. Exists only
+  // inside picker mode (every reference below is picker-mode-only code);
+  // startAdServing()/the live ad-rendering path never reads this flag, so
+  // it can never affect what a real site visitor sees.
+  var PICKER_DEBUG = params.get("vybridge_debug") === "1";
+  var debugPanelEl = null;
+  var reconstructedEl = null;
+
   // Live ad-serving viewport detection — a different, unrelated threshold
   // from the picker tool's own MIN_PICKER_WIDTH gate in new.js (that one
   // decides who can use the picker at all; this one decides which
@@ -670,6 +684,143 @@
     }
   }
 
+  // PICKER_DEBUG-only — duplicates just enough of computeAnchorData()'s own
+  // lookup (never modifies it) to also expose the anchor's raw rect and a
+  // "reconstructed" rectangle computed with the exact same formula
+  // anchorRenderRect() uses at live-render time, so the two can be
+  // compared visually and numerically inside the Picker itself.
+  function computeDebugInfo(x, y, width, height) {
+    try {
+      var anchorEl = findAnchorContainer({ x: x, y: y, width: width, height: height });
+      if (!anchorEl) {
+        return null;
+      }
+      var anchorRect = anchorEl.getBoundingClientRect();
+      if (!anchorRect.width || !anchorRect.height) {
+        return null;
+      }
+      var relativeX = (x - anchorRect.left) / anchorRect.width;
+      var relativeY = (y - anchorRect.top) / anchorRect.height;
+      var relativeWidth = width / anchorRect.width;
+      var relativeHeight = height / anchorRect.height;
+
+      var reconstructed = {
+        left: anchorRect.left + relativeX * anchorRect.width,
+        top: anchorRect.top + relativeY * anchorRect.height,
+        width: relativeWidth * anchorRect.width,
+        height: relativeHeight * anchorRect.height,
+      };
+
+      return {
+        anchorSelector: computeSelector(anchorEl),
+        anchorRect: { left: anchorRect.left, top: anchorRect.top, width: anchorRect.width, height: anchorRect.height },
+        relativeX: relativeX,
+        relativeY: relativeY,
+        relativeWidth: relativeWidth,
+        relativeHeight: relativeHeight,
+        reconstructed: reconstructed,
+        delta: {
+          x: reconstructed.left - x,
+          y: reconstructed.top - y,
+          width: reconstructed.width - width,
+          height: reconstructed.height - height,
+        },
+      };
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function removeReconstructedBox() {
+    if (reconstructedEl) {
+      reconstructedEl.remove();
+      reconstructedEl = null;
+    }
+  }
+
+  function removeDebugPanel() {
+    if (debugPanelEl) {
+      debugPanelEl.remove();
+      debugPanelEl = null;
+    }
+    removeReconstructedBox();
+  }
+
+  // PICKER_DEBUG-only — live debug panel + "Reconstructed" overlay box,
+  // updated on every drag tick and once more at mouseup.
+  function updateDebugPanel(x, y, width, height) {
+    if (!PICKER_DEBUG) {
+      return;
+    }
+    var info = computeDebugInfo(x, y, width, height);
+
+    if (!debugPanelEl) {
+      debugPanelEl = document.createElement("div");
+      debugPanelEl.id = "vybridge-picker-debug-panel";
+      document.body.appendChild(debugPanelEl);
+    }
+
+    var lines = [
+      "selectionX: " + x,
+      "selectionY: " + y,
+      "selectionWidth: " + width,
+      "selectionHeight: " + height,
+      "iframe viewport: " + window.innerWidth + "x" + window.innerHeight,
+      "scrollX/Y: " + window.scrollX + ", " + window.scrollY,
+    ];
+
+    if (info) {
+      lines.push(
+        "anchorSelector: " + info.anchorSelector,
+        "anchorRect: " +
+          info.anchorRect.left.toFixed(1) +
+          ", " +
+          info.anchorRect.top.toFixed(1) +
+          ", " +
+          info.anchorRect.width.toFixed(1) +
+          ", " +
+          info.anchorRect.height.toFixed(1),
+        "anchorRelX/Y: " + info.relativeX.toFixed(4) + ", " + info.relativeY.toFixed(4),
+        "anchorRelW/H: " + info.relativeWidth.toFixed(4) + ", " + info.relativeHeight.toFixed(4),
+        "deltaX/Y: " + info.delta.x.toFixed(2) + ", " + info.delta.y.toFixed(2),
+        "deltaW/H: " + info.delta.width.toFixed(2) + ", " + info.delta.height.toFixed(2)
+      );
+
+      if (!reconstructedEl) {
+        reconstructedEl = document.createElement("div");
+        reconstructedEl.id = "vybridge-picker-reconstructed";
+        document.body.appendChild(reconstructedEl);
+      }
+      reconstructedEl.style.left = info.reconstructed.left + "px";
+      reconstructedEl.style.top = info.reconstructed.top + "px";
+      reconstructedEl.style.width = info.reconstructed.width + "px";
+      reconstructedEl.style.height = info.reconstructed.height + "px";
+    } else {
+      lines.push("anchor: (none found)");
+      removeReconstructedBox();
+    }
+
+    debugPanelEl.textContent = lines.join("\n");
+  }
+
+  // PICKER_DEBUG-only CSS — separate from injectPickerStyles() so it's
+  // trivially removable as one block.
+  function injectDebugStyles() {
+    var style = document.createElement("style");
+    style.textContent =
+      "#vybridge-picker-debug-panel{position:fixed;top:8px;right:8px;z-index:2147483647;" +
+      "background:rgba(15,23,42,0.92);color:#e2e8f0;padding:10px 12px;border-radius:8px;" +
+      "font:11px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre;pointer-events:none;" +
+      "max-width:360px;}" +
+      "#vybridge-picker-reconstructed{position:fixed;border:2px dashed #f97316;" +
+      "background:rgba(249,115,22,0.08);pointer-events:none;z-index:999999;}" +
+      "#vybridge-picker-reconstructed::after{content:'Reconstructed';position:absolute;top:-18px;left:0;" +
+      "font:600 10px/1 -apple-system,BlinkMacSystemFont,sans-serif;color:#f97316;white-space:nowrap;}" +
+      "#vybridge-picker-drag::after{content:'Selected';position:absolute;top:-18px;left:0;" +
+      "font:600 10px/1 -apple-system,BlinkMacSystemFont,sans-serif;color:#6366F1;white-space:nowrap;}";
+    document.head.appendChild(style);
+  }
+
   function injectPickerStyles() {
     var style = document.createElement("style");
     style.textContent =
@@ -802,6 +953,10 @@
     dragEl.style.height = "0px";
     document.body.appendChild(dragEl);
 
+    if (PICKER_DEBUG) {
+      updateDebugPanel(dragStart.x, dragStart.y, 0, 0);
+    }
+
     document.addEventListener("mousemove", onMouseMove, true);
     document.addEventListener("mouseup", onMouseUp, true);
   }
@@ -818,6 +973,10 @@
     dragEl.style.top = y + "px";
     dragEl.style.width = width + "px";
     dragEl.style.height = height + "px";
+
+    if (PICKER_DEBUG) {
+      updateDebugPanel(x, y, width, height);
+    }
 
     if (embedded) {
       window.parent.postMessage({ vybridgeDragging: true, x: x, y: y, width: width, height: height }, "*");
@@ -856,6 +1015,11 @@
     showAreaPreview(x, y, width, height);
 
     var anchorData = computeAnchorData(x, y, width, height);
+    var debugInfo = PICKER_DEBUG ? computeDebugInfo(x, y, width, height) : null;
+    if (PICKER_DEBUG) {
+      updateDebugPanel(x, y, width, height);
+    }
+
     window.parent.postMessage(
       {
         vybridgePicked: true,
@@ -868,6 +1032,17 @@
         relativeY: anchorData.relativeY,
         relativeWidth: anchorData.relativeWidth,
         relativeHeight: anchorData.relativeHeight,
+        debug: debugInfo
+          ? {
+              iframeViewportWidth: window.innerWidth,
+              iframeViewportHeight: window.innerHeight,
+              scrollX: window.scrollX,
+              scrollY: window.scrollY,
+              anchorRect: debugInfo.anchorRect,
+              reconstructed: debugInfo.reconstructed,
+              delta: debugInfo.delta,
+            }
+          : null,
       },
       "*"
     );
@@ -896,6 +1071,9 @@
 
   function startPickerMode() {
     injectPickerStyles();
+    if (PICKER_DEBUG) {
+      injectDebugStyles();
+    }
 
     if (embedded) {
       window.parent.postMessage({ vybridgePickerReady: true }, "*");
