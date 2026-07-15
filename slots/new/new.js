@@ -543,6 +543,26 @@
             relativeWidth: state.picked.relativeWidth,
             relativeHeight: state.picked.relativeHeight,
           });
+          // No API change needed to detect a server-side rejection —
+          // publicSlot() already returns anchorRelWidth in the finalize
+          // response. If we sent an anchor but the saved slot doesn't have
+          // one, server-side validation (sanitizeAnchorData() in
+          // lib/slots.js) silently dropped it, and the slot fell back to
+          // the legacy window-relative model with no other signal.
+          var savedSlot = result.body.slot;
+          if (state.picked.anchorSelector && savedSlot && savedSlot.anchorRelWidth == null) {
+            console.warn(
+              "[PICKER_DEBUG] Anchor payload was sent but REJECTED by server-side validation — " +
+                "slot saved WITHOUT anchor data, falling back to the legacy window-relative model. Sent:",
+              {
+                anchorSelector: state.picked.anchorSelector,
+                relativeX: state.picked.relativeX,
+                relativeY: state.picked.relativeY,
+                relativeWidth: state.picked.relativeWidth,
+                relativeHeight: state.picked.relativeHeight,
+              }
+            );
+          }
         }
         window.location.href = "/dashboard";
       })
