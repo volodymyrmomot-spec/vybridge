@@ -54,6 +54,7 @@
   var PICKER_DEBUG = params.get("vybridge_debug") === "1";
   var debugPanelEl = null;
   var reconstructedEl = null;
+  var lastAnchorSearchTrace = null; // PICKER_DEBUG-only, see findAnchorContainer()
 
   // Live ad-serving viewport detection — a different, unrelated threshold
   // from the picker tool's own MIN_PICKER_WIDTH gate in new.js (that one
@@ -620,13 +621,22 @@
   //
   // Falls back to document.body if nothing qualifies at all, mirroring
   // computeSelector()'s own body boundary above.
+  //
+  // Edge case fixed here: the primary lookup is a single
+  // elementFromPoint(centerX, centerY) call at the selection's own center —
+  // elementFromPoint only ever hits elements currently painted in the
+  // viewport, so for a tall selection whose center has scrolled outside
+  // the viewport by the time this runs (mouseup, after a mid-drag scroll),
+  // it returns null and the whole anchor search gave up, even though most
+  // of the selection might still be plainly visible. Fallback below tries
+  // a handful of points sampled from the intersection of the selection
+  // rect with the CURRENT viewport instead — never a point outside the
+  // selection rect, and never a scan of the document — reusing the exact
+  // same qualification rules (fullyContains/containsCenter+max-width) via
+  // walkFrom(), unchanged.
   function findAnchorContainer(rect) {
     var centerX = rect.x + rect.width / 2;
     var centerY = rect.y + rect.height / 2;
-    var el = document.elementFromPoint(centerX, centerY);
-    if (!el) {
-      return null;
-    }
 
     var right = rect.x + rect.width;
     var bottom = rect.y + rect.height;
@@ -637,21 +647,101 @@
       return box.left <= centerX && box.right >= centerX && box.top <= centerY && box.bottom >= centerY;
     }
 
-    var fullyContainingCandidate = null;
-    var constrainedCandidate = null;
-
-    var node = el;
-    while (node && node.nodeType === 1) {
-      var box = node.getBoundingClientRect();
-      if (!fullyContainingCandidate && fullyContains(box)) {
-        fullyContainingCandidate = node;
+    // Walks up from a given starting element applying the SAME
+    // qualification rules as always — only WHICH element we start from
+    // ever varies between the primary attempt and the fallback samples.
+    function walkFrom(startEl) {
+      var fullyContainingCandidate = null;
+      var constrainedCandidate = null;
+      var node = startEl;
+      while (node && node.nodeType === 1) {
+        var box = node.getBoundingClientRect();
+        if (!fullyContainingCandidate && fullyContains(box)) {
+          fullyContainingCandidate = node;
+        }
+        if (!constrainedCandidate && containsCenter(box) && getComputedStyle(node).maxWidth !== "none") {
+          constrainedCandidate = node;
+        }
+        node = node.parentElement;
       }
-      if (!constrainedCandidate && containsCenter(box) && getComputedStyle(node).maxWidth !== "none") {
-        constrainedCandidate = node;
-      }
-      node = node.parentElement;
+      return constrainedCandidate || fullyContainingCandidate || document.body;
     }
-    return constrainedCandidate || fullyContainingCandidate || document.body;
+
+    var centerInViewport = centerX >= 0 && centerX <= window.innerWidth && centerY >= 0 && centerY <= window.innerHeight;
+    var trace = PICKER_DEBUG
+      ? { centerPoint: { x: centerX, y: centerY }, centerInViewport: centerInViewport, samplePoints: [], resolvedVia: null, selector: null }
+      : null;
+
+    if (centerInViewport) {
+      var elFromCenter = document.elementFromPoint(centerX, centerY);
+      if (elFromCenter) {
+        var resolvedFromCenter = walkFrom(elFromCenter);
+        if (trace) {
+          trace.resolvedVia = "center";
+          trace.selector = computeSelector(resolvedFromCenter);
+          lastAnchorSearchTrace = trace;
+        }
+        return resolvedFromCenter;
+      }
+    }
+
+    // Fallback: center was off-viewport (or, defensively, produced no
+    // element) — sample a few points from the intersection of the
+    // selection rect with the current viewport instead.
+    var visLeft = Math.max(rect.x, 0);
+    var visTop = Math.max(rect.y, 0);
+    var visRight = Math.min(right, window.innerWidth);
+    var visBottom = Math.min(bottom, window.innerHeight);
+
+    if (visRight <= visLeft || visBottom <= visTop) {
+      // Selection rect doesn't intersect the current viewport at all —
+      // nothing to sample; graceful no-anchor result, same as before.
+      if (trace) {
+        trace.resolvedVia = null;
+        lastAnchorSearchTrace = trace;
+      }
+      return null;
+    }
+
+    var INSET = 4;
+    var visCenterX = (visLeft + visRight) / 2;
+    var visCenterY = (visTop + visBottom) / 2;
+    var candidates = [
+      { label: "visible-center", x: visCenterX, y: visCenterY },
+      { label: "visible-top", x: visCenterX, y: visTop + INSET },
+      { label: "visible-bottom", x: visCenterX, y: visBottom - INSET },
+      { label: "visible-left", x: visLeft + INSET, y: visCenterY },
+      { label: "visible-right", x: visRight - INSET, y: visCenterY },
+    ];
+
+    for (var i = 0; i < candidates.length; i++) {
+      var point = candidates[i];
+      // Clamp into the viewport (never outside it, per elementFromPoint's
+      // own contract) — already guaranteed to stay inside the selection
+      // rect since every candidate above was derived from visLeft/Top/
+      // Right/Bottom, which are themselves clamped to rect bounds.
+      var px = Math.min(Math.max(point.x, 1), window.innerWidth - 1);
+      var py = Math.min(Math.max(point.y, 1), window.innerHeight - 1);
+      var hitEl = document.elementFromPoint(px, py);
+      if (trace) {
+        trace.samplePoints.push({ label: point.label, x: px, y: py, hit: !!hitEl });
+      }
+      if (hitEl) {
+        var resolved = walkFrom(hitEl);
+        if (trace) {
+          trace.resolvedVia = "sample:" + point.label;
+          trace.selector = computeSelector(resolved);
+          lastAnchorSearchTrace = trace;
+        }
+        return resolved;
+      }
+    }
+
+    if (trace) {
+      trace.resolvedVia = null;
+      lastAnchorSearchTrace = trace;
+    }
+    return null;
   }
 
   // Computes anchor-relative capture data for a just-drawn selection —
@@ -1060,6 +1150,9 @@
     var debugInfo = PICKER_DEBUG ? computeDebugInfo(vp.x, vp.y, vp.width, vp.height) : null;
     if (PICKER_DEBUG) {
       updateDebugPanel(vp.x, vp.y, vp.width, vp.height);
+      if (lastAnchorSearchTrace) {
+        console.log("[PICKER_DEBUG] anchor search trace:", lastAnchorSearchTrace);
+      }
     }
 
     window.parent.postMessage(
