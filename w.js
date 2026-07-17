@@ -731,6 +731,24 @@
     }
   }
 
+  // Anchor detection (elementFromPoint/getBoundingClientRect, both inside
+  // findAnchorContainer()/computeAnchorData()/computeDebugInfo()) is
+  // inherently viewport-relative — this projects a document-relative rect
+  // (see onMouseDown/onMouseMove/onMouseUp below) back into the CURRENT
+  // viewport frame, purely so those unchanged functions keep receiving the
+  // same kind of input they always have. A no-op whenever there's no
+  // scroll (scrollX/Y = 0), which is why fixing the drag-select scroll bug
+  // doesn't change anchor-relative behavior for the common, non-scrolled
+  // case.
+  function toViewportRect(rect) {
+    return {
+      x: rect.x - window.scrollX,
+      y: rect.y - window.scrollY,
+      width: rect.width,
+      height: rect.height,
+    };
+  }
+
   function removeReconstructedBox() {
     if (reconstructedEl) {
       reconstructedEl.remove();
@@ -835,9 +853,9 @@
       "#vybridge-picker-toast button:hover{background:rgba(255,255,255,0.2);}" +
       "#vybridge-picker-toast.vybridge-picker-toast--success{background:#059669;}" +
       "#vybridge-picker-toast.vybridge-picker-toast--error{background:#dc2626;}" +
-      "#vybridge-picker-drag{position:fixed;border:2px dashed #6366F1;background:rgba(99,102,241,0.1);" +
+      "#vybridge-picker-drag{position:absolute;border:2px dashed #6366F1;background:rgba(99,102,241,0.1);" +
       "pointer-events:none;z-index:999999;}" +
-      "#vybridge-picker-preview{position:fixed;z-index:999998;box-sizing:border-box;" +
+      "#vybridge-picker-preview{position:absolute;z-index:999998;box-sizing:border-box;" +
       "display:flex;align-items:center;justify-content:center;text-align:center;padding:8px;" +
       "background:rgba(124,58,237,0.15);border:2px solid #7c3aed;border-radius:6px;" +
       "font:600 13px/1.3 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#4f46e5;" +
@@ -845,10 +863,10 @@
     document.head.appendChild(style);
   }
 
-  // Confirmed-selection box, shown after mouseup — position:fixed with
-  // plain viewport coordinates (no scrollX/scrollY), same as the drag
-  // rectangle and the final ad render, so it lines up exactly regardless
-  // of page scroll position.
+  // Confirmed-selection box, shown after mouseup — position:absolute with
+  // document coordinates (x/y already include scrollX/scrollY, same as the
+  // drag rectangle), so it stays pinned to the picked spot on the page and
+  // scrolls naturally with it, rather than drifting with the viewport.
   function showAreaPreview(x, y, width, height) {
     removePickPreview();
     previewEl = document.createElement("div");
@@ -944,7 +962,12 @@
     }
     event.preventDefault();
 
-    dragStart = { x: event.clientX, y: event.clientY };
+    // Document-relative (not viewport-relative) — dragStart must stay
+    // pinned to the same place on the PAGE for the whole drag, even if the
+    // user scrolls mid-drag. event.clientX/Y alone would silently drift
+    // with the viewport, so a start point captured before a scroll and an
+    // end point read after one would describe two unrelated rectangles.
+    dragStart = { x: event.clientX + window.scrollX, y: event.clientY + window.scrollY };
     dragEl = document.createElement("div");
     dragEl.id = "vybridge-picker-drag";
     dragEl.style.left = dragStart.x + "px";
@@ -954,7 +977,8 @@
     document.body.appendChild(dragEl);
 
     if (PICKER_DEBUG) {
-      updateDebugPanel(dragStart.x, dragStart.y, 0, 0);
+      var vpStart = toViewportRect({ x: dragStart.x, y: dragStart.y, width: 0, height: 0 });
+      updateDebugPanel(vpStart.x, vpStart.y, 0, 0);
     }
 
     document.addEventListener("mousemove", onMouseMove, true);
@@ -965,21 +989,32 @@
     if (!dragStart || !dragEl) {
       return;
     }
-    var x = Math.min(dragStart.x, event.clientX);
-    var y = Math.min(dragStart.y, event.clientY);
-    var width = Math.abs(event.clientX - dragStart.x);
-    var height = Math.abs(event.clientY - dragStart.y);
+    // Document-relative, same reasoning as onMouseDown — dragStart never
+    // moves once set; only the current point (and therefore the rect)
+    // does, so the box always spans the correct place on the page
+    // regardless of scroll position at any point during the drag.
+    var currentX = event.clientX + window.scrollX;
+    var currentY = event.clientY + window.scrollY;
+    var x = Math.min(dragStart.x, currentX);
+    var y = Math.min(dragStart.y, currentY);
+    var width = Math.abs(currentX - dragStart.x);
+    var height = Math.abs(currentY - dragStart.y);
     dragEl.style.left = x + "px";
     dragEl.style.top = y + "px";
     dragEl.style.width = width + "px";
     dragEl.style.height = height + "px";
 
+    // Debug panel and the overlap-warning relay both need viewport-
+    // relative coordinates (unchanged from before this fix) — project the
+    // document rect back into the current viewport frame.
+    var vp = toViewportRect({ x: x, y: y, width: width, height: height });
+
     if (PICKER_DEBUG) {
-      updateDebugPanel(x, y, width, height);
+      updateDebugPanel(vp.x, vp.y, vp.width, vp.height);
     }
 
     if (embedded) {
-      window.parent.postMessage({ vybridgeDragging: true, x: x, y: y, width: width, height: height }, "*");
+      window.parent.postMessage({ vybridgeDragging: true, x: vp.x, y: vp.y, width: vp.width, height: vp.height }, "*");
     }
   }
 
@@ -990,10 +1025,12 @@
       return;
     }
 
-    var x = Math.min(dragStart.x, event.clientX);
-    var y = Math.min(dragStart.y, event.clientY);
-    var width = Math.abs(event.clientX - dragStart.x);
-    var height = Math.abs(event.clientY - dragStart.y);
+    var currentX = event.clientX + window.scrollX;
+    var currentY = event.clientY + window.scrollY;
+    var x = Math.min(dragStart.x, currentX);
+    var y = Math.min(dragStart.y, currentY);
+    var width = Math.abs(currentX - dragStart.x);
+    var height = Math.abs(currentY - dragStart.y);
     dragStart = null;
     if (dragEl) {
       dragEl.remove();
@@ -1014,10 +1051,15 @@
 
     showAreaPreview(x, y, width, height);
 
-    var anchorData = computeAnchorData(x, y, width, height);
-    var debugInfo = PICKER_DEBUG ? computeDebugInfo(x, y, width, height) : null;
+    // Anchor detection still needs viewport-relative coordinates (see
+    // toViewportRect() above) — its own math is completely unchanged, it's
+    // just now fed a correctly scroll-projected rect instead of raw
+    // event.clientX/Y. A no-op for the common, non-scrolled case.
+    var vp = toViewportRect({ x: x, y: y, width: width, height: height });
+    var anchorData = computeAnchorData(vp.x, vp.y, vp.width, vp.height);
+    var debugInfo = PICKER_DEBUG ? computeDebugInfo(vp.x, vp.y, vp.width, vp.height) : null;
     if (PICKER_DEBUG) {
-      updateDebugPanel(x, y, width, height);
+      updateDebugPanel(vp.x, vp.y, vp.width, vp.height);
     }
 
     window.parent.postMessage(
