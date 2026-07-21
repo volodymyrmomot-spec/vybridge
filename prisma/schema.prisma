@@ -45,6 +45,19 @@ enum SlotStatus {
   paused
 }
 
+// Status of the automatic Marketplace screenshot capture for a slot (see
+// lib/slot-preview.js). "pending" covers both "not started yet" and
+// "in progress" — there's no separate in-flight state since capture is
+// fire-and-forget with no retry queue in Phase 1. Legacy slots default to
+// pending (not failed) so the dashboard's manual "Regenerate preview"
+// action gives them a real path to a screenshot rather than a permanent
+// error state they never actually hit.
+enum PreviewStatus {
+  pending
+  ready
+  failed
+}
+
 // The viewport coordinate system a placement was captured against and
 // should render against — not a physical device. Kept intentionally
 // two-valued (no "all") to avoid ambiguous absolute-coordinate behavior;
@@ -375,6 +388,28 @@ model Slot {
   // above — this is the capture ALGORITHM's version). Set once by
   // finalizeSlot(), never updated after.
   captureVersion Int @default(1) @map("capture_version")
+
+  // The exact page createPickerSession() opened the picker against —
+  // validated there (host must match site.domain) but not persisted until
+  // now. Needed so the background screenshot capture (lib/slot-preview.js)
+  // knows what to navigate to; without it, capture would have nothing but
+  // the site's domain root, wrong for any slot picked on a non-homepage
+  // page. Null for slots created before this field existed.
+  pageUrl String? @map("page_url")
+
+  // Marketplace preview screenshot (see lib/slot-preview.js) — a plain,
+  // unmodified capture of the page with no highlight baked in; the
+  // Marketplace draws the highlight itself via CSS using
+  // posX/posY/posWidth/posHeight + pickerViewportWidth/pickerViewportHeight
+  // above, so there's no separate previewRect field and no risk of the
+  // highlight ever drifting from the slot's real position.
+  previewImageUrl      String?       @map("preview_image_url")
+  // Cloudinary's own asset id for previewImageUrl, captured from the
+  // upload response — used only to delete the previous asset when a
+  // preview is regenerated or the slot is deleted (same rationale as
+  // Site.coverImagePublicId above).
+  previewImagePublicId String?       @map("preview_image_public_id")
+  previewStatus        PreviewStatus @default(pending) @map("preview_status")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

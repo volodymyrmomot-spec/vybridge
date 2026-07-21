@@ -134,9 +134,36 @@
 }
 
 .listing-card__cover {
+  position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
+  overflow: hidden;
   background: var(--brand-gradient-soft);
+}
+
+/* Real width/aspect ratio, positioned+scaled by renderListingCover()
+   (sites.js) once loaded — shown at its natural (often much taller than
+   16:9) proportions and shifted up so the ad area stays in frame, rather
+   than squashed to fit the card. */
+.listing-card__cover-img {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.listing-card__cover-highlight {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px solid var(--purple);
+  background: rgba(124, 58, 237, 0.15);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.listing-card__cover-highlight[hidden] {
+  display: none;
 }
 
 .listing-card__title {

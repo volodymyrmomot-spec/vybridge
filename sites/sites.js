@@ -66,6 +66,53 @@
     return node;
   }
 
+  // Screenshot + CSS highlight overlay for a listing card's cover, or the
+  // plain gradient placeholder (untouched, no markup added) whenever no
+  // ready preview exists yet. The card is a fixed 16:9 window, so the
+  // (potentially much taller, full-page) screenshot is shown at its real
+  // aspect ratio and shifted vertically to keep the ad area centered in
+  // that window — computed once the image actually loads, since only then
+  // is its true natural height known.
+  function renderListingCover(listing) {
+    var cover = el("div", "listing-card__cover");
+    var hasPreview =
+      listing.previewStatus === "ready" &&
+      listing.previewImageUrl &&
+      listing.posX !== null &&
+      listing.posX !== undefined &&
+      listing.pickerViewportWidth;
+    if (!hasPreview) {
+      return cover;
+    }
+
+    var img = document.createElement("img");
+    img.className = "listing-card__cover-img";
+    img.alt = "";
+    var overlay = el("div", "listing-card__cover-highlight");
+    overlay.hidden = true;
+
+    img.addEventListener("load", function () {
+      var cardWidth = cover.clientWidth;
+      var cardHeight = cover.clientHeight;
+      var scale = cardWidth / img.naturalWidth;
+      var centerY = (listing.posY + listing.posHeight / 2) * scale;
+      var maxShift = Math.max(0, img.naturalHeight * scale - cardHeight);
+      var shift = Math.min(Math.max(centerY - cardHeight / 2, 0), maxShift);
+
+      img.style.top = -shift + "px";
+      overlay.style.left = listing.posX * scale + "px";
+      overlay.style.top = listing.posY * scale - shift + "px";
+      overlay.style.width = listing.posWidth * scale + "px";
+      overlay.style.height = listing.posHeight * scale + "px";
+      overlay.hidden = false;
+    });
+    img.src = listing.previewImageUrl;
+
+    cover.appendChild(img);
+    cover.appendChild(overlay);
+    return cover;
+  }
+
   function renderBreadcrumbs(site) {
     var nav = document.getElementById("breadcrumbs");
     nav.innerHTML = "";
@@ -121,7 +168,7 @@
       site.listings.forEach(function (listing) {
         var card = el("a", "listing-card");
         card.href = "/listings/" + encodeURIComponent(listing.slug);
-        card.appendChild(el("div", "listing-card__cover"));
+        card.appendChild(renderListingCover(listing));
         card.appendChild(el("div", "listing-card__title", listing.title));
         card.appendChild(el("div", "listing-card__type", LISTING_TYPE_LABELS[listing.listingType] || listing.listingType));
         card.appendChild(el("div", "listing-card__price", money(listing.priceCents, listing.currency)));

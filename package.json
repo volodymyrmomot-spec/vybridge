@@ -14,6 +14,7 @@
     "@prisma/client": "6.19.3",
     "busboy": "^1.6.0",
     "cloudinary": "^2.10.0",
+    "puppeteer-core": "^23.11.1",
     "stripe": "^22.3.0"
   },
   "devDependencies": {

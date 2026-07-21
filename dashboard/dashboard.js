@@ -975,6 +975,27 @@
       }
       row.appendChild(actionCell);
 
+      // Always available, not gated on previewStatus — a publisher's page
+      // can change layout at any time (redesign, new hero section), so
+      // there's no status where "the current screenshot is definitely
+      // still accurate" holds.
+      var regenerateBtn = el("button", "btn btn--outline btn--sm", "Regenerate preview");
+      regenerateBtn.type = "button";
+      regenerateBtn.addEventListener("click", function () {
+        regenerateBtn.disabled = true;
+        regenerateBtn.textContent = "Regenerating…";
+        fetch("/api/slots/" + encodeURIComponent(slot.id) + "/regenerate-preview", { method: "POST" })
+          .then(function () {
+            regenerateBtn.disabled = false;
+            regenerateBtn.textContent = "Regenerate preview";
+          })
+          .catch(function () {
+            regenerateBtn.disabled = false;
+            regenerateBtn.textContent = "Regenerate preview";
+          });
+      });
+      actionCell.appendChild(regenerateBtn);
+
       var deleteCell = document.createElement("td");
       var deleteBtn = el("button", "btn btn--danger btn--sm", "Delete");
       deleteBtn.type = "button";

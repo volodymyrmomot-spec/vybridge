@@ -50,10 +50,51 @@
     nav.appendChild(el("span", null, listing.title));
   }
 
+  // Large hero preview — the page's main image. Shown at its real (full-
+  // page) aspect ratio with no cropping, so the highlight overlay only ever
+  // needs a single width-based scale factor, no vertical shift/crop math
+  // (contrast with sites.js's fixed-aspect-ratio card cover). Falls back to
+  // the existing gradient placeholder (untouched, no markup added) whenever
+  // no ready preview exists.
+  function renderListingHero(slot) {
+    var cover = document.getElementById("listingCover");
+    var hasPreview =
+      slot &&
+      slot.previewStatus === "ready" &&
+      slot.previewImageUrl &&
+      slot.posX !== null &&
+      slot.posX !== undefined &&
+      slot.pickerViewportWidth;
+    if (!hasPreview) {
+      return;
+    }
+
+    var img = document.createElement("img");
+    img.className = "listing-cover__img";
+    img.alt = "";
+    var overlay = el("div", "listing-cover__highlight");
+    overlay.hidden = true;
+
+    img.addEventListener("load", function () {
+      var scale = cover.clientWidth / img.naturalWidth;
+      overlay.style.left = slot.posX * scale + "px";
+      overlay.style.top = slot.posY * scale + "px";
+      overlay.style.width = slot.posWidth * scale + "px";
+      overlay.style.height = slot.posHeight * scale + "px";
+      overlay.hidden = false;
+    });
+    img.src = slot.previewImageUrl;
+
+    cover.appendChild(img);
+    cover.appendChild(overlay);
+  }
+
   function render(data) {
     var listing = data.listing;
     var site = data.site;
     var slot = data.slot;
+
+    renderListingHero(slot);
 
     document.getElementById("listingTitle").textContent = listing.title;
     document.title = listing.title + (site ? " — " + site.domain : "") + " | Vybridge";

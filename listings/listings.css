@@ -47,11 +47,41 @@
 }
 
 .listing-cover {
+  position: relative;
   grid-column: 1 / -1;
   width: 100%;
   aspect-ratio: 21 / 9;
+  overflow: hidden;
   border-radius: var(--radius-lg);
   background: var(--brand-gradient-soft);
+}
+
+/* When a ready preview exists, the placeholder box above is overridden by
+   the real (often much taller than 21:9) screenshot at its natural aspect
+   ratio — the fixed-height box is only ever the no-preview fallback. */
+.listing-cover:has(.listing-cover__img) {
+  aspect-ratio: auto;
+  background: none;
+}
+
+.listing-cover__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-lg);
+}
+
+.listing-cover__highlight {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px solid var(--purple);
+  background: rgba(124, 58, 237, 0.15);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.listing-cover__highlight[hidden] {
+  display: none;
 }
 
 .listing-title {
