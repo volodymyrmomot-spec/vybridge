@@ -150,6 +150,33 @@ async function handleRequest(req, res) {
     return sendJson(res, 200, { ok: true, service: "vybridge" });
   }
 
+  // TEMPORARY — Phase 0 feasibility check for the slot-preview screenshot
+  // feature (lib/slot-preview.js): confirms puppeteer-core + Alpine's apk
+  // chromium actually launch and screenshot inside the real Railway
+  // container, independent of any Slot/DB data. Remove once confirmed.
+  if (url.pathname === "/api/_internal/preview-spike" && req.method === "GET") {
+    const puppeteer = require("puppeteer-core");
+    let browser;
+    try {
+      browser = await puppeteer.launch({
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
+        headless: true,
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      });
+      const page = await browser.newPage();
+      await page.setViewport({ width: 1440, height: 900 });
+      await page.goto("https://example.com", { waitUntil: "networkidle0", timeout: 30000 });
+      const buffer = await page.screenshot({ fullPage: true, type: "png" });
+      return sendJson(res, 200, { ok: true, bytes: buffer.length });
+    } catch (err) {
+      return sendJson(res, 500, { ok: false, error: err.message });
+    } finally {
+      if (browser) {
+        await browser.close().catch(function () {});
+      }
+    }
+  }
+
   // Reads the raw request body itself (needed for Stripe signature
   // verification) — must be handled before any route below touches the
   // request stream via readBody().
