@@ -150,29 +150,6 @@ async function handleRequest(req, res) {
     return sendJson(res, 200, { ok: true, service: "vybridge" });
   }
 
-  // TEMPORARY — regression-check: triggers capturePreview() for one
-  // specific diagnostic slot so live rendering can be re-measured before
-  // and after previewPos* exists. Removed once confirmed.
-  if (url.pathname === "/api/_internal/diag-capture" && req.method === "POST") {
-    const DIAG_SLOT_ID = "3c44f07c-ccaa-4fb3-b252-7d3593ff78c4";
-    try {
-      const { capturePreview } = require("./lib/slot-preview");
-      await capturePreview(DIAG_SLOT_ID);
-      const prisma = require("./lib/prisma");
-      const slot = await prisma.slot.findUnique({ where: { id: DIAG_SLOT_ID } });
-      return sendJson(res, 200, {
-        ok: true,
-        previewStatus: slot.previewStatus,
-        posX: slot.posX,
-        posY: slot.posY,
-        previewPosX: slot.previewPosX,
-        previewPosY: slot.previewPosY,
-      });
-    } catch (err) {
-      return sendJson(res, 500, { ok: false, error: err.message });
-    }
-  }
-
   // Reads the raw request body itself (needed for Stripe signature
   // verification) — must be handled before any route below touches the
   // request stream via readBody().
