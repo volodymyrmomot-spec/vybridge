@@ -156,7 +156,9 @@ async function handleRequest(req, res) {
   // preview data. Hardcoded to a single slot id, not a general trigger.
   // Remove once the investigation is done.
   if (url.pathname === "/api/_internal/diag-capture" && req.method === "POST") {
-    const DIAG_SLOT_ID = "fedad32f-21c7-4a1a-a444-b6adc6250620";
+    const DIAG_ALLOWED_IDS = ["fedad32f-21c7-4a1a-a444-b6adc6250620", "6e1ff056-40dc-4931-bf9e-0430790f3094"];
+    const requested = url.searchParams.get("slotId");
+    const DIAG_SLOT_ID = DIAG_ALLOWED_IDS.includes(requested) ? requested : DIAG_ALLOWED_IDS[0];
     try {
       const { capturePreview } = require("./lib/slot-preview");
       await capturePreview(DIAG_SLOT_ID);
