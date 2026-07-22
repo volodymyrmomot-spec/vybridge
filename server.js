@@ -150,6 +150,28 @@ async function handleRequest(req, res) {
     return sendJson(res, 200, { ok: true, service: "vybridge" });
   }
 
+  // TEMPORARY — triggers the real capturePreview() pipeline (Alpine
+  // chromium, actual Cloudinary upload) for one specific diagnostic slot
+  // only, so the coordinate-mismatch investigation can inspect real
+  // preview data. Hardcoded to a single slot id, not a general trigger.
+  // Remove once the investigation is done.
+  if (url.pathname === "/api/_internal/diag-capture" && req.method === "POST") {
+    const DIAG_SLOT_ID = "fedad32f-21c7-4a1a-a444-b6adc6250620";
+    try {
+      const { capturePreview } = require("./lib/slot-preview");
+      await capturePreview(DIAG_SLOT_ID);
+      const prisma = require("./lib/prisma");
+      const slot = await prisma.slot.findUnique({ where: { id: DIAG_SLOT_ID } });
+      return sendJson(res, 200, {
+        ok: true,
+        previewStatus: slot.previewStatus,
+        previewImageUrl: slot.previewImageUrl,
+      });
+    } catch (err) {
+      return sendJson(res, 500, { ok: false, error: err.message });
+    }
+  }
+
   // Reads the raw request body itself (needed for Stripe signature
   // verification) — must be handled before any route below touches the
   // request stream via readBody().
