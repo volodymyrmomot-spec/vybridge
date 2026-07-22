@@ -66,6 +66,19 @@
     }
   }
 
+  // previewPosX/Y/Width/Height (resolved server-side at screenshot-capture
+  // time — see lib/slot-preview.js's resolveFinalRect()) describe where
+  // the ad actually sits within THIS screenshot; posX/Y/Width/Height are
+  // the Picker's own capture-time coordinates, which can drift from that.
+  // Preferred whenever present; falls back to posX/Y/Width/Height for a
+  // preview captured before this field existed.
+  function overlayRect(slot) {
+    if (slot.previewPosX !== null && slot.previewPosX !== undefined) {
+      return { x: slot.previewPosX, y: slot.previewPosY, width: slot.previewPosWidth, height: slot.previewPosHeight };
+    }
+    return { x: slot.posX, y: slot.posY, width: slot.posWidth, height: slot.posHeight };
+  }
+
   // Large hero preview — the page's main image. Shown at its real (full-
   // page) aspect ratio with no cropping, so the highlight overlay only ever
   // needs a single width-based scale factor, no vertical shift/crop math
@@ -85,6 +98,7 @@
       return;
     }
 
+    var rect = overlayRect(slot);
     var img = document.createElement("img");
     img.className = "listing-cover__img";
     img.alt = "";
@@ -93,10 +107,10 @@
 
     img.addEventListener("load", function () {
       var scale = cover.clientWidth / img.naturalWidth;
-      overlay.style.left = slot.posX * scale + "px";
-      overlay.style.top = slot.posY * scale + "px";
-      overlay.style.width = slot.posWidth * scale + "px";
-      overlay.style.height = slot.posHeight * scale + "px";
+      overlay.style.left = rect.x * scale + "px";
+      overlay.style.top = rect.y * scale + "px";
+      overlay.style.width = rect.width * scale + "px";
+      overlay.style.height = rect.height * scale + "px";
       overlay.hidden = false;
     });
     img.src = slot.previewImageUrl;

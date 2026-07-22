@@ -66,6 +66,21 @@
     return node;
   }
 
+  // previewPosX/Y/Width/Height (resolved server-side at screenshot-capture
+  // time — see lib/slot-preview.js's resolveFinalRect()) describe where
+  // the ad actually sits within THIS screenshot; posX/Y/Width/Height are
+  // the Picker's own capture-time coordinates, which can drift from that
+  // (anchor movement between selection and capture, or a no-anchor
+  // fixed-position slot's document position being scroll-dependent live).
+  // Preferred whenever present; falls back to posX/Y/Width/Height for a
+  // preview captured before this field existed.
+  function overlayRect(listing) {
+    if (listing.previewPosX !== null && listing.previewPosX !== undefined) {
+      return { x: listing.previewPosX, y: listing.previewPosY, width: listing.previewPosWidth, height: listing.previewPosHeight };
+    }
+    return { x: listing.posX, y: listing.posY, width: listing.posWidth, height: listing.posHeight };
+  }
+
   // Screenshot + CSS highlight overlay for a listing card's cover, or the
   // plain gradient placeholder (untouched, no markup added) whenever no
   // ready preview exists yet. The card is a fixed 16:9 window, so the
@@ -85,6 +100,7 @@
       return cover;
     }
 
+    var rect = overlayRect(listing);
     var img = document.createElement("img");
     img.className = "listing-card__cover-img";
     img.alt = "";
@@ -95,15 +111,15 @@
       var cardWidth = cover.clientWidth;
       var cardHeight = cover.clientHeight;
       var scale = cardWidth / img.naturalWidth;
-      var centerY = (listing.posY + listing.posHeight / 2) * scale;
+      var centerY = (rect.y + rect.height / 2) * scale;
       var maxShift = Math.max(0, img.naturalHeight * scale - cardHeight);
       var shift = Math.min(Math.max(centerY - cardHeight / 2, 0), maxShift);
 
       img.style.top = -shift + "px";
-      overlay.style.left = listing.posX * scale + "px";
-      overlay.style.top = listing.posY * scale - shift + "px";
-      overlay.style.width = listing.posWidth * scale + "px";
-      overlay.style.height = listing.posHeight * scale + "px";
+      overlay.style.left = rect.x * scale + "px";
+      overlay.style.top = rect.y * scale - shift + "px";
+      overlay.style.width = rect.width * scale + "px";
+      overlay.style.height = rect.height * scale + "px";
       overlay.hidden = false;
     });
     img.src = listing.previewImageUrl;

@@ -399,10 +399,7 @@ model Slot {
 
   // Marketplace preview screenshot (see lib/slot-preview.js) — a plain,
   // unmodified capture of the page with no highlight baked in; the
-  // Marketplace draws the highlight itself via CSS using
-  // posX/posY/posWidth/posHeight + pickerViewportWidth/pickerViewportHeight
-  // above, so there's no separate previewRect field and no risk of the
-  // highlight ever drifting from the slot's real position.
+  // Marketplace draws the highlight itself via CSS.
   previewImageUrl      String?       @map("preview_image_url")
   // Cloudinary's own asset id for previewImageUrl, captured from the
   // upload response — used only to delete the previous asset when a
@@ -410,6 +407,26 @@ model Slot {
   // Site.coverImagePublicId above).
   previewImagePublicId String?       @map("preview_image_public_id")
   previewStatus        PreviewStatus @default(pending) @map("preview_status")
+
+  // Where the ad actually sits WITHIN previewImageUrl specifically —
+  // resolved once, server-side, inside the same Puppeteer session that
+  // produces the screenshot (see resolveFinalRect() in lib/slot-preview.js),
+  // using the exact anchor-relative formula w.js's own anchorRenderRect()
+  // uses live, evaluated against THAT page snapshot. Deliberately separate
+  // from posX/posY/posWidth/posHeight above, which remain the Picker's own
+  // capture-time coordinates and continue to drive live rendering
+  // completely unchanged — these previewPos* fields exist only so the
+  // Marketplace overlay doesn't drift from the screenshot pixels, which the
+  // legacy posX/Y can (anchor container drift between selection time and
+  // capture time; a no-anchor fixed-position slot's document position
+  // is scroll-dependent live and has no other static-image answer than
+  // its scrollY=0 rect, which is what posX/Y already give it here too).
+  // Null until the first capture succeeds; the overlay falls back to
+  // posX/Y/Width/Height for any preview captured before this field existed.
+  previewPosX      Int? @map("preview_pos_x")
+  previewPosY      Int? @map("preview_pos_y")
+  previewPosWidth  Int? @map("preview_pos_width")
+  previewPosHeight Int? @map("preview_pos_height")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
