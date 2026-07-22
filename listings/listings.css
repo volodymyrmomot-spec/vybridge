@@ -166,6 +166,17 @@
   text-align: center;
 }
 
+#viewPlacementBtn {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  text-align: center;
+}
+
+#viewPlacementBtn[hidden] {
+  display: none;
+}
+
 @media (max-width: 720px) {
   .listing-page {
     grid-template-columns: 1fr;

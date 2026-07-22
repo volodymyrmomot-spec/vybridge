@@ -50,6 +50,22 @@
     nav.appendChild(el("span", null, listing.title));
   }
 
+  // pageUrl is only ever missing for a slot created before Phase 1 added
+  // that field — the button just stays hidden for those rather than
+  // linking somewhere broken.
+  function buildPlacementPreviewUrl(pageUrl, slotId) {
+    if (!pageUrl || !slotId) {
+      return null;
+    }
+    try {
+      var url = new URL(pageUrl);
+      url.searchParams.set("slotPreview", slotId);
+      return url.toString();
+    } catch (err) {
+      return null;
+    }
+  }
+
   // Large hero preview — the page's main image. Shown at its real (full-
   // page) aspect ratio with no cropping, so the highlight overlay only ever
   // needs a single width-based scale factor, no vertical shift/crop math
@@ -135,6 +151,13 @@
 
     var bookBtn = document.getElementById("bookBtn");
     bookBtn.href = "/slots?slot=" + encodeURIComponent(listing.sourceId);
+
+    var viewPlacementBtn = document.getElementById("viewPlacementBtn");
+    var previewUrl = slot ? buildPlacementPreviewUrl(slot.pageUrl, listing.sourceId) : null;
+    if (previewUrl) {
+      viewPlacementBtn.href = previewUrl;
+      viewPlacementBtn.hidden = false;
+    }
 
     renderBreadcrumbs(site, listing);
 

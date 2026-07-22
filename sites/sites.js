@@ -113,6 +113,22 @@
     return cover;
   }
 
+  // pageUrl is only ever missing for a slot created before Phase 1 added
+  // that field — the button just doesn't render for those rather than
+  // linking somewhere broken.
+  function buildPlacementPreviewUrl(pageUrl, slotId) {
+    if (!pageUrl || !slotId) {
+      return null;
+    }
+    try {
+      var url = new URL(pageUrl);
+      url.searchParams.set("slotPreview", slotId);
+      return url.toString();
+    } catch (err) {
+      return null;
+    }
+  }
+
   function renderBreadcrumbs(site) {
     var nav = document.getElementById("breadcrumbs");
     nav.innerHTML = "";
@@ -166,13 +182,30 @@
       empty.hidden = false;
     } else {
       site.listings.forEach(function (listing) {
+        // A wrapper, not the card <a> itself, carries the box styling now —
+        // the "View placement" link below has to be a sibling of the card
+        // link, never nested inside it (two interactive <a>s inside one
+        // another is invalid HTML and makes clicks ambiguous).
+        var wrap = el("div", "listing-card-wrap");
+
         var card = el("a", "listing-card");
         card.href = "/listings/" + encodeURIComponent(listing.slug);
         card.appendChild(renderListingCover(listing));
         card.appendChild(el("div", "listing-card__title", listing.title));
         card.appendChild(el("div", "listing-card__type", LISTING_TYPE_LABELS[listing.listingType] || listing.listingType));
         card.appendChild(el("div", "listing-card__price", money(listing.priceCents, listing.currency)));
-        grid.appendChild(card);
+        wrap.appendChild(card);
+
+        var previewUrl = buildPlacementPreviewUrl(listing.pageUrl, listing.sourceId);
+        if (previewUrl) {
+          var viewBtn = el("a", "listing-card__view-btn", "🌐 View placement on website");
+          viewBtn.href = previewUrl;
+          viewBtn.target = "_blank";
+          viewBtn.rel = "noopener";
+          wrap.appendChild(viewBtn);
+        }
+
+        grid.appendChild(wrap);
       });
     }
 

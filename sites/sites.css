@@ -116,21 +116,47 @@
   gap: 18px;
 }
 
-.listing-card {
-  display: block;
-  padding: 0;
+/* Box styling lives here, not on .listing-card itself — the "View
+   placement" button needs to be a sibling of the card link (see sites.js),
+   so the wrapper is what visually reads as "the card" now. */
+.listing-card-wrap {
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   background: #fff;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-  text-decoration: none;
   transition: box-shadow 0.15s, transform 0.15s;
 }
 
-.listing-card:hover {
+.listing-card-wrap:hover {
   box-shadow: var(--shadow-md);
   transform: translateY(-1px);
+}
+
+.listing-card {
+  display: block;
+  padding: 0;
+  text-decoration: none;
+}
+
+.listing-card__view-btn {
+  display: block;
+  margin: 0 16px 16px;
+  padding: 8px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--purple-dark);
+  background: var(--brand-gradient-soft);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.listing-card__view-btn:hover {
+  background: rgba(124, 58, 237, 0.16);
 }
 
 .listing-card__cover {

@@ -21,6 +21,12 @@
   var pickToken = params.get("vybridge_pick");
   var pickSlotId = params.get("vybridge_slot");
 
+  // Marketplace "View placement on website" button (Phase 2) — a plain
+  // ad-serving page load, just with this one extra param telling w.js which
+  // already-rendered slot to scroll to and briefly highlight. Only ever
+  // read inside startAdServing() below; never applies during picker mode.
+  var previewSlotId = params.get("slotPreview");
+
   // True when this page was opened inside the /slots/new iframe (the new,
   // primary picker flow) rather than in its own tab (the older per-slot
   // "Pick placement" dashboard button, which still posts straight to
@@ -237,6 +243,9 @@
       .then(function (slots) {
         allSlots = Array.isArray(slots) ? slots : [];
         applyViewportFilter();
+        if (previewSlotId) {
+          showSlotPreview(previewSlotId);
+        }
       })
       .catch(function () {});
 
@@ -254,6 +263,62 @@
     // never run for that case, leaving already-rendered slots stuck at
     // their mount-time position.
     window.addEventListener("resize", applyViewportFilter);
+  }
+
+  // ---------- Marketplace "View placement on website" (Phase 2) ----------
+
+  var SLOT_PREVIEW_SCROLL_DELAY_MS = 700; // rough time for the smooth scroll to settle
+  var SLOT_PREVIEW_HIGHLIGHT_MS = 2500;
+
+  function cleanPreviewUrlParam() {
+    try {
+      var url = new URL(window.location.href);
+      if (!url.searchParams.has("slotPreview")) {
+        return;
+      }
+      url.searchParams.delete("slotPreview");
+      var query = url.searchParams.toString();
+      window.history.replaceState(window.history.state, "", url.pathname + (query ? "?" + query : "") + url.hash);
+    } catch (err) {}
+  }
+
+  function injectSlotPreviewStyles() {
+    var style = document.createElement("style");
+    style.textContent =
+      ".vybridge-slot-preview-highlight{box-shadow:0 0 0 6px rgba(124,58,237,0.35)," +
+      "0 0 32px 8px rgba(124,58,237,0.25);transform:scale(1.02);}";
+    document.head.appendChild(style);
+  }
+
+  // Existing placeholder/ad rendering (renderPlaceholder/renderAd) and
+  // scheduling (scheduleSlot/applyViewportFilter) are completely untouched —
+  // this only ever observes an already-rendered slot's own wrap element
+  // (renderedSlots[slotId].wrap) and adds/removes one CSS class on it.
+  // Silently does nothing if that slot isn't currently rendered on this
+  // page (wrong viewport, closed recently, no matching active/draft slot) —
+  // the URL param is still cleaned up either way.
+  function showSlotPreview(slotId) {
+    var entry = renderedSlots[slotId];
+    var target = entry && entry.wrap;
+    cleanPreviewUrlParam();
+    if (!target) {
+      return;
+    }
+
+    injectSlotPreviewStyles();
+    target.scrollIntoView({ behavior: "smooth", block: "center" });
+
+    window.setTimeout(function () {
+      // transition lives on the element itself (not inside the toggled
+      // class) so both the fade-in and the fade-out on removal animate —
+      // a class's own `transition` declaration stops applying the instant
+      // that class is removed.
+      target.style.transition = "box-shadow 0.6s ease, transform 0.6s ease";
+      target.classList.add("vybridge-slot-preview-highlight");
+      window.setTimeout(function () {
+        target.classList.remove("vybridge-slot-preview-highlight");
+      }, SLOT_PREVIEW_HIGHLIGHT_MS);
+    }, SLOT_PREVIEW_SCROLL_DELAY_MS);
   }
 
   // True once a slot has been through the drag-to-select picker (see
