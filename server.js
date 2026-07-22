@@ -172,6 +172,54 @@ async function handleRequest(req, res) {
     }
   }
 
+  // TEMPORARY — read-only diagnostic: resolves the diagnostic slot's
+  // anchor rect from WITHIN an actual Puppeteer capture session (same
+  // browser/environment capturePreview() uses), to compare against the
+  // anchor rect measured in a normal browser. Removed once the
+  // coordinate-mismatch investigation concludes.
+  if (url.pathname === "/api/_internal/diag-anchor-rect" && req.method === "GET") {
+    try {
+      const puppeteer = require("puppeteer-core");
+      const prisma = require("./lib/prisma");
+      const slot = await prisma.slot.findUnique({ where: { id: "fedad32f-21c7-4a1a-a444-b6adc6250620" } });
+      const browser = await puppeteer.launch({
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
+        headless: true,
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      });
+      const page = await browser.newPage();
+      await page.setViewport({ width: slot.pickerViewportWidth, height: slot.pickerViewportHeight });
+      await page.goto(slot.pageUrl, { waitUntil: "networkidle0", timeout: 30000 });
+      await new Promise((r) => setTimeout(r, 1000));
+      const result = await page.evaluate((selector, anchorRelX, anchorRelY, anchorRelWidth, anchorRelHeight, posX, posY, posWidth, posHeight) => {
+        const anchorEl = document.querySelector(selector);
+        if (!anchorEl) {
+          return { anchorFound: false, docHeight: document.documentElement.scrollHeight };
+        }
+        const r = anchorEl.getBoundingClientRect();
+        const anchorDocRect = { left: r.left + window.scrollX, top: r.top + window.scrollY, width: r.width, height: r.height };
+        const resolvedRect = {
+          left: anchorDocRect.left + anchorRelX * anchorDocRect.width,
+          top: anchorDocRect.top + anchorRelY * anchorDocRect.height,
+          width: anchorRelWidth * anchorDocRect.width,
+          height: anchorRelHeight * anchorDocRect.height,
+        };
+        return {
+          anchorFound: true,
+          anchorDocRect: anchorDocRect,
+          resolvedRect: resolvedRect,
+          legacyRect: { left: posX, top: posY, width: posWidth, height: posHeight },
+          docHeight: document.documentElement.scrollHeight,
+          innerWidth: window.innerWidth,
+        };
+      }, slot.domSelector, slot.anchorRelX, slot.anchorRelY, slot.anchorRelWidth, slot.anchorRelHeight, slot.posX, slot.posY, slot.posWidth, slot.posHeight);
+      await browser.close();
+      return sendJson(res, 200, { ok: true, result: result });
+    } catch (err) {
+      return sendJson(res, 500, { ok: false, error: err.message });
+    }
+  }
+
   // Reads the raw request body itself (needed for Stripe signature
   // verification) — must be handled before any route below touches the
   // request stream via readBody().
